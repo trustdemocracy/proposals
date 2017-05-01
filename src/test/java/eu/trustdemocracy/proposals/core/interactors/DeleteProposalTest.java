@@ -1,6 +1,7 @@
 package eu.trustdemocracy.proposals.core.interactors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import com.thedeanda.lorem.LoremIpsum;
 import eu.trustdemocracy.proposals.core.interactors.util.TokenUtils;
@@ -16,7 +17,7 @@ import org.jose4j.lang.JoseException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class GetProposalTest {
+public class DeleteProposalTest {
 
   private Map<UUID, ProposalResponseDTO> reponseProposals;
   private ProposalDAO proposalDAO;
@@ -33,8 +34,8 @@ public class GetProposalTest {
 
     val lorem = LoremIpsum.getInstance();
 
-    authorId = UUID.randomUUID();
     authorUsername = lorem.getEmail();
+    authorId = UUID.randomUUID();
 
     val interactor = new CreateProposal(proposalDAO);
 
@@ -53,12 +54,14 @@ public class GetProposalTest {
   }
 
   @Test
-  public void getProposal() {
+  public void deleteProposal() {
     val createdProposal = reponseProposals.values().iterator().next();
 
-    val inputProposal = new ProposalRequestDTO().setId(createdProposal.getId());
+    val inputProposal = new ProposalRequestDTO()
+        .setId(createdProposal.getId())
+        .setAuthorToken(TokenUtils.createToken(authorId, authorUsername));
 
-    ProposalResponseDTO responseProposal = new GetProposal(proposalDAO).execute(inputProposal);
+    ProposalResponseDTO responseProposal = new DeleteProposal(proposalDAO).execute(inputProposal);
 
     assertEquals(authorUsername, responseProposal.getAuthorUsername());
     assertEquals(createdProposal.getTitle(), responseProposal.getTitle());
@@ -66,6 +69,8 @@ public class GetProposalTest {
     assertEquals(createdProposal.getSource(), responseProposal.getSource());
     assertEquals(createdProposal.getMotivation(), responseProposal.getMotivation());
     assertEquals(createdProposal.getMeasures(), responseProposal.getMeasures());
+
+    assertNull(new GetProposal(proposalDAO).execute(inputProposal));
   }
 
 }

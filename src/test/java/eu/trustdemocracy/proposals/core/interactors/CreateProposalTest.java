@@ -8,12 +8,10 @@ import eu.trustdemocracy.proposals.core.models.request.ProposalRequestDTO;
 import eu.trustdemocracy.proposals.core.models.response.ProposalResponseDTO;
 import eu.trustdemocracy.proposals.gateways.ProposalDAO;
 import eu.trustdemocracy.proposals.gateways.fake.FakeProposalDAO;
-import eu.trustdemocracy.proposals.infrastructure.JWTKeyFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import lombok.val;
-import org.jose4j.jwk.RsaJwkGenerator;
 import org.jose4j.lang.JoseException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -28,9 +26,7 @@ public class CreateProposalTest {
 
   @BeforeEach
   public void init() throws JoseException {
-    val rsaKey = RsaJwkGenerator.generateJwk(2048);
-    JWTKeyFactory.setPrivateKey(rsaKey.getPrivateKey());
-    JWTKeyFactory.setPublicKey(rsaKey.getPublicKey());
+    TokenUtils.generateKeys();
 
     proposalDAO = new FakeProposalDAO();
     inputProposals = new ArrayList<>();
