@@ -56,7 +56,7 @@ public class CreateProposalTest {
     val inputProposal = inputProposals.get(0);
     ProposalResponseDTO responseProposal = new CreateProposal(proposalDAO).execute(inputProposal);
 
-    assertEquals(authorUsername, responseProposal.getAuthor());
+    assertEquals(authorUsername, responseProposal.getAuthorUsername());
     assertEquals(inputProposal.getTitle(), responseProposal.getTitle());
     assertEquals(inputProposal.getBrief(), responseProposal.getBrief());
     assertEquals(inputProposal.getSource(), responseProposal.getSource());

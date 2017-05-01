@@ -1,5 +1,4 @@
-package eu.trustdemocracy.proposals.core.models.response;
-
+package eu.trustdemocracy.proposals.core.entities;
 
 import java.util.UUID;
 import lombok.Data;
@@ -7,10 +6,10 @@ import lombok.experimental.Accessors;
 
 @Data
 @Accessors(chain = true)
-public class ProposalResponseDTO {
+public class Proposal {
 
   private UUID id;
-  private String authorUsername;
+  private User author;
   private String title;
   private String brief;
   private String source;
