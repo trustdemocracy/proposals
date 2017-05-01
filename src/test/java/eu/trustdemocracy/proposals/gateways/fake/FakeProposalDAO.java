@@ -27,4 +27,9 @@ public class FakeProposalDAO implements ProposalDAO {
     return proposals.get(id);
   }
 
+  @Override
+  public Proposal delete(UUID id) {
+    return proposals.remove(id);
+  }
+
 }

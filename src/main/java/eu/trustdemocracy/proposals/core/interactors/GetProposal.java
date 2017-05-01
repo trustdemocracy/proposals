@@ -16,6 +16,6 @@ public class GetProposal {
 
   public ProposalResponseDTO execute(ProposalRequestDTO inputProposal) {
     val proposal = proposalDAO.findById(inputProposal.getId());
-    return ProposalMapper.createResponse(proposal);
+    return proposal == null ? null : ProposalMapper.createResponse(proposal);
   }
 }

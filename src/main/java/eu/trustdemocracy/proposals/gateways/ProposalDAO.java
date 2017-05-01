@@ -8,4 +8,6 @@ public interface ProposalDAO {
   Proposal create(Proposal proposal);
 
   Proposal findById(UUID id);
+
+  Proposal delete(UUID id);
 }
