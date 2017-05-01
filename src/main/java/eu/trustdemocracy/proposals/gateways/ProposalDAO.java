@@ -10,4 +10,6 @@ public interface ProposalDAO {
   Proposal findById(UUID id);
 
   Proposal delete(UUID id);
+
+  Proposal publish(UUID id);
 }

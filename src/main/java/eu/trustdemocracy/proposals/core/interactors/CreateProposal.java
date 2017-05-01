@@ -7,8 +7,8 @@ import eu.trustdemocracy.proposals.gateways.ProposalDAO;
 import lombok.val;
 
 public class CreateProposal {
-  private ProposalDAO proposalDAO;
 
+  private ProposalDAO proposalDAO;
 
   public CreateProposal(ProposalDAO proposalDAO) {
     this.proposalDAO = proposalDAO;

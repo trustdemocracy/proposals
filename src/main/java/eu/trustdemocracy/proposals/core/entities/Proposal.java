@@ -15,4 +15,5 @@ public class Proposal {
   private String source;
   private String motivation;
   private String measures;
+  private ProposalStatus status;
 }

@@ -25,6 +25,7 @@ public class ProposalMapper {
         .setBrief(proposal.getBrief())
         .setSource(proposal.getSource())
         .setMotivation(proposal.getMotivation())
-        .setMeasures(proposal.getMeasures());
+        .setMeasures(proposal.getMeasures())
+        .setStatus(proposal.getStatus());
   }
 }
