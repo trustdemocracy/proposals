@@ -36,9 +36,9 @@ public class FakeProposalDAO implements ProposalDAO {
   }
 
   @Override
-  public Proposal publish(UUID id) {
+  public Proposal setStatus(UUID id, ProposalStatus status) {
     val proposal = findById(id);
-    return proposal.setStatus(ProposalStatus.PUBLISHED);
+    return proposal.setStatus(status);
   }
 
 }

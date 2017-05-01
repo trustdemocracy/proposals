@@ -1,6 +1,7 @@
 package eu.trustdemocracy.proposals.gateways;
 
 import eu.trustdemocracy.proposals.core.entities.Proposal;
+import eu.trustdemocracy.proposals.core.entities.ProposalStatus;
 import java.util.UUID;
 
 public interface ProposalDAO {
@@ -11,5 +12,5 @@ public interface ProposalDAO {
 
   Proposal delete(UUID id);
 
-  Proposal publish(UUID id);
+  Proposal setStatus(UUID id, ProposalStatus status);
 }

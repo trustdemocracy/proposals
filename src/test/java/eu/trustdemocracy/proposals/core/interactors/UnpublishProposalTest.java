@@ -60,22 +60,24 @@ public class UnpublishProposalTest {
 
   @Test
   public void unpublishProposal() {
-    val createdProposal = reponseProposals.values().iterator().next();
+    val publishedProposal = reponseProposals.values().iterator().next();
 
     val inputProposal = new ProposalRequestDTO()
-        .setId(createdProposal.getId())
+        .setId(publishedProposal.getId())
         .setAuthorToken(TokenUtils.createToken(authorId, authorUsername));
 
     ProposalResponseDTO responseProposal = new UnpublishProposal(proposalDAO).execute(inputProposal);
 
     assertEquals(authorUsername, responseProposal.getAuthorUsername());
-    assertEquals(createdProposal.getTitle(), responseProposal.getTitle());
-    assertEquals(createdProposal.getBrief(), responseProposal.getBrief());
-    assertEquals(createdProposal.getSource(), responseProposal.getSource());
-    assertEquals(createdProposal.getMotivation(), responseProposal.getMotivation());
-    assertEquals(createdProposal.getMeasures(), responseProposal.getMeasures());
-    assertNotEquals(createdProposal.getStatus(), responseProposal.getStatus());
+    assertEquals(publishedProposal.getTitle(), responseProposal.getTitle());
+    assertEquals(publishedProposal.getBrief(), responseProposal.getBrief());
+    assertEquals(publishedProposal.getSource(), responseProposal.getSource());
+    assertEquals(publishedProposal.getMotivation(), responseProposal.getMotivation());
+    assertEquals(publishedProposal.getMeasures(), responseProposal.getMeasures());
+    assertNotEquals(publishedProposal.getStatus(), responseProposal.getStatus());
     assertEquals(ProposalStatus.UNPUBLISHED, responseProposal.getStatus());
   }
+
+
 
 }
