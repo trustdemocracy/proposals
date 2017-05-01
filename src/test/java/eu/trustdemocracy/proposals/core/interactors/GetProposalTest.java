@@ -66,6 +66,7 @@ public class GetProposalTest {
     assertEquals(createdProposal.getSource(), responseProposal.getSource());
     assertEquals(createdProposal.getMotivation(), responseProposal.getMotivation());
     assertEquals(createdProposal.getMeasures(), responseProposal.getMeasures());
+    assertEquals(createdProposal.getStatus(), responseProposal.getStatus());
   }
 
 }

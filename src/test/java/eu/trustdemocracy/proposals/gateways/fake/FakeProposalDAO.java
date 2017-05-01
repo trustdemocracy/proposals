@@ -20,6 +20,7 @@ public class FakeProposalDAO implements ProposalDAO {
     } while (findById(id) != null);
 
     proposal.setId(id);
+    proposal.setStatus(ProposalStatus.UNPUBLISHED);
     proposals.put(proposal.getId(), proposal);
     return proposal;
   }

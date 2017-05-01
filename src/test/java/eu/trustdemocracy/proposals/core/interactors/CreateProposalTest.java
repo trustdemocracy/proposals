@@ -3,6 +3,7 @@ package eu.trustdemocracy.proposals.core.interactors;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.thedeanda.lorem.LoremIpsum;
+import eu.trustdemocracy.proposals.core.entities.ProposalStatus;
 import eu.trustdemocracy.proposals.core.interactors.util.TokenUtils;
 import eu.trustdemocracy.proposals.core.models.request.ProposalRequestDTO;
 import eu.trustdemocracy.proposals.core.models.response.ProposalResponseDTO;
@@ -58,5 +59,6 @@ public class CreateProposalTest {
     assertEquals(inputProposal.getSource(), responseProposal.getSource());
     assertEquals(inputProposal.getMotivation(), responseProposal.getMotivation());
     assertEquals(inputProposal.getMeasures(), responseProposal.getMeasures());
+    assertEquals(ProposalStatus.UNPUBLISHED, responseProposal.getStatus());
   }
 }
