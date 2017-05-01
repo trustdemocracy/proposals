@@ -1,6 +1,7 @@
 package eu.trustdemocracy.proposals.core.models.response;
 
 
+import eu.trustdemocracy.proposals.core.entities.ProposalStatus;
 import java.util.UUID;
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -16,4 +17,5 @@ public class ProposalResponseDTO {
   private String source;
   private String motivation;
   private String measures;
+  private ProposalStatus status;
 }
