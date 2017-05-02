@@ -8,6 +8,7 @@ import ch.vorburger.mariadb4j.DBConfigurationBuilder;
 import com.thedeanda.lorem.Lorem;
 import com.thedeanda.lorem.LoremIpsum;
 import eu.trustdemocracy.proposals.core.entities.Proposal;
+import eu.trustdemocracy.proposals.core.entities.ProposalStatus;
 import eu.trustdemocracy.proposals.core.entities.util.UserMapper;
 import eu.trustdemocracy.proposals.core.interactors.util.TokenUtils;
 import eu.trustdemocracy.proposals.gateways.ProposalDAO;
@@ -45,13 +46,14 @@ public class MySqlProposalDAOTest {
     val statement = connection.createStatement();
     val sql = "CREATE TABLE `proposals` (" +
 
-        "`id` VARCHAR(16) NOT NULL, " +
+        "`id` VARCHAR(36) NOT NULL, " +
         "`author` VARCHAR(255), " +
         "`title` VARCHAR(255), " +
         "`brief` VARCHAR(500), " +
         "`source` VARCHAR(1000), " +
         "`motivation` TEXT(20000), " +
         "`measures` TEXT(20000), " +
+        "`status` VARCHAR(30), " +
 
         "PRIMARY KEY ( id ) " +
         ") ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;";
@@ -62,7 +64,7 @@ public class MySqlProposalDAOTest {
   }
 
   @AfterEach
-  private void tearDown() throws SQLException {
+  public void tearDown() throws SQLException {
     while (!connectionStack.isEmpty()) {
       connectionStack.pop().close();
     }
@@ -94,6 +96,7 @@ public class MySqlProposalDAOTest {
     assertEquals(proposal.getSource(), resultSet.getString("source"));
     assertEquals(proposal.getMotivation(), resultSet.getString("motivation"));
     assertEquals(proposal.getMeasures(), resultSet.getString("measures"));
+    assertEquals(ProposalStatus.UNPUBLISHED.toString(), resultSet.getString("status"));
   }
 
   private Connection getConnection() {
