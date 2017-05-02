@@ -99,6 +99,29 @@ public class MySqlProposalDAOTest {
     assertEquals(ProposalStatus.UNPUBLISHED.toString(), resultSet.getString("status"));
   }
 
+  @Test
+  public void findProposal() throws SQLException {
+    val user = UserMapper.createEntity(TokenUtils.createToken(UUID.randomUUID(), lorem.getEmail()));
+    val proposal = new Proposal()
+        .setAuthor(user)
+        .setTitle(lorem.getTitle(5, 30))
+        .setBrief(lorem.getParagraphs(1, 1))
+        .setSource(lorem.getUrl())
+        .setMotivation(lorem.getParagraphs(1, 5))
+        .setMeasures(lorem.getParagraphs(1, 5));
+
+    val createdProposal = proposalDAO.create(proposal);
+    val resultProposal = proposalDAO.findById(createdProposal.getId());
+
+    assertEquals(createdProposal.getId(), resultProposal.getId());
+    assertEquals(proposal.getTitle(), resultProposal.getTitle());
+    assertEquals(proposal.getBrief(), resultProposal.getBrief());
+    assertEquals(proposal.getSource(), resultProposal.getSource());
+    assertEquals(proposal.getMotivation(), resultProposal.getMotivation());
+    assertEquals(proposal.getMeasures(), resultProposal.getMeasures());
+    assertEquals(ProposalStatus.UNPUBLISHED, resultProposal.getStatus());
+  }
+
   private Connection getConnection() {
     try {
       val conn = DriverManager
