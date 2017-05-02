@@ -16,6 +16,15 @@ public class MySqlProposalDAO implements ProposalDAO {
   private static final Logger LOG = LoggerFactory.getLogger(MySqlProposalDAO.class);
 
   private static final String TABLE = "proposals";
+  public static final int ID_SIZE = 36;
+  public static final int AUTHOR_SIZE = 100;
+  public static final int TITLE_SIZE = 100;
+  public static final int BRIEF_SIZE = 500;
+  public static final int SOURCE_SIZE = 1000;
+  public static final int MOTIVATION_SIZE = 20000;
+  public static final int MEASURES_SIZE = 20000;
+  public static final int STATUS_SIZE = 36;
+
   private Connection conn;
 
   public MySqlProposalDAO(Connection conn) {
@@ -37,12 +46,12 @@ public class MySqlProposalDAO implements ProposalDAO {
       val statement = conn.prepareStatement(sql);
 
       statement.setString(1, id.toString());
-      statement.setString(2, proposal.getAuthor().getUsername());
-      statement.setString(3, proposal.getTitle());
-      statement.setString(4, proposal.getBrief());
-      statement.setString(5, proposal.getSource());
-      statement.setString(6, proposal.getMotivation());
-      statement.setString(7, proposal.getMeasures());
+      statement.setString(2, truncate(proposal.getAuthor().getUsername(), AUTHOR_SIZE));
+      statement.setString(3, truncate(proposal.getTitle(), TITLE_SIZE));
+      statement.setString(4, truncate(proposal.getBrief(), BRIEF_SIZE));
+      statement.setString(5, truncate(proposal.getSource(), SOURCE_SIZE));
+      statement.setString(6, truncate(proposal.getMotivation(), MOTIVATION_SIZE));
+      statement.setString(7, truncate(proposal.getMeasures(), MEASURES_SIZE));
       statement.setString(8, ProposalStatus.UNPUBLISHED.toString());
 
       if (statement.executeUpdate() > 0) {
@@ -112,5 +121,9 @@ public class MySqlProposalDAO implements ProposalDAO {
   @Override
   public Proposal setStatus(UUID id, ProposalStatus status) {
     return null;
+  }
+
+  protected static String truncate(String string, int limit) {
+    return string.length() > limit ? string.substring(0, limit) : string;
   }
 }

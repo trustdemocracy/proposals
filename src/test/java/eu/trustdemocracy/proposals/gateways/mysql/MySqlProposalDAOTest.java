@@ -48,14 +48,14 @@ public class MySqlProposalDAOTest {
     val statement = connection.createStatement();
     val sql = "CREATE TABLE `proposals` (" +
 
-        "`id` VARCHAR(36) NOT NULL, " +
-        "`author` VARCHAR(255), " +
-        "`title` VARCHAR(255), " +
-        "`brief` VARCHAR(500), " +
-        "`source` VARCHAR(1000), " +
-        "`motivation` TEXT(20000), " +
-        "`measures` TEXT(20000), " +
-        "`status` VARCHAR(30), " +
+        "`id` VARCHAR(" + MySqlProposalDAO.ID_SIZE + ") NOT NULL, " +
+        "`author` VARCHAR(" + MySqlProposalDAO.AUTHOR_SIZE + "), " +
+        "`title` VARCHAR(" + MySqlProposalDAO.TITLE_SIZE + "), " +
+        "`brief` VARCHAR(" + MySqlProposalDAO.BRIEF_SIZE + "), " +
+        "`source` VARCHAR(" + MySqlProposalDAO.SOURCE_SIZE + "), " +
+        "`motivation` TEXT(" + MySqlProposalDAO.MOTIVATION_SIZE + "), " +
+        "`measures` TEXT(" + MySqlProposalDAO.MEASURES_SIZE + "), " +
+        "`status` VARCHAR(" + MySqlProposalDAO.STATUS_SIZE + "), " +
 
         "PRIMARY KEY ( id ) " +
         ") ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;";
@@ -74,14 +74,7 @@ public class MySqlProposalDAOTest {
 
   @Test
   public void createProposal() throws SQLException {
-    val user = UserMapper.createEntity(TokenUtils.createToken(UUID.randomUUID(), lorem.getEmail()));
-    val proposal = new Proposal()
-        .setAuthor(user)
-        .setTitle(lorem.getTitle(5, 30))
-        .setBrief(lorem.getParagraphs(1, 1))
-        .setSource(lorem.getUrl())
-        .setMotivation(lorem.getParagraphs(1, 5))
-        .setMeasures(lorem.getParagraphs(1, 5));
+    val proposal = createRandomProposal();
 
     val resultProposal = proposalDAO.create(proposal);
 
@@ -103,14 +96,7 @@ public class MySqlProposalDAOTest {
 
   @Test
   public void findProposal() throws SQLException {
-    val user = UserMapper.createEntity(TokenUtils.createToken(UUID.randomUUID(), lorem.getEmail()));
-    val proposal = new Proposal()
-        .setAuthor(user)
-        .setTitle(lorem.getTitle(5, 30))
-        .setBrief(lorem.getParagraphs(1, 1))
-        .setSource(lorem.getUrl())
-        .setMotivation(lorem.getParagraphs(1, 5))
-        .setMeasures(lorem.getParagraphs(1, 5));
+    val proposal = createRandomProposal();
 
     val createdProposal = proposalDAO.create(proposal);
     val resultProposal = proposalDAO.findById(createdProposal.getId());
@@ -126,15 +112,7 @@ public class MySqlProposalDAOTest {
 
   @Test
   public void deleteProposal() throws SQLException {
-    val user = UserMapper.createEntity(TokenUtils.createToken(UUID.randomUUID(), lorem.getEmail()));
-    val proposal = new Proposal()
-        .setAuthor(user)
-        .setTitle(lorem.getTitle(5, 30))
-        .setBrief(lorem.getParagraphs(1, 1))
-        .setSource(lorem.getUrl())
-        .setMotivation(lorem.getParagraphs(1, 5))
-        .setMeasures(lorem.getParagraphs(1, 5));
-
+    val proposal = createRandomProposal();
     val resultProposal = proposalDAO.create(proposal);
 
     assertNotNull(resultProposal.getId());
@@ -159,6 +137,26 @@ public class MySqlProposalDAOTest {
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  private Proposal createRandomProposal() {
+    val username = MySqlProposalDAO.truncate(lorem.getEmail(), MySqlProposalDAO.AUTHOR_SIZE);
+    val title = MySqlProposalDAO.truncate(lorem.getTitle(5, 30), MySqlProposalDAO.TITLE_SIZE);
+    val brief = MySqlProposalDAO.truncate(lorem.getParagraphs(1, 1), MySqlProposalDAO.BRIEF_SIZE);
+    val source = MySqlProposalDAO.truncate(lorem.getUrl(), MySqlProposalDAO.SOURCE_SIZE);
+    val motivation =
+        MySqlProposalDAO.truncate(lorem.getParagraphs(1, 5), MySqlProposalDAO.MOTIVATION_SIZE);
+    val measures =
+        MySqlProposalDAO.truncate(lorem.getParagraphs(1, 5), MySqlProposalDAO.MEASURES_SIZE);
+
+    val user = UserMapper.createEntity(TokenUtils.createToken(UUID.randomUUID(), username));
+    return new Proposal()
+        .setAuthor(user)
+        .setTitle(title)
+        .setBrief(brief)
+        .setSource(source)
+        .setMotivation(motivation)
+        .setMeasures(measures);
   }
 
 }
