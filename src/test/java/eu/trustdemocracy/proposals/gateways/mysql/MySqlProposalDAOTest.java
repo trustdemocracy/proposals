@@ -1,6 +1,8 @@
 package eu.trustdemocracy.proposals.gateways.mysql;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import ch.vorburger.mariadb4j.DB;
@@ -120,6 +122,32 @@ public class MySqlProposalDAOTest {
     assertEquals(proposal.getMotivation(), resultProposal.getMotivation());
     assertEquals(proposal.getMeasures(), resultProposal.getMeasures());
     assertEquals(ProposalStatus.UNPUBLISHED, resultProposal.getStatus());
+  }
+
+  @Test
+  public void deleteProposal() throws SQLException {
+    val user = UserMapper.createEntity(TokenUtils.createToken(UUID.randomUUID(), lorem.getEmail()));
+    val proposal = new Proposal()
+        .setAuthor(user)
+        .setTitle(lorem.getTitle(5, 30))
+        .setBrief(lorem.getParagraphs(1, 1))
+        .setSource(lorem.getUrl())
+        .setMotivation(lorem.getParagraphs(1, 5))
+        .setMeasures(lorem.getParagraphs(1, 5));
+
+    val resultProposal = proposalDAO.create(proposal);
+
+    assertNotNull(resultProposal.getId());
+
+    proposalDAO.delete(resultProposal.getId());
+
+    val connection = getConnection();
+    val sql = "SELECT * FROM `proposals` WHERE id = ?";
+    val statement = connection.prepareStatement(sql);
+    statement.setString(1, resultProposal.getId().toString());
+    val resultSet = statement.executeQuery();
+
+    assertFalse(resultSet.next());
   }
 
   private Connection getConnection() {
