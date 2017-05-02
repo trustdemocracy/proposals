@@ -87,7 +87,26 @@ public class MySqlProposalDAO implements ProposalDAO {
 
   @Override
   public Proposal delete(UUID id) {
-    return null;
+    try {
+      val proposal = findById(id);
+      if (proposal == null) {
+        return null;
+      }
+
+      val sql = "DELETE FROM `" + TABLE + "` WHERE id = ? ";
+      val statement = conn.prepareStatement(sql);
+
+      statement.setString(1, id.toString());
+
+      if (statement.executeUpdate() > 0) {
+        return proposal;
+      }
+
+      return null;
+    } catch (SQLException e) {
+      LOG.error("Failed to create proposal with id " + id, e);
+      return null;
+    }
   }
 
   @Override
