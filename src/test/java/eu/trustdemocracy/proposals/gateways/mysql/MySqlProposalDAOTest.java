@@ -128,6 +128,29 @@ public class MySqlProposalDAOTest {
     assertFalse(resultSet.next());
   }
 
+  @Test
+  public void setStatus() throws SQLException {
+    val proposal = createRandomProposal();
+
+    val resultProposal = proposalDAO.create(proposal);
+    proposalDAO.setStatus(resultProposal.getId(), ProposalStatus.PUBLISHED);
+
+    val connection = getConnection();
+    val sql = "SELECT * FROM `proposals` WHERE id = ?";
+    val statement = connection.prepareStatement(sql);
+    statement.setString(1, resultProposal.getId().toString());
+    val publishedResultSet = statement.executeQuery();
+
+    assertTrue(publishedResultSet.next());
+    assertEquals(ProposalStatus.PUBLISHED.toString(), publishedResultSet.getString("status"));
+
+    proposalDAO.setStatus(resultProposal.getId(), ProposalStatus.UNPUBLISHED);
+    val unpublishedResultSet = statement.executeQuery();
+
+    assertTrue(unpublishedResultSet.next());
+    assertEquals(ProposalStatus.PUBLISHED.toString(), unpublishedResultSet.getString("status"));
+  }
+
   private Connection getConnection() {
     try {
       val conn = DriverManager
