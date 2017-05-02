@@ -120,7 +120,29 @@ public class MySqlProposalDAO implements ProposalDAO {
 
   @Override
   public Proposal setStatus(UUID id, ProposalStatus status) {
-    return null;
+    try {
+      val proposal = findById(id);
+      if (proposal == null) {
+        return null;
+      }
+
+      val sql = "UPDATE `" + TABLE + "` "
+          + "SET status = ?"
+          + " WHERE id = ? ";
+      val statement = conn.prepareStatement(sql);
+
+      statement.setString(1, status.toString());
+      statement.setString(2, id.toString());
+
+      if (statement.executeUpdate() > 0) {
+        return proposal;
+      }
+
+      return null;
+    } catch (SQLException e) {
+      LOG.error("Failed to update status in proposal with id " + id, e);
+      return null;
+    }
   }
 
   protected static String truncate(String string, int limit) {

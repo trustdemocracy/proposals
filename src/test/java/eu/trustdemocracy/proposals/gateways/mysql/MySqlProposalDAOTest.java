@@ -148,7 +148,7 @@ public class MySqlProposalDAOTest {
     val unpublishedResultSet = statement.executeQuery();
 
     assertTrue(unpublishedResultSet.next());
-    assertEquals(ProposalStatus.PUBLISHED.toString(), unpublishedResultSet.getString("status"));
+    assertEquals(ProposalStatus.UNPUBLISHED.toString(), unpublishedResultSet.getString("status"));
   }
 
   private Connection getConnection() {
