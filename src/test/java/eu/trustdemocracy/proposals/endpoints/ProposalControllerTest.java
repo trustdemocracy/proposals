@@ -151,32 +151,92 @@ public class ProposalControllerTest {
           .subscribe(publishResponse -> {
             context.assertEquals(publishResponse.statusCode(), 200);
 
-
             client.get(port, HOST, "/proposals/" + responseProposal.getId())
                 .rxSend()
 
                 .subscribe(getResponse -> {
-            val updatedProposal = Json
-                .decodeValue(getResponse.body().toString(), ProposalResponseDTO.class);
+                  val updatedProposal = Json
+                      .decodeValue(getResponse.body().toString(), ProposalResponseDTO.class);
 
-            context.assertEquals(responseProposal.getId(), updatedProposal.getId());
-            context.assertEquals(currentUsername, updatedProposal.getAuthorUsername());
-            context.assertEquals(inputProposal.getTitle(), updatedProposal.getTitle());
-            context.assertEquals(inputProposal.getBrief(), updatedProposal.getBrief());
-            context.assertEquals(inputProposal.getSource(), updatedProposal.getSource());
-            context.assertEquals(inputProposal.getMotivation(), updatedProposal.getMotivation());
-            context.assertEquals(inputProposal.getMeasures(), updatedProposal.getMeasures());
-            context.assertEquals(ProposalStatus.PUBLISHED, updatedProposal.getStatus());
+                  context.assertEquals(responseProposal.getId(), updatedProposal.getId());
+                  context.assertEquals(currentUsername, updatedProposal.getAuthorUsername());
+                  context.assertEquals(inputProposal.getTitle(), updatedProposal.getTitle());
+                  context.assertEquals(inputProposal.getBrief(), updatedProposal.getBrief());
+                  context.assertEquals(inputProposal.getSource(), updatedProposal.getSource());
+                  context
+                      .assertEquals(inputProposal.getMotivation(), updatedProposal.getMotivation());
+                  context.assertEquals(inputProposal.getMeasures(), updatedProposal.getMeasures());
+                  context.assertEquals(ProposalStatus.PUBLISHED, updatedProposal.getStatus());
 
-            async.complete();
+                  async.complete();
+                }, error -> {
+                  context.fail(error);
+                  async.complete();
+                });
           }, error -> {
             context.fail(error);
             async.complete();
           });
-        }, error -> {
-          context.fail(error);
-          async.complete();
-        });
+
+    }, error -> {
+      context.fail(error);
+      async.complete();
+    });
+  }
+
+  @Test
+  public void createPublishAndUnpublishProposal(TestContext context) {
+    val async = context.async();
+    val inputProposal = createRandomProposal();
+
+    val single = client.post(port, HOST, "/proposals")
+        .rxSendJson(inputProposal);
+
+    single.subscribe(response -> {
+      val responseProposal = Json
+          .decodeValue(response.body().toString(), ProposalResponseDTO.class);
+      client.get(port, HOST, "/proposals/" + responseProposal.getId() + "/publish")
+          .rxSend()
+          .subscribe(publishResponse -> {
+            context.assertEquals(publishResponse.statusCode(), 200);
+
+            client.get(port, HOST, "/proposals/" + responseProposal.getId() + "/unpublish")
+                .rxSend()
+                .subscribe(unpublishResponse -> {
+                  context.assertEquals(unpublishResponse.statusCode(), 200);
+                  client.get(port, HOST, "/proposals/" + responseProposal.getId())
+                      .rxSend()
+
+                      .subscribe(getResponse -> {
+                        val updatedProposal = Json
+                            .decodeValue(getResponse.body().toString(), ProposalResponseDTO.class);
+
+                        context.assertEquals(responseProposal.getId(), updatedProposal.getId());
+                        context.assertEquals(currentUsername, updatedProposal.getAuthorUsername());
+                        context.assertEquals(inputProposal.getTitle(), updatedProposal.getTitle());
+                        context.assertEquals(inputProposal.getBrief(), updatedProposal.getBrief());
+                        context
+                            .assertEquals(inputProposal.getSource(), updatedProposal.getSource());
+                        context.assertEquals(inputProposal.getMotivation(),
+                            updatedProposal.getMotivation());
+                        context.assertEquals(inputProposal.getMeasures(),
+                            updatedProposal.getMeasures());
+                        context
+                            .assertEquals(ProposalStatus.UNPUBLISHED, updatedProposal.getStatus());
+
+                        async.complete();
+                      }, error -> {
+                        context.fail(error);
+                        async.complete();
+                      });
+                }, error -> {
+                  context.fail(error);
+                  async.complete();
+                });
+          }, error -> {
+            context.fail(error);
+            async.complete();
+          });
 
     }, error -> {
       context.fail(error);
