@@ -52,7 +52,7 @@ public class MySqlProposalDAO implements ProposalDAO {
       statement.setString(5, truncate(proposal.getSource(), SOURCE_SIZE));
       statement.setString(6, truncate(proposal.getMotivation(), MOTIVATION_SIZE));
       statement.setString(7, truncate(proposal.getMeasures(), MEASURES_SIZE));
-      statement.setString(8, ProposalStatus.UNPUBLISHED.toString());
+      statement.setString(8, proposal.getStatus().toString());
 
       if (statement.executeUpdate() > 0) {
         return proposal;

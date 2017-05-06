@@ -2,6 +2,7 @@ package eu.trustdemocracy.proposals.endpoints;
 
 import com.thedeanda.lorem.Lorem;
 import com.thedeanda.lorem.LoremIpsum;
+import eu.trustdemocracy.proposals.core.entities.ProposalStatus;
 import eu.trustdemocracy.proposals.core.interactors.util.TokenUtils;
 import eu.trustdemocracy.proposals.core.models.request.ProposalRequestDTO;
 import eu.trustdemocracy.proposals.core.models.response.ProposalResponseDTO;
@@ -84,6 +85,7 @@ public class ProposalControllerTest {
       context.assertEquals(inputProposal.getSource(), responseProposal.getSource());
       context.assertEquals(inputProposal.getMotivation(), responseProposal.getMotivation());
       context.assertEquals(inputProposal.getMeasures(), responseProposal.getMeasures());
+      context.assertEquals(ProposalStatus.UNPUBLISHED, responseProposal.getStatus());
       context.assertNotNull(responseProposal.getId());
 
       async.complete();

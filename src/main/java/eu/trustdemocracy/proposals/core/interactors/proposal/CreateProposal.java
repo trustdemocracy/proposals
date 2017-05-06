@@ -1,5 +1,6 @@
 package eu.trustdemocracy.proposals.core.interactors.proposal;
 
+import eu.trustdemocracy.proposals.core.entities.ProposalStatus;
 import eu.trustdemocracy.proposals.core.entities.util.ProposalMapper;
 import eu.trustdemocracy.proposals.core.interactors.Interactor;
 import eu.trustdemocracy.proposals.core.models.request.ProposalRequestDTO;
@@ -17,6 +18,7 @@ public class CreateProposal implements Interactor<ProposalRequestDTO, ProposalRe
 
   public ProposalResponseDTO execute(ProposalRequestDTO proposalRequestDTO) {
     val proposal = ProposalMapper.createEntity(proposalRequestDTO);
+    proposal.setStatus(ProposalStatus.UNPUBLISHED);
     return ProposalMapper.createResponse(proposalDAO.create(proposal));
   }
 }

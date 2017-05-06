@@ -179,7 +179,8 @@ public class MySqlProposalDAOTest {
         .setBrief(brief)
         .setSource(source)
         .setMotivation(motivation)
-        .setMeasures(measures);
+        .setMeasures(measures)
+        .setStatus(ProposalStatus.UNPUBLISHED);
   }
 
 }
