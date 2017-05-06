@@ -1,74 +1,98 @@
 package eu.trustdemocracy.proposals.endpoints;
 
+import eu.trustdemocracy.proposals.endpoints.controllers.Controller;
+import eu.trustdemocracy.proposals.endpoints.controllers.ProposalController;
+import eu.trustdemocracy.proposals.endpoints.util.Runner;
+import eu.trustdemocracy.proposals.infrastructure.DefaultInteractorFactory;
+import eu.trustdemocracy.proposals.infrastructure.InteractorFactory;
+import eu.trustdemocracy.proposals.infrastructure.JWTKeyFactory;
 import io.vertx.core.AbstractVerticle;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-import io.vertx.ext.asyncsql.AsyncSQLClient;
-import io.vertx.ext.asyncsql.MySQLClient;
-import io.vertx.ext.sql.ResultSet;
-import io.vertx.ext.sql.SQLConnection;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.Router;
-import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
-
-import java.util.List;
+import java.util.HashSet;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import lombok.val;
+import org.jose4j.jwk.RsaJwkGenerator;
+import org.jose4j.lang.JoseException;
 
 public class App extends AbstractVerticle {
 
-    AsyncSQLClient mySQLClient;
+  private static final Logger LOG = LoggerFactory.getLogger(App.class);
+  private static final int DEFAULT_PORT = 8080;
 
-    @Override
-    public void start() {
-        Router router = Router.router(vertx);
-        router.route().handler(BodyHandler.create());
-        router.get("/").handler(this::handleProposals);
-        mySQLClient = MySQLClient.createShared(vertx,
-                new JsonObject().put("host", "mysql")
-                        .put("username", "root")
-                        .put("password", "root")
-                        .put("database", "proposals"));
+  private static InteractorFactory interactorFactory = DefaultInteractorFactory.getInstance();
 
-        vertx.createHttpServer().requestHandler(router::accept).listen(8080);
+  private Router router;
+
+  public static void main(String... args) {
+    Runner.runVerticle(App.class.getName());
+  }
+
+  @Override
+  public void start() {
+    val port = config().getInteger("http.port", DEFAULT_PORT);
+
+    vertx.executeBlocking(future -> {
+      setKeys();
+      router = Router.router(vertx);
+      router.route().handler(BodyHandler.create());
+      registerControllers();
+
+      vertx.createHttpServer()
+          .requestHandler(router::accept)
+          .listen(port);
+
+      future.complete();
+    }, result -> {
+      if (result.succeeded()) {
+        LOG.info("App listening on port: " + port);
+      } else {
+        LOG.error("Failed to start verticle", result.cause());
+      }
+    });
+  }
+
+  private void registerControllers() {
+    val controllers = Stream.of(
+        ProposalController.class
+    ).collect(Collectors.toCollection(HashSet<Class<? extends Controller>>::new));
+
+    for (val controller : controllers) {
+      try {
+        val constructor = controller.getConstructor(App.class);
+        constructor.newInstance(this);
+      } catch (Exception e) {
+        LOG.error("Failing to attach controller [" + controller.getName() + "]", e);
+      }
     }
+  }
 
-    private void handleProposals(RoutingContext routingContext) {
-        System.out.println("Getting request");
-        mySQLClient.getConnection(res -> {
-            if (res.succeeded()) {
-                System.out.println("Getting connection");
+  public Router getRouter() {
+    return router;
+  }
 
+  public InteractorFactory getInteractorFactory() {
+    return interactorFactory;
+  }
 
-                SQLConnection connection = res.result();
-
-                connection.query("SELECT title, id from proposals", res1 -> {
-                    if (res1.succeeded()) {
-                        // Get the result set
-                        ResultSet resultSet = res1.result();
-                        System.out.println("Getting query");
-
-                        List<String> columnNames = resultSet.getColumnNames();
-
-                        List<JsonArray> results = resultSet.getResults();
-
-                        String result = "";
-                        for (JsonArray row : results) {
-
-                            result += row.encodePrettily();
-                        }
-
-
-                        routingContext.response().putHeader("content-type", "application/json").end(result);
-                    } else {
-                        // Failed!
-                    }
-                });
-
-            } else {
-                res.cause().printStackTrace();
-            }
-        });
-
-
+  public static void setInteractorFactory(InteractorFactory interactorFactory) {
+    if (interactorFactory == null) {
+      throw new NullPointerException("InteractorFactory cannot be null");
     }
+    App.interactorFactory = interactorFactory;
+  }
+
+  private void setKeys() {
+    try {
+      val rsaJsonWebKey = RsaJwkGenerator.generateJwk(2048);
+      JWTKeyFactory.setPrivateKey(rsaJsonWebKey.getPrivateKey());
+      JWTKeyFactory.setPublicKey(rsaJsonWebKey.getPublicKey());
+    } catch (JoseException e) {
+      throw new RuntimeException(e);
+    }
+  }
 
 }
