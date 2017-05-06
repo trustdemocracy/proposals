@@ -1,4 +1,4 @@
-package eu.trustdemocracy.proposals.core.interactors;
+package eu.trustdemocracy.proposals.core.interactors.proposal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 

@@ -87,9 +87,11 @@ public class App extends AbstractVerticle {
 
   private void setKeys() {
     try {
-      val rsaJsonWebKey = RsaJwkGenerator.generateJwk(2048);
-      JWTKeyFactory.setPrivateKey(rsaJsonWebKey.getPrivateKey());
-      JWTKeyFactory.setPublicKey(rsaJsonWebKey.getPublicKey());
+      if (JWTKeyFactory.getPublicKey() == null) {
+        val rsaJsonWebKey = RsaJwkGenerator.generateJwk(2048);
+        JWTKeyFactory.setPrivateKey(rsaJsonWebKey.getPrivateKey());
+        JWTKeyFactory.setPublicKey(rsaJsonWebKey.getPublicKey());
+      }
     } catch (JoseException e) {
       throw new RuntimeException(e);
     }

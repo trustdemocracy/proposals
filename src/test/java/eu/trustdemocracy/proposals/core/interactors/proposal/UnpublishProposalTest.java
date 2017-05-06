@@ -1,9 +1,13 @@
-package eu.trustdemocracy.proposals.core.interactors;
+package eu.trustdemocracy.proposals.core.interactors.proposal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import com.thedeanda.lorem.LoremIpsum;
+import eu.trustdemocracy.proposals.core.entities.ProposalStatus;
+import eu.trustdemocracy.proposals.core.interactors.proposal.CreateProposal;
+import eu.trustdemocracy.proposals.core.interactors.proposal.PublishProposal;
+import eu.trustdemocracy.proposals.core.interactors.proposal.UnpublishProposal;
 import eu.trustdemocracy.proposals.core.interactors.util.TokenUtils;
 import eu.trustdemocracy.proposals.core.models.request.ProposalRequestDTO;
 import eu.trustdemocracy.proposals.core.models.response.ProposalResponseDTO;
@@ -17,7 +21,7 @@ import org.jose4j.lang.JoseException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class DeleteProposalTest {
+public class UnpublishProposalTest {
 
   private Map<UUID, ProposalResponseDTO> reponseProposals;
   private ProposalDAO proposalDAO;
@@ -27,17 +31,17 @@ public class DeleteProposalTest {
 
   @BeforeEach
   public void init() throws JoseException {
-    TokenUtils.generateKeys();
-
     proposalDAO = new FakeProposalDAO();
     reponseProposals = new HashMap<>();
+    TokenUtils.generateKeys();
 
     val lorem = LoremIpsum.getInstance();
 
-    authorUsername = lorem.getEmail();
     authorId = UUID.randomUUID();
+    authorUsername = lorem.getEmail();
 
-    val interactor = new CreateProposal(proposalDAO);
+    val createProposal = new CreateProposal(proposalDAO);
+    val publishProposal = new PublishProposal(proposalDAO);
 
     for (int i = 0; i < 10; i++) {
       val inputProposal = new ProposalRequestDTO()
@@ -48,29 +52,35 @@ public class DeleteProposalTest {
           .setMotivation(lorem.getParagraphs(1, 5))
           .setMeasures(lorem.getParagraphs(1, 5));
 
-      val responseProposal = interactor.execute(inputProposal);
+      val createdProposal = createProposal.execute(inputProposal);
+      inputProposal.setId(createdProposal.getId());
+
+      val responseProposal = publishProposal.execute(inputProposal);
+
       reponseProposals.put(responseProposal.getId(), responseProposal);
     }
   }
 
   @Test
-  public void deleteProposal() {
-    val createdProposal = reponseProposals.values().iterator().next();
+  public void unpublishProposal() {
+    val publishedProposal = reponseProposals.values().iterator().next();
 
     val inputProposal = new ProposalRequestDTO()
-        .setId(createdProposal.getId())
+        .setId(publishedProposal.getId())
         .setAuthorToken(TokenUtils.createToken(authorId, authorUsername));
 
-    ProposalResponseDTO responseProposal = new DeleteProposal(proposalDAO).execute(inputProposal);
+    ProposalResponseDTO responseProposal = new UnpublishProposal(proposalDAO).execute(inputProposal);
 
     assertEquals(authorUsername, responseProposal.getAuthorUsername());
-    assertEquals(createdProposal.getTitle(), responseProposal.getTitle());
-    assertEquals(createdProposal.getBrief(), responseProposal.getBrief());
-    assertEquals(createdProposal.getSource(), responseProposal.getSource());
-    assertEquals(createdProposal.getMotivation(), responseProposal.getMotivation());
-    assertEquals(createdProposal.getMeasures(), responseProposal.getMeasures());
-
-    assertNull(new GetProposal(proposalDAO).execute(inputProposal));
+    assertEquals(publishedProposal.getTitle(), responseProposal.getTitle());
+    assertEquals(publishedProposal.getBrief(), responseProposal.getBrief());
+    assertEquals(publishedProposal.getSource(), responseProposal.getSource());
+    assertEquals(publishedProposal.getMotivation(), responseProposal.getMotivation());
+    assertEquals(publishedProposal.getMeasures(), responseProposal.getMeasures());
+    assertNotEquals(publishedProposal.getStatus(), responseProposal.getStatus());
+    assertEquals(ProposalStatus.UNPUBLISHED, responseProposal.getStatus());
   }
+
+
 
 }

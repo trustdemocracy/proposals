@@ -84,7 +84,7 @@ public class ProposalControllerTest {
       context.assertEquals(inputProposal.getSource(), responseProposal.getSource());
       context.assertEquals(inputProposal.getMotivation(), responseProposal.getMotivation());
       context.assertEquals(inputProposal.getMeasures(), responseProposal.getMeasures());
-      context.assertNotNull(inputProposal.getId());
+      context.assertNotNull(responseProposal.getId());
 
       async.complete();
     }, error -> {
