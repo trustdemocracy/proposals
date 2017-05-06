@@ -2,6 +2,7 @@ package eu.trustdemocracy.proposals.endpoints.controllers;
 
 import eu.trustdemocracy.proposals.core.interactors.proposal.CreateProposal;
 import eu.trustdemocracy.proposals.core.interactors.proposal.GetProposal;
+import eu.trustdemocracy.proposals.core.interactors.proposal.PublishProposal;
 import eu.trustdemocracy.proposals.core.models.request.ProposalRequestDTO;
 import eu.trustdemocracy.proposals.endpoints.App;
 import io.vertx.core.json.Json;
@@ -19,6 +20,7 @@ public class ProposalController extends Controller {
   public void buildRoutes() {
     getRouter().post("/proposals").handler(this::createProposal);
     getRouter().get("/proposals/:id").handler(this::getProposal);
+    getRouter().get("/proposals/:id/publish").handler(this::publishProposal);
   }
 
   private void createProposal(RoutingContext routingContext) {
@@ -42,6 +44,18 @@ public class ProposalController extends Controller {
         .putHeader("content-type", "application/json")
         .setStatusCode(200)
         .end(Json.encodePrettily(proposal));
-
   }
+
+  private void publishProposal(RoutingContext routingContext) {
+    val id = UUID.fromString(routingContext.pathParam("id"));
+    val requestProposal = new ProposalRequestDTO().setId(id);
+    val interactor = getInteractorFactory().createProposalInteractor(PublishProposal.class);
+    val proposal = interactor.execute(requestProposal);
+
+    routingContext.response()
+        .putHeader("content-type", "application/json")
+        .setStatusCode(200)
+        .end(Json.encodePrettily(proposal));
+  }
+
 }
