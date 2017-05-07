@@ -5,6 +5,7 @@ import eu.trustdemocracy.proposals.gateways.CommentDAO;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import lombok.val;
 
 public class FakeCommentDAO implements CommentDAO {
 
@@ -21,6 +22,15 @@ public class FakeCommentDAO implements CommentDAO {
     comment.setTimestamp(System.currentTimeMillis());
 
     comments.put(id, comment);
+    return comment;
+  }
+
+  @Override
+  public Comment deleteById(UUID id) {
+    val comment = comments.get(id);
+    if (comment != null) {
+      comments.remove(id);
+    }
     return comment;
   }
 }

@@ -21,8 +21,6 @@ public class DeleteCommentTest {
   private List<CommentResponseDTO> responseComments;
   private FakeCommentDAO commentDAO;
 
-  private String authorUsername;
-
   @BeforeEach
   public void init() throws JoseException {
     TokenUtils.generateKeys();
@@ -32,12 +30,10 @@ public class DeleteCommentTest {
 
     val lorem = LoremIpsum.getInstance();
 
-    authorUsername = lorem.getEmail();
-
     val interactor = new CreateComment(commentDAO);
     for (int i = 0; i < 10; i++) {
       val inputComment = new CommentRequestDTO()
-          .setAuthorToken(TokenUtils.createToken(UUID.randomUUID(), authorUsername))
+          .setAuthorToken(TokenUtils.createToken(UUID.randomUUID(), lorem.getEmail()))
           .setProposalId(UUID.randomUUID())
           .setContent(lorem.getParagraphs(1, 2));
 
