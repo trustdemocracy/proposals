@@ -52,6 +52,6 @@ public class CreateCommentTest {
     assertEquals(authorUsername, responseProposal.getAuthorUsername());
     assertEquals(inputComment.getProposalId(), responseProposal.getProposalId());
     assertEquals(inputComment.getContent(), responseProposal.getContent());
-    assertTrue(timestamp >= responseProposal.getTimestamp());
+    assertTrue(timestamp <= responseProposal.getTimestamp());
   }
 }
