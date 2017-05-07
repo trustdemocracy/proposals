@@ -244,6 +244,45 @@ public class ProposalControllerTest {
     });
   }
 
+
+  @Test
+  public void createAndDeleteProposal(TestContext context) {
+    val async = context.async();
+    val inputProposal = createRandomProposal();
+
+    val single = client.post(port, HOST, "/proposals")
+        .rxSendJson(inputProposal);
+
+    single.subscribe(response -> {
+      val responseProposal = Json
+          .decodeValue(response.body().toString(), ProposalResponseDTO.class);
+      client.delete(port, HOST, "/proposals/" + responseProposal.getId())
+          .rxSend()
+          .subscribe(deleteResponse -> {
+            context.assertEquals(deleteResponse.statusCode(), 200);
+
+            client.get(port, HOST, "/proposals/" + responseProposal.getId())
+                .rxSend()
+
+                .subscribe(getResponse -> {
+                  context.assertEquals(getResponse.statusCode(), 404);
+                  async.complete();
+                }, error -> {
+                  context.fail(error);
+                  async.complete();
+                });
+          }, error -> {
+            context.fail(error);
+            async.complete();
+          });
+
+    }, error -> {
+      context.fail(error);
+      async.complete();
+    });
+  }
+
+
   private ProposalRequestDTO createRandomProposal() {
     currentUsername = truncate(lorem.getEmail(), MySqlProposalDAO.AUTHOR_SIZE);
     val title = truncate(lorem.getTitle(5, 30), MySqlProposalDAO.TITLE_SIZE);
