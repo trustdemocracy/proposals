@@ -8,7 +8,7 @@ import java.util.UUID;
 
 public class FakeCommentDAO implements CommentDAO {
 
-  private Map<UUID, Comment> comments = new HashMap<>();
+  public Map<UUID, Comment> comments = new HashMap<>();
 
   @Override
   public Comment create(Comment comment) {

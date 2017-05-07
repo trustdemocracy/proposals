@@ -1,13 +1,12 @@
 package eu.trustdemocracy.proposals.core.interactors.comment;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.thedeanda.lorem.LoremIpsum;
 import eu.trustdemocracy.proposals.core.interactors.util.TokenUtils;
 import eu.trustdemocracy.proposals.core.models.request.CommentRequestDTO;
 import eu.trustdemocracy.proposals.core.models.response.CommentResponseDTO;
-import eu.trustdemocracy.proposals.gateways.CommentDAO;
 import eu.trustdemocracy.proposals.gateways.fake.FakeCommentDAO;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,10 +16,10 @@ import org.jose4j.lang.JoseException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class CreateCommentTest {
+public class DeleteCommentTest {
 
-  private List<CommentRequestDTO> inputComments;
-  private CommentDAO commentDAO;
+  private List<CommentResponseDTO> responseComments;
+  private FakeCommentDAO commentDAO;
 
   private String authorUsername;
 
@@ -29,29 +28,33 @@ public class CreateCommentTest {
     TokenUtils.generateKeys();
 
     commentDAO = new FakeCommentDAO();
-    inputComments = new ArrayList<>();
+    responseComments = new ArrayList<>();
 
     val lorem = LoremIpsum.getInstance();
 
     authorUsername = lorem.getEmail();
 
+    val interactor = new CreateComment(commentDAO);
     for (int i = 0; i < 10; i++) {
-      inputComments.add(new CommentRequestDTO()
+      val inputComment = new CommentRequestDTO()
           .setAuthorToken(TokenUtils.createToken(UUID.randomUUID(), authorUsername))
           .setProposalId(UUID.randomUUID())
-          .setContent(lorem.getParagraphs(1, 2)));
+          .setContent(lorem.getParagraphs(1, 2));
+
+      responseComments.add(interactor.execute(inputComment));
     }
   }
 
   @Test
-  public void createComment() {
-    val inputComment = inputComments.get(0);
-    val timestamp = System.currentTimeMillis();
-    CommentResponseDTO responseComment = new CreateComment(commentDAO).execute(inputComment);
+  public void deleteComment() {
+    val responseComment = responseComments.get(0);
 
-    assertEquals(authorUsername, responseComment.getAuthorUsername());
-    assertEquals(inputComment.getProposalId(), responseComment.getProposalId());
-    assertEquals(inputComment.getContent(), responseComment.getContent());
-    assertTrue(timestamp <= responseComment.getTimestamp());
+    val inputComment = new CommentRequestDTO()
+        .setId(responseComment.getId());
+
+    val deletedComment = new DeleteComment(commentDAO).execute(inputComment);
+
+    assertEquals(responseComment, deletedComment);
+    assertFalse(commentDAO.comments.containsKey(responseComment.getId()));
   }
 }
