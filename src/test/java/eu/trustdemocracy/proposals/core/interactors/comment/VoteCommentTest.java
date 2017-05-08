@@ -67,4 +67,34 @@ public class VoteCommentTest {
     assertNotNull(votedComment.getVotes().get(CommentVoteOption.UP));
     assertEquals(new Integer(0), votedComment.getVotes().get(CommentVoteOption.UP));
   }
+
+  @Test
+  public void revokeVoteInComment() {
+    val id = UUID.randomUUID();
+    val inputVote = new CommentVoteRequestDTO()
+        .setCommentId(responseComment.getId())
+        .setVoterToken(TokenUtils.createToken(id, lorem.getEmail()));
+
+    val interactor = new VoteComment(commentDAO);
+
+    inputVote.setOption(CommentVoteOption.UP);
+    val upvotedComment = interactor.execute(inputVote);
+    assertEquals(new Integer(1), upvotedComment.getVotes().get(CommentVoteOption.UP));
+    assertEquals(new Integer(0), upvotedComment.getVotes().get(CommentVoteOption.DOWN));
+
+    inputVote.setOption(null);
+    val revokeUpvoteComment = interactor.execute(inputVote);
+    assertEquals(new Integer(0), revokeUpvoteComment.getVotes().get(CommentVoteOption.UP));
+    assertEquals(new Integer(0), revokeUpvoteComment.getVotes().get(CommentVoteOption.DOWN));
+
+    inputVote.setOption(CommentVoteOption.DOWN);
+    val downvotedComment = interactor.execute(inputVote);
+    assertEquals(new Integer(1), downvotedComment.getVotes().get(CommentVoteOption.DOWN));
+    assertEquals(new Integer(0), downvotedComment.getVotes().get(CommentVoteOption.UP));
+
+    inputVote.setOption(null);
+    val revokeDownvoteComment = interactor.execute(inputVote);
+    assertEquals(new Integer(0), revokeDownvoteComment.getVotes().get(CommentVoteOption.UP));
+    assertEquals(new Integer(0), revokeDownvoteComment.getVotes().get(CommentVoteOption.DOWN));
+  }
 }
