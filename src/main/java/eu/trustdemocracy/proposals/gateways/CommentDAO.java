@@ -1,6 +1,7 @@
 package eu.trustdemocracy.proposals.gateways;
 
 import eu.trustdemocracy.proposals.core.entities.Comment;
+import eu.trustdemocracy.proposals.core.entities.CommentVoteOption;
 import java.util.UUID;
 
 public interface CommentDAO {
@@ -8,4 +9,6 @@ public interface CommentDAO {
   Comment create(Comment comment);
 
   Comment deleteById(UUID id);
+
+  Comment vote(UUID commentId, UUID voterId, CommentVoteOption option);
 }

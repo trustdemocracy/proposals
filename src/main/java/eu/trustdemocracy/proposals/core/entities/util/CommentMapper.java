@@ -3,6 +3,7 @@ package eu.trustdemocracy.proposals.core.entities.util;
 import eu.trustdemocracy.proposals.core.entities.Comment;
 import eu.trustdemocracy.proposals.core.models.request.CommentRequestDTO;
 import eu.trustdemocracy.proposals.core.models.response.CommentResponseDTO;
+import java.util.HashMap;
 
 public class CommentMapper {
 
@@ -22,6 +23,7 @@ public class CommentMapper {
         .setRootCommentId(comment.getRootCommentId())
         .setAuthorUsername(comment.getAuthor().getUsername())
         .setContent(comment.getContent())
-        .setTimestamp(comment.getTimestamp());
+        .setTimestamp(comment.getTimestamp())
+        .setVotes(new HashMap<>(comment.getVotes()));
   }
 }

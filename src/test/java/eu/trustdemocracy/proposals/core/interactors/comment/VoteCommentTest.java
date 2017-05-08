@@ -1,9 +1,10 @@
 package eu.trustdemocracy.proposals.core.interactors.comment;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 
 import com.thedeanda.lorem.LoremIpsum;
+import eu.trustdemocracy.proposals.core.entities.CommentVoteOption;
 import eu.trustdemocracy.proposals.core.interactors.util.TokenUtils;
 import eu.trustdemocracy.proposals.core.models.request.CommentRequestDTO;
 import eu.trustdemocracy.proposals.core.models.request.CommentVoteRequestDTO;
@@ -42,14 +43,13 @@ public class VoteCommentTest {
     val id = UUID.randomUUID();
     val inputVote = new CommentVoteRequestDTO()
         .setCommentId(responseComment.getId())
-        .setVoterToken(TokenUtils.createToken(id, lorem.getEmail()));
+        .setVoterToken(TokenUtils.createToken(id, lorem.getEmail()))
+        .setOption(CommentVoteOption.UP);
 
     val votedComment = new VoteComment(commentDAO).execute(inputVote);
 
-    assertNotEquals(1, votedComment.getUpVotesCount());
-    assertEquals(0, votedComment.getDownVotesCount());
-
-    assertNotEquals(responseComment.getUpVotesCount(), votedComment.getUpVotesCount());
-    assertEquals(responseComment.getDownVotesCount(), votedComment.getDownVotesCount());
+    assertEquals(new Integer(1), votedComment.getVotes().get(CommentVoteOption.UP));
+    assertNotNull(votedComment.getVotes().get(CommentVoteOption.DOWN));
+    assertEquals(new Integer(0), votedComment.getVotes().get(CommentVoteOption.DOWN));
   }
 }

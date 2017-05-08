@@ -1,5 +1,8 @@
 package eu.trustdemocracy.proposals.core.models.response;
 
+import eu.trustdemocracy.proposals.core.entities.CommentVoteOption;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -14,6 +17,5 @@ public class CommentResponseDTO {
   private String authorUsername;
   private String content;
   private long timestamp;
-  private int upVotesCount;
-  private int downVotesCount;
+  private Map<CommentVoteOption, Integer> votes = new HashMap<>();
 }
