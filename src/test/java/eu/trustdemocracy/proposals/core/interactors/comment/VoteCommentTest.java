@@ -52,4 +52,19 @@ public class VoteCommentTest {
     assertNotNull(votedComment.getVotes().get(CommentVoteOption.DOWN));
     assertEquals(new Integer(0), votedComment.getVotes().get(CommentVoteOption.DOWN));
   }
+
+  @Test
+  public void voteDownComment() {
+    val id = UUID.randomUUID();
+    val inputVote = new CommentVoteRequestDTO()
+        .setCommentId(responseComment.getId())
+        .setVoterToken(TokenUtils.createToken(id, lorem.getEmail()))
+        .setOption(CommentVoteOption.DOWN);
+
+    val votedComment = new VoteComment(commentDAO).execute(inputVote);
+
+    assertEquals(new Integer(1), votedComment.getVotes().get(CommentVoteOption.DOWN));
+    assertNotNull(votedComment.getVotes().get(CommentVoteOption.UP));
+    assertEquals(new Integer(0), votedComment.getVotes().get(CommentVoteOption.UP));
+  }
 }
