@@ -14,4 +14,6 @@ public class CommentResponseDTO {
   private String authorUsername;
   private String content;
   private long timestamp;
+  private int upVotesCount;
+  private int downVotesCount;
 }

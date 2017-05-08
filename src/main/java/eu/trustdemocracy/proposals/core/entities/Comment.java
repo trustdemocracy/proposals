@@ -14,4 +14,6 @@ public class Comment {
   private User author;
   private String content;
   private long timestamp;
+  private int upVotesCount;
+  private int downVotesCount;
 }
