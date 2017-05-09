@@ -2,6 +2,7 @@ package eu.trustdemocracy.proposals.gateways.mysql;
 
 import eu.trustdemocracy.proposals.core.entities.Comment;
 import eu.trustdemocracy.proposals.core.entities.CommentVoteOption;
+import eu.trustdemocracy.proposals.core.entities.User;
 import eu.trustdemocracy.proposals.gateways.CommentDAO;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -64,7 +65,54 @@ public class MySqlCommentDAO implements CommentDAO {
 
   @Override
   public Comment deleteById(UUID id) {
-    return null;
+    try {
+      val comment = findById(id);
+      if (comment == null) {
+        return null;
+      }
+
+      val sql = "DELETE FROM `" + TABLE + "` WHERE id = ? ";
+      val statement = conn.prepareStatement(sql);
+      statement.setString(1, id.toString());
+
+      if (statement.executeUpdate() > 0) {
+        return comment;
+      }
+
+      return null;
+    } catch (SQLException e) {
+      LOG.error("Failed to delete comment with id " + id, e);
+      return null;
+    }
+  }
+
+  private Comment findById(UUID id) {
+    try {
+      val sql = "SELECT * FROM `" + TABLE + "` WHERE id = ?";
+      val statement = conn.prepareStatement(sql);
+
+      statement.setString(1, id.toString());
+      val resultSet = statement.executeQuery();
+
+      if (!resultSet.next()) {
+        return null;
+      }
+
+      val author = new User()
+          .setId(UUID.fromString(resultSet.getString("author_id")))
+          .setUsername(resultSet.getString("author_username"));
+
+      return new Comment()
+          .setId(UUID.fromString(resultSet.getString("id")))
+          .setProposalId(UUID.fromString(resultSet.getString("proposal_id")))
+          .setRootCommentId(UUID.fromString(resultSet.getString("root_comment_id")))
+          .setRootCommentId(UUID.fromString(resultSet.getString("root_comment_id")))
+          .setAuthor(author)
+          .setContent(resultSet.getString("content"));
+    } catch (SQLException e) {
+      LOG.error("Failed to find comment with id " + id, e);
+      return null;
+    }
   }
 
   @Override

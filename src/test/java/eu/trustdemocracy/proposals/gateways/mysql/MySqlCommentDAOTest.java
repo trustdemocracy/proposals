@@ -1,6 +1,7 @@
 package eu.trustdemocracy.proposals.gateways.mysql;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import ch.vorburger.exec.ManagedProcessException;
@@ -62,6 +63,32 @@ public class MySqlCommentDAOTest {
     assertEquals(comment.getAuthor().getUsername(), resultSet.getString("author_username"));
     assertEquals(comment.getContent(), resultSet.getString("content"));
   }
+
+  @Test
+  public void deleteComment() throws SQLException {
+    val comment = createRandomComment();
+
+    val resultComment = commentDAO.create(comment);
+
+    val connection = sqlUtils.getConnection();
+    val sql = "SELECT * FROM `comments` WHERE id = ?";
+    val statement = connection.prepareStatement(sql);
+    statement.setString(1, resultComment.getId().toString());
+
+    assertTrue(statement.executeQuery().next());
+
+    val deletedComment = commentDAO.deleteById(comment.getId());
+
+    assertEquals(resultComment.getId(), deletedComment.getId());
+    assertEquals(resultComment.getProposalId(), deletedComment.getProposalId());
+    assertEquals(resultComment.getRootCommentId(), deletedComment.getRootCommentId());
+    assertEquals(comment.getAuthor().getId(), deletedComment.getAuthor().getId());
+    assertEquals(comment.getAuthor().getUsername(), deletedComment.getAuthor().getUsername());
+    assertEquals(comment.getContent(), deletedComment.getContent());
+
+    assertFalse(statement.executeQuery().next());
+  }
+
 
   private Comment createRandomComment() {
     val username = MySqlProposalDAO.truncate(lorem.getEmail(), MySqlProposalDAO.AUTHOR_SIZE);
