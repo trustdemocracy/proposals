@@ -15,6 +15,7 @@ public class MySqlCommentDAO implements CommentDAO {
   private static final int DUPLICATE_PK_ERROR_CODE = 1062;
   private static final String TABLE = "comments";
   public static final int ID_SIZE = 36;
+  public static final int AUTHOR_SIZE = 100;
   public static final int CONTENT_SIZE = 5000;
 
   private static final Logger LOG = LoggerFactory.getLogger(MySqlProposalDAO.class);
@@ -32,17 +33,19 @@ public class MySqlCommentDAO implements CommentDAO {
       comment.setId(id);
 
       comment.setContent(truncate(comment.getContent(), CONTENT_SIZE));
+      val username = truncate(comment.getAuthor().getUsername(), AUTHOR_SIZE);
 
       val sql = "INSERT INTO `" + TABLE + "` "
-          + "(id, proposal_id, root_comment_id, author_id, content) "
-          + "VALUES(?, ?, ?, ?, ?)";
+          + "(id, proposal_id, root_comment_id, author_id, author_username, content) "
+          + "VALUES(?, ?, ?, ?, ?, ?)";
       val statement = conn.prepareStatement(sql);
 
       statement.setString(1, id.toString());
       statement.setString(2, comment.getProposalId().toString());
       statement.setString(3, comment.getRootCommentId().toString());
       statement.setString(4, comment.getAuthor().getId().toString());
-      statement.setString(5, comment.getContent());
+      statement.setString(5, username);
+      statement.setString(6, comment.getContent());
 
       if (statement.executeUpdate() > 0) {
         return comment;
