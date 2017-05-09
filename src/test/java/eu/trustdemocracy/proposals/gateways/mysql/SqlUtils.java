@@ -43,6 +43,7 @@ public final class SqlUtils {
         "`id` VARCHAR(" + MySqlCommentDAO.ID_SIZE + ") NOT NULL, " +
         "`proposal_id` VARCHAR(" + MySqlCommentDAO.ID_SIZE + ") NOT NULL, " +
         "`root_comment_id` VARCHAR(" + MySqlCommentDAO.ID_SIZE + ") NOT NULL, " +
+        "`author_id` VARCHAR(" + MySqlCommentDAO.ID_SIZE + ") NOT NULL, " +
         "`content` VARCHAR(" + MySqlCommentDAO.CONTENT_SIZE + "), " +
 
         "PRIMARY KEY ( id ) " +

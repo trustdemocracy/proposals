@@ -58,6 +58,7 @@ public class MySqlCommentDAOTest {
     assertEquals(resultComment.getId(), UUID.fromString(resultSet.getString("id")));
     assertEquals(resultComment.getProposalId(), UUID.fromString(resultSet.getString("proposal_id")));
     assertEquals(resultComment.getRootCommentId(), UUID.fromString(resultSet.getString("root_comment_id")));
+    assertEquals(comment.getAuthor().getId(), UUID.fromString(resultSet.getString("author_id")));
     assertEquals(comment.getContent(), resultSet.getString("content"));
   }
 
@@ -71,6 +72,4 @@ public class MySqlCommentDAOTest {
         .setRootCommentId(new UUID(0L, 0L))
         .setContent(lorem.getParagraphs(1, 2));
   }
-
-
 }
