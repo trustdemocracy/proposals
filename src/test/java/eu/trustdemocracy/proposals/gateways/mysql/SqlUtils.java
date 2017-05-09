@@ -36,6 +36,23 @@ public final class SqlUtils {
     connectionStack.pop();
   }
 
+  public void createCommentsTable() throws SQLException {
+    val statement = getConnection().createStatement();
+    val sql = "CREATE TABLE `comments` (" +
+
+        "`id` VARCHAR(" + MySqlCommentDAO.ID_SIZE + ") NOT NULL, " +
+        "`proposal_id` VARCHAR(" + MySqlCommentDAO.ID_SIZE + ") NOT NULL, " +
+        "`root_comment_id` VARCHAR(" + MySqlCommentDAO.ID_SIZE + ") NOT NULL, " +
+        "`content` VARCHAR(" + MySqlCommentDAO.CONTENT_SIZE + "), " +
+
+        "PRIMARY KEY ( id ) " +
+        ") ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;";
+
+    statement.executeUpdate(sql);
+    statement.close();
+    connectionStack.pop();
+  }
+
   public void startDB() throws ManagedProcessException {
     configBuilder = DBConfigurationBuilder.newBuilder();
     configBuilder.setPort(0);
