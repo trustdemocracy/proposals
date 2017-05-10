@@ -51,6 +51,7 @@ public final class SqlUtils {
         "`author_id` VARCHAR(" + MySqlCommentDAO.ID_SIZE + ") NOT NULL, " +
         "`author_username` VARCHAR(" + MySqlCommentDAO.ID_SIZE + ") NOT NULL, " +
         "`content` VARCHAR(" + MySqlCommentDAO.CONTENT_SIZE + "), " +
+        "`created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, " +
 
         "PRIMARY KEY ( id ) " +
         ") ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci; ";

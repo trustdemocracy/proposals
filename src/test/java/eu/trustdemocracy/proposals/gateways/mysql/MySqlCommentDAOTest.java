@@ -66,6 +66,7 @@ public class MySqlCommentDAOTest {
     assertEquals(comment.getAuthor().getId(), UUID.fromString(resultSet.getString("author_id")));
     assertEquals(comment.getAuthor().getUsername(), resultSet.getString("author_username"));
     assertEquals(comment.getContent(), resultSet.getString("content"));
+    assertEquals(resultComment.getTimestamp(), resultSet.getTimestamp("created_at").getTime());
 
     for (val option : resultComment.getVotes().keySet()) {
       assertEquals(new Integer(0), resultComment.getVotes().get(option));

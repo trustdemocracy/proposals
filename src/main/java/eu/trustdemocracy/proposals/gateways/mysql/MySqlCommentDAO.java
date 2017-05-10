@@ -52,7 +52,7 @@ public class MySqlCommentDAO implements CommentDAO {
       statement.setString(6, comment.getContent());
 
       if (statement.executeUpdate() > 0) {
-        return comment;
+        return findById(id);
       }
 
       return null;
@@ -115,7 +115,8 @@ public class MySqlCommentDAO implements CommentDAO {
           .setRootCommentId(UUID.fromString(resultSet.getString("comments.root_comment_id")))
           .setRootCommentId(UUID.fromString(resultSet.getString("comments.root_comment_id")))
           .setAuthor(author)
-          .setContent(resultSet.getString("comments.content"));
+          .setContent(resultSet.getString("comments.content"))
+          .setTimestamp(resultSet.getTimestamp("comments.created_at").getTime());
 
       if (resultSet.getString("votes.option") == null) {
         return comment;

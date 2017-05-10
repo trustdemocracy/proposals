@@ -37,7 +37,7 @@ public class CommentControllerTest extends ControllerTest {
           .decodeValue(response.body().toString(), CommentResponseDTO.class);
       context.assertEquals(inputComment.getProposalId(), responseComment.getProposalId());
       context.assertEquals(inputComment.getRootCommentId(), responseComment.getRootCommentId());
-//      context.assertTrue(currentTime < responseComment.getTimestamp());
+      context.assertTrue(currentTime < responseComment.getTimestamp());
       context.assertEquals(username, responseComment.getAuthorUsername());
       context.assertNotNull(responseComment.getId());
 
