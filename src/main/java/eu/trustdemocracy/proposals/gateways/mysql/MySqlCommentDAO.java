@@ -8,6 +8,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import lombok.val;
@@ -159,7 +160,59 @@ public class MySqlCommentDAO implements CommentDAO {
 
   @Override
   public List<Comment> findByProposalId(UUID proposalId) {
-    return null;
+    try {
+      val sql = "SELECT comments.*, votes.option, COUNT(votes.option) AS `count` "
+          + "FROM `" + COMMENTS_TABLE + "` AS comments "
+          + "LEFT JOIN `" + VOTES_TABLE + "` AS votes "
+          + "ON comments.id = votes.comment_id "
+          + "WHERE comments.proposal_id = ? "
+          + "GROUP BY comments.id, votes.option "
+          + "ORDER BY comments.created_at";
+      val statement = conn.prepareStatement(sql);
+
+      statement.setString(1, proposalId.toString());
+      val resultSet = statement.executeQuery();
+
+      if (!resultSet.next()) {
+        return null;
+      }
+
+
+      List<Comment> comments = new ArrayList<>();
+      Comment currentComment = new Comment();
+
+      do {
+        val commentId = UUID.fromString(resultSet.getString("comments.id"));
+
+        if (!commentId.equals(currentComment.getId())) {
+          val author = new User()
+              .setId(UUID.fromString(resultSet.getString("comments.author_id")))
+              .setUsername(resultSet.getString("comments.author_username"));
+
+          currentComment = new Comment()
+              .setId(commentId)
+              .setProposalId(UUID.fromString(resultSet.getString("comments.proposal_id")))
+              .setRootCommentId(UUID.fromString(resultSet.getString("comments.root_comment_id")))
+              .setRootCommentId(UUID.fromString(resultSet.getString("comments.root_comment_id")))
+              .setAuthor(author)
+              .setContent(resultSet.getString("comments.content"))
+              .setTimestamp(resultSet.getTimestamp("comments.created_at").getTime());
+
+          comments.add(currentComment);
+        }
+
+        if (resultSet.getString("votes.option") != null) {
+          val option = CommentVoteOption.valueOf(resultSet.getString("votes.option"));
+          val count = Integer.valueOf(resultSet.getString("count"));
+          currentComment.getVotes().put(option, count);
+        }
+      } while (resultSet.next());
+
+      return comments;
+    } catch (SQLException e) {
+      LOG.error("Failed to find comments with proposal id " + proposalId, e);
+      return null;
+    }
   }
 
   private void deleteExistingVote(UUID commentId, UUID voterId) throws SQLException {

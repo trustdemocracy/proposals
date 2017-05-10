@@ -14,6 +14,8 @@ import eu.trustdemocracy.proposals.core.entities.util.UserMapper;
 import eu.trustdemocracy.proposals.core.interactors.util.TokenUtils;
 import eu.trustdemocracy.proposals.gateways.CommentDAO;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import lombok.val;
 import org.junit.jupiter.api.AfterEach;
@@ -111,7 +113,8 @@ public class MySqlCommentDAOTest {
         assertEquals(new Integer(0), resultComment.getVotes().get(option));
       }
 
-      val votedComment = commentDAO.vote(comment.getId(), comment.getAuthor().getId(), optionToTest);
+      val votedComment = commentDAO
+          .vote(comment.getId(), comment.getAuthor().getId(), optionToTest);
 
       assertNotNull(votedComment);
       for (val option : votedComment.getVotes().keySet()) {
@@ -120,6 +123,35 @@ public class MySqlCommentDAOTest {
         } else {
           assertEquals(new Integer(0), votedComment.getVotes().get(option));
         }
+      }
+    }
+  }
+
+
+  @Test
+  public void getComments() throws SQLException, InterruptedException {
+    val createdComments = new ArrayList<Comment>();
+    val proposalId = UUID.randomUUID();
+
+    for (int i = 0; i < 10; i++) {
+      val comment = createRandomComment();
+      comment.setProposalId(proposalId);
+      createdComments.add(commentDAO.create(comment));
+      Thread.sleep(1000);
+    }
+
+    List<Comment> retrievedComments = commentDAO.findByProposalId(proposalId);
+
+    assertEquals(createdComments.size(), retrievedComments.size());
+
+    for (int i = 0; i < retrievedComments.size(); i++) {
+      assertEquals(proposalId, retrievedComments.get(i).getProposalId());
+
+      assertEquals(createdComments.get(i), retrievedComments.get(i));
+
+      for (val option : retrievedComments.get(i).getVotes().keySet()) {
+        assertEquals(createdComments.get(i).getVotes().get(option),
+            retrievedComments.get(i).getVotes().get(option));
       }
     }
   }
