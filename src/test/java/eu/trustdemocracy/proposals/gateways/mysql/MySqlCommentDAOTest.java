@@ -8,6 +8,7 @@ import ch.vorburger.exec.ManagedProcessException;
 import com.thedeanda.lorem.Lorem;
 import com.thedeanda.lorem.LoremIpsum;
 import eu.trustdemocracy.proposals.core.entities.Comment;
+import eu.trustdemocracy.proposals.core.entities.CommentVoteOption;
 import eu.trustdemocracy.proposals.core.entities.util.UserMapper;
 import eu.trustdemocracy.proposals.core.interactors.util.TokenUtils;
 import eu.trustdemocracy.proposals.gateways.CommentDAO;
@@ -57,8 +58,10 @@ public class MySqlCommentDAOTest {
 
     assertTrue(resultSet.next());
     assertEquals(resultComment.getId(), UUID.fromString(resultSet.getString("id")));
-    assertEquals(resultComment.getProposalId(), UUID.fromString(resultSet.getString("proposal_id")));
-    assertEquals(resultComment.getRootCommentId(), UUID.fromString(resultSet.getString("root_comment_id")));
+    assertEquals(resultComment.getProposalId(),
+        UUID.fromString(resultSet.getString("proposal_id")));
+    assertEquals(resultComment.getRootCommentId(),
+        UUID.fromString(resultSet.getString("root_comment_id")));
     assertEquals(comment.getAuthor().getId(), UUID.fromString(resultSet.getString("author_id")));
     assertEquals(comment.getAuthor().getUsername(), resultSet.getString("author_username"));
     assertEquals(comment.getContent(), resultSet.getString("content"));
@@ -87,6 +90,29 @@ public class MySqlCommentDAOTest {
     assertEquals(comment.getContent(), deletedComment.getContent());
 
     assertFalse(statement.executeQuery().next());
+  }
+
+  @Test
+  public void voteComment() {
+    for (val optionToTest : CommentVoteOption.values()) {
+      val comment = createRandomComment();
+
+      val resultComment = commentDAO.create(comment);
+
+      for (val option : resultComment.getVotes().keySet()) {
+        assertEquals(new Integer(0), resultComment.getVotes().get(option));
+      }
+
+      val votedComment = commentDAO.vote(comment.getId(), comment.getAuthor().getId(), optionToTest);
+
+      for (val option : votedComment.getVotes().keySet()) {
+        if (option == optionToTest) {
+          assertEquals(new Integer(1), votedComment.getVotes().get(option));
+        } else {
+          assertEquals(new Integer(0), votedComment.getVotes().get(option));
+        }
+      }
+    }
   }
 
 
