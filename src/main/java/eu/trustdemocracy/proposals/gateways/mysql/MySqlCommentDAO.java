@@ -8,6 +8,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.UUID;
 import lombok.val;
 
@@ -154,6 +155,11 @@ public class MySqlCommentDAO implements CommentDAO {
           + "], by voter [" + voterId + "] and with the option [" + option + "]", e);
       return null;
     }
+  }
+
+  @Override
+  public List<Comment> findByProposalId(UUID proposalId) {
+    return null;
   }
 
   private void deleteExistingVote(UUID commentId, UUID voterId) throws SQLException {
