@@ -127,7 +127,6 @@ public class MySqlCommentDAOTest {
     }
   }
 
-
   @Test
   public void getComments() throws SQLException, InterruptedException {
     val createdComments = new ArrayList<Comment>();
@@ -154,6 +153,12 @@ public class MySqlCommentDAOTest {
             retrievedComments.get(i).getVotes().get(option));
       }
     }
+  }
+
+  @Test
+  public void getEmptyCommentList() {
+    List<Comment> retrievedComments = commentDAO.findByProposalId(UUID.randomUUID());
+    assertEquals(0, retrievedComments.size());
   }
 
 
