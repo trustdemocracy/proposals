@@ -4,6 +4,7 @@ import ch.vorburger.exec.ManagedProcessException;
 import ch.vorburger.mariadb4j.DB;
 import ch.vorburger.mariadb4j.DBConfigurationBuilder;
 import eu.trustdemocracy.proposals.core.interactors.Interactor;
+import eu.trustdemocracy.proposals.core.interactors.comment.GetComments;
 import eu.trustdemocracy.proposals.core.models.request.CommentRequestDTO;
 import eu.trustdemocracy.proposals.core.models.request.ProposalRequestDTO;
 import eu.trustdemocracy.proposals.core.models.response.CommentResponseDTO;
@@ -43,6 +44,11 @@ public class FakeInteractorFactory implements InteractorFactory {
     } catch (ReflectiveOperationException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  @Override
+  public GetComments createGetCommentsInteractor() {
+    return new GetComments(new MySqlCommentDAO(getConnection()));
   }
 
   private Connection getConnection() {

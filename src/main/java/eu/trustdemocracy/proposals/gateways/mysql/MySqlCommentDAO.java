@@ -173,15 +173,10 @@ public class MySqlCommentDAO implements CommentDAO {
       statement.setString(1, proposalId.toString());
       val resultSet = statement.executeQuery();
 
-      if (!resultSet.next()) {
-        return null;
-      }
-
-
       List<Comment> comments = new ArrayList<>();
       Comment currentComment = new Comment();
 
-      do {
+      while (resultSet.next()) {
         val commentId = UUID.fromString(resultSet.getString("comments.id"));
 
         if (!commentId.equals(currentComment.getId())) {
@@ -206,7 +201,7 @@ public class MySqlCommentDAO implements CommentDAO {
           val count = Integer.valueOf(resultSet.getString("count"));
           currentComment.getVotes().put(option, count);
         }
-      } while (resultSet.next());
+      };
 
       return comments;
     } catch (SQLException e) {

@@ -1,6 +1,7 @@
 package eu.trustdemocracy.proposals.infrastructure;
 
 import eu.trustdemocracy.proposals.core.interactors.Interactor;
+import eu.trustdemocracy.proposals.core.interactors.comment.GetComments;
 import eu.trustdemocracy.proposals.core.models.request.CommentRequestDTO;
 import eu.trustdemocracy.proposals.core.models.request.ProposalRequestDTO;
 import eu.trustdemocracy.proposals.core.models.response.CommentResponseDTO;
@@ -13,4 +14,6 @@ public interface InteractorFactory {
 
   Interactor<CommentRequestDTO, CommentResponseDTO> createCommentInteractor(
       Class<? extends Interactor<CommentRequestDTO, CommentResponseDTO>> concreteClass);
+
+  GetComments createGetCommentsInteractor();
 }
