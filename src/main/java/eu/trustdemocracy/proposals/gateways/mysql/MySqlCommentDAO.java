@@ -14,12 +14,15 @@ import lombok.val;
 public class MySqlCommentDAO implements CommentDAO {
 
   private static final int DUPLICATE_PK_ERROR_CODE = 1062;
-  private static final String TABLE = "comments";
+  private static final String COMMENTS_TABLE = "comments";
+  private static final String VOTES_TABLE = "votes";
   public static final int ID_SIZE = 36;
   public static final int AUTHOR_SIZE = 100;
   public static final int CONTENT_SIZE = 5000;
+  public static final int OPTION_SIZE = 10;
 
   private static final Logger LOG = LoggerFactory.getLogger(MySqlProposalDAO.class);
+
 
   private Connection conn;
 
@@ -36,7 +39,7 @@ public class MySqlCommentDAO implements CommentDAO {
       comment.setContent(truncate(comment.getContent(), CONTENT_SIZE));
       val username = truncate(comment.getAuthor().getUsername(), AUTHOR_SIZE);
 
-      val sql = "INSERT INTO `" + TABLE + "` "
+      val sql = "INSERT INTO `" + COMMENTS_TABLE + "` "
           + "(id, proposal_id, root_comment_id, author_id, author_username, content) "
           + "VALUES(?, ?, ?, ?, ?, ?)";
       val statement = conn.prepareStatement(sql);
@@ -71,7 +74,7 @@ public class MySqlCommentDAO implements CommentDAO {
         return null;
       }
 
-      val sql = "DELETE FROM `" + TABLE + "` WHERE id = ? ";
+      val sql = "DELETE FROM `" + COMMENTS_TABLE + "` WHERE id = ? ";
       val statement = conn.prepareStatement(sql);
       statement.setString(1, id.toString());
 
@@ -88,7 +91,12 @@ public class MySqlCommentDAO implements CommentDAO {
 
   private Comment findById(UUID id) {
     try {
-      val sql = "SELECT * FROM `" + TABLE + "` WHERE id = ?";
+      val sql = "SELECT comments.*, votes.option, COUNT(votes.option) AS `count` "
+          + "FROM `" + COMMENTS_TABLE + "` AS comments "
+          + "INNER JOIN `" + VOTES_TABLE + "` AS votes "
+          + "ON comments.id = votes.comment_id "
+          + "WHERE comments.id = ? "
+          + "GROUP BY comments.id, votes.option";
       val statement = conn.prepareStatement(sql);
 
       statement.setString(1, id.toString());
@@ -99,16 +107,23 @@ public class MySqlCommentDAO implements CommentDAO {
       }
 
       val author = new User()
-          .setId(UUID.fromString(resultSet.getString("author_id")))
-          .setUsername(resultSet.getString("author_username"));
-
-      return new Comment()
-          .setId(UUID.fromString(resultSet.getString("id")))
-          .setProposalId(UUID.fromString(resultSet.getString("proposal_id")))
-          .setRootCommentId(UUID.fromString(resultSet.getString("root_comment_id")))
-          .setRootCommentId(UUID.fromString(resultSet.getString("root_comment_id")))
+          .setId(UUID.fromString(resultSet.getString("comments.author_id")))
+          .setUsername(resultSet.getString("comments.author_username"));
+      val comment = new Comment()
+          .setId(UUID.fromString(resultSet.getString("comments.id")))
+          .setProposalId(UUID.fromString(resultSet.getString("comments.proposal_id")))
+          .setRootCommentId(UUID.fromString(resultSet.getString("comments.root_comment_id")))
+          .setRootCommentId(UUID.fromString(resultSet.getString("comments.root_comment_id")))
           .setAuthor(author)
-          .setContent(resultSet.getString("content"));
+          .setContent(resultSet.getString("comments.content"));
+
+      do {
+        val option = CommentVoteOption.valueOf(resultSet.getString("votes.option"));
+        val count = Integer.valueOf(resultSet.getString("count"));
+        comment.getVotes().put(option, count);
+      } while (resultSet.next());
+
+      return comment;
     } catch (SQLException e) {
       LOG.error("Failed to find comment with id " + id, e);
       return null;
@@ -117,6 +132,48 @@ public class MySqlCommentDAO implements CommentDAO {
 
   @Override
   public Comment vote(UUID commentId, UUID voterId, CommentVoteOption option) {
+    try {
+      deleteExistingVote(commentId, voterId);
+
+      if (option == null) {
+        return findById(commentId);
+      }
+
+      return insertNewVote(commentId, voterId, option);
+    } catch (SQLException e) {
+      if (e.getErrorCode() == DUPLICATE_PK_ERROR_CODE) {
+        return vote(commentId, voterId, option);
+      }
+
+      LOG.error("Failed to create vote for comment [" + commentId
+          + "], by voter [" + voterId + "] and with the option [" + option + "]", e);
+      return null;
+    }
+  }
+
+  private void deleteExistingVote(UUID commentId, UUID voterId) throws SQLException {
+    val sql = "DELETE FROM `" + VOTES_TABLE + "` WHERE comment_id = ? AND voter_id = ?";
+    val statement = conn.prepareStatement(sql);
+    statement.setString(1, commentId.toString());
+    statement.setString(2, voterId.toString());
+    statement.executeUpdate();
+  }
+
+  private Comment insertNewVote(UUID commentId, UUID voterId, CommentVoteOption option)
+      throws SQLException {
+    val sql = "INSERT INTO `" + VOTES_TABLE + "` "
+        + "(comment_id, voter_id, option) "
+        + "VALUES(?, ?, ?)";
+    val statement = conn.prepareStatement(sql);
+
+    statement.setString(1, commentId.toString());
+    statement.setString(2, voterId.toString());
+    statement.setString(3, option.toString());
+
+    if (statement.executeUpdate() > 0) {
+      return findById(commentId);
+    }
+
     return null;
   }
 

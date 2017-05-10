@@ -2,6 +2,7 @@ package eu.trustdemocracy.proposals.gateways.mysql;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import ch.vorburger.exec.ManagedProcessException;
@@ -34,7 +35,7 @@ public class MySqlCommentDAOTest {
     sqlUtils = new SqlUtils();
     sqlUtils.startDB();
 
-    sqlUtils.createCommentsTable();
+    sqlUtils.createCommentsAndVotesTables();
 
     commentDAO = new MySqlCommentDAO(sqlUtils.getConnection());
   }
@@ -105,6 +106,7 @@ public class MySqlCommentDAOTest {
 
       val votedComment = commentDAO.vote(comment.getId(), comment.getAuthor().getId(), optionToTest);
 
+      assertNotNull(votedComment);
       for (val option : votedComment.getVotes().keySet()) {
         if (option == optionToTest) {
           assertEquals(new Integer(1), votedComment.getVotes().get(option));
