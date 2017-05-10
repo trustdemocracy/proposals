@@ -93,7 +93,7 @@ public class MySqlCommentDAO implements CommentDAO {
     try {
       val sql = "SELECT comments.*, votes.option, COUNT(votes.option) AS `count` "
           + "FROM `" + COMMENTS_TABLE + "` AS comments "
-          + "INNER JOIN `" + VOTES_TABLE + "` AS votes "
+          + "LEFT JOIN `" + VOTES_TABLE + "` AS votes "
           + "ON comments.id = votes.comment_id "
           + "WHERE comments.id = ? "
           + "GROUP BY comments.id, votes.option";
@@ -116,6 +116,10 @@ public class MySqlCommentDAO implements CommentDAO {
           .setRootCommentId(UUID.fromString(resultSet.getString("comments.root_comment_id")))
           .setAuthor(author)
           .setContent(resultSet.getString("comments.content"));
+
+      if (resultSet.getString("votes.option") == null) {
+        return comment;
+      }
 
       do {
         val option = CommentVoteOption.valueOf(resultSet.getString("votes.option"));

@@ -66,6 +66,10 @@ public class MySqlCommentDAOTest {
     assertEquals(comment.getAuthor().getId(), UUID.fromString(resultSet.getString("author_id")));
     assertEquals(comment.getAuthor().getUsername(), resultSet.getString("author_username"));
     assertEquals(comment.getContent(), resultSet.getString("content"));
+
+    for (val option : resultComment.getVotes().keySet()) {
+      assertEquals(new Integer(0), resultComment.getVotes().get(option));
+    }
   }
 
   @Test
@@ -83,6 +87,8 @@ public class MySqlCommentDAOTest {
 
     val deletedComment = commentDAO.deleteById(comment.getId());
 
+    assertNotNull(resultComment);
+    assertNotNull(deletedComment);
     assertEquals(resultComment.getId(), deletedComment.getId());
     assertEquals(resultComment.getProposalId(), deletedComment.getProposalId());
     assertEquals(resultComment.getRootCommentId(), deletedComment.getRootCommentId());
