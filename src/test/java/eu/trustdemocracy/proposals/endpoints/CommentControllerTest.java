@@ -1,7 +1,5 @@
 package eu.trustdemocracy.proposals.endpoints;
 
-import static org.junit.Assert.assertEquals;
-
 import com.thedeanda.lorem.Lorem;
 import com.thedeanda.lorem.LoremIpsum;
 import eu.trustdemocracy.proposals.core.entities.CommentVoteOption;
@@ -147,7 +145,7 @@ public class CommentControllerTest extends ControllerTest {
 
                     for (val commentOption : CommentVoteOption.values()) {
                       val count = commentOption == option ? 1 : 0;
-                      assertEquals(new Integer(count), comment.getVotes().get(commentOption));
+                      context.assertEquals(new Integer(count), comment.getVotes().get(commentOption));
                     }
 
                     async.countDown();

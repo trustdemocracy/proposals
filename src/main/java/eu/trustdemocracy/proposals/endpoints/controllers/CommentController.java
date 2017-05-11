@@ -3,6 +3,7 @@ package eu.trustdemocracy.proposals.endpoints.controllers;
 import eu.trustdemocracy.proposals.core.interactors.comment.CreateComment;
 import eu.trustdemocracy.proposals.core.interactors.comment.DeleteComment;
 import eu.trustdemocracy.proposals.core.models.request.CommentRequestDTO;
+import eu.trustdemocracy.proposals.core.models.request.CommentVoteRequestDTO;
 import eu.trustdemocracy.proposals.core.models.request.ProposalRequestDTO;
 import eu.trustdemocracy.proposals.endpoints.App;
 import io.vertx.core.json.Json;
@@ -21,6 +22,7 @@ public class CommentController extends Controller {
     getRouter().post("/proposals/:proposalId/comments").handler(this::createComment);
     getRouter().get("/proposals/:proposalId/comments").handler(this::getComments);
     getRouter().delete("/proposals/:proposalId/comments/:commentId").handler(this::deleteComment);
+    getRouter().post("/proposals/:proposalId/comments/:commentId").handler(this::voteComment);
   }
 
   private void createComment(RoutingContext routingContext) {
@@ -56,6 +58,18 @@ public class CommentController extends Controller {
 
     val interactor = getInteractorFactory().createCommentInteractor(DeleteComment.class);
     val comment = interactor.execute(commentRequest);
+
+    routingContext.response()
+        .putHeader("content-type", "application/json")
+        .setStatusCode(200)
+        .end(Json.encodePrettily(comment));
+  }
+
+  private void voteComment(RoutingContext routingContext) {
+    val requestVote = Json
+        .decodeValue(routingContext.getBodyAsString(), CommentVoteRequestDTO.class);
+    val interactor = getInteractorFactory().createVoteCommentInteractor();
+    val comment = interactor.execute(requestVote);
 
     routingContext.response()
         .putHeader("content-type", "application/json")

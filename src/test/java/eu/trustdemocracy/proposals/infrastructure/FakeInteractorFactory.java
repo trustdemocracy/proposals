@@ -5,6 +5,7 @@ import ch.vorburger.mariadb4j.DB;
 import ch.vorburger.mariadb4j.DBConfigurationBuilder;
 import eu.trustdemocracy.proposals.core.interactors.Interactor;
 import eu.trustdemocracy.proposals.core.interactors.comment.GetComments;
+import eu.trustdemocracy.proposals.core.interactors.comment.VoteComment;
 import eu.trustdemocracy.proposals.core.models.request.CommentRequestDTO;
 import eu.trustdemocracy.proposals.core.models.request.ProposalRequestDTO;
 import eu.trustdemocracy.proposals.core.models.response.CommentResponseDTO;
@@ -49,6 +50,11 @@ public class FakeInteractorFactory implements InteractorFactory {
   @Override
   public GetComments createGetCommentsInteractor() {
     return new GetComments(new MySqlCommentDAO(getConnection()));
+  }
+
+  @Override
+  public VoteComment createVoteCommentInteractor() {
+    return new VoteComment(new MySqlCommentDAO(getConnection()));
   }
 
   private Connection getConnection() {
