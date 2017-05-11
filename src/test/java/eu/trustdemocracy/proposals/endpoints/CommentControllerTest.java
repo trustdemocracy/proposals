@@ -1,9 +1,13 @@
 package eu.trustdemocracy.proposals.endpoints;
 
+import static org.junit.Assert.assertEquals;
+
 import com.thedeanda.lorem.Lorem;
 import com.thedeanda.lorem.LoremIpsum;
+import eu.trustdemocracy.proposals.core.entities.CommentVoteOption;
 import eu.trustdemocracy.proposals.core.interactors.util.TokenUtils;
 import eu.trustdemocracy.proposals.core.models.request.CommentRequestDTO;
+import eu.trustdemocracy.proposals.core.models.request.CommentVoteRequestDTO;
 import eu.trustdemocracy.proposals.core.models.response.CommentResponseDTO;
 import io.vertx.core.json.Json;
 import io.vertx.ext.unit.TestContext;
@@ -103,7 +107,63 @@ public class CommentControllerTest extends ControllerTest {
       context.fail(error);
       async.complete();
     });
+  }
 
+  @Test
+  public void voteComment(TestContext context) {
+    val async = context.async(CommentVoteOption.values().length);
+
+    for (val option : CommentVoteOption.values()) {
+      val inputComment = createRandomComment();
+
+      val single = client
+          .post(port, HOST, "/proposals/" + inputComment.getProposalId() + "/comments")
+          .rxSendJson(inputComment);
+
+      single.subscribe(response -> {
+        context.assertEquals(response.statusCode(), 201);
+        val responseComment = Json
+            .decodeValue(response.body().toString(), CommentResponseDTO.class);
+
+        val vote = new CommentVoteRequestDTO()
+            .setCommentId(responseComment.getId())
+            .setVoterToken(TokenUtils.createToken(UUID.randomUUID(), "voter"))
+            .setOption(option);
+
+        client.post(port, HOST,
+            "/proposals/" + responseComment.getProposalId() + "/comments/" + vote.getCommentId())
+            .rxSendJson(vote)
+            .subscribe(voteResponse -> {
+              context.assertEquals(voteResponse.statusCode(), 200);
+
+              client.get(port, HOST, "/proposals/" + inputComment.getProposalId() + "/comments")
+                  .rxSend()
+                  .subscribe(getResponse -> {
+                    context.assertEquals(getResponse.statusCode(), 200);
+
+                    val jsonArray = getResponse.bodyAsJsonArray();
+                    val comment = Json
+                        .decodeValue(jsonArray.getJsonObject(0).encode(), CommentResponseDTO.class);
+
+                    for (val commentOption : CommentVoteOption.values()) {
+                      val count = commentOption == option ? 1 : 0;
+                      assertEquals(new Integer(count), comment.getVotes().get(commentOption));
+                    }
+
+                    async.countDown();
+                  }, error -> {
+                    context.fail(error);
+                    async.complete();
+                  });
+            }, error -> {
+              context.fail(error);
+              async.complete();
+            });
+      }, error -> {
+        context.fail(error);
+        async.complete();
+      });
+    }
   }
 
   private CommentRequestDTO createRandomComment() {
