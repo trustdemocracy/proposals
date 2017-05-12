@@ -5,8 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import ch.vorburger.mariadb4j.DB;
-import ch.vorburger.mariadb4j.DBConfigurationBuilder;
+import ch.vorburger.exec.ManagedProcessException;
 import com.thedeanda.lorem.Lorem;
 import com.thedeanda.lorem.LoremIpsum;
 import eu.trustdemocracy.proposals.core.entities.Proposal;
@@ -14,10 +13,7 @@ import eu.trustdemocracy.proposals.core.entities.ProposalStatus;
 import eu.trustdemocracy.proposals.core.entities.util.UserMapper;
 import eu.trustdemocracy.proposals.core.interactors.util.TokenUtils;
 import eu.trustdemocracy.proposals.gateways.ProposalDAO;
-import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.Stack;
 import java.util.UUID;
 import lombok.val;
 import org.junit.jupiter.api.AfterEach;
@@ -26,9 +22,7 @@ import org.junit.jupiter.api.Test;
 
 public class MySqlProposalDAOTest {
 
-  private DB db;
-  private DBConfigurationBuilder configBuilder;
-  private Stack<Connection> connectionStack = new Stack<>();
+  private SqlUtils sqlUtils;
 
   private Lorem lorem = LoremIpsum.getInstance();
 
@@ -38,38 +32,17 @@ public class MySqlProposalDAOTest {
   public void init() throws Exception {
     TokenUtils.generateKeys();
 
-    configBuilder = DBConfigurationBuilder.newBuilder();
-    configBuilder.setPort(0);
+    sqlUtils = new SqlUtils();
+    sqlUtils.startDB();
 
-    db = DB.newEmbeddedDB(configBuilder.build());
-    db.start();
+    sqlUtils.createProposalsTable();
 
-    val connection = getConnection();
-    val statement = connection.createStatement();
-    val sql = "CREATE TABLE `proposals` (" +
-
-        "`id` VARCHAR(" + MySqlProposalDAO.ID_SIZE + ") NOT NULL, " +
-        "`author` VARCHAR(" + MySqlProposalDAO.AUTHOR_SIZE + "), " +
-        "`title` VARCHAR(" + MySqlProposalDAO.TITLE_SIZE + "), " +
-        "`brief` VARCHAR(" + MySqlProposalDAO.BRIEF_SIZE + "), " +
-        "`source` VARCHAR(" + MySqlProposalDAO.SOURCE_SIZE + "), " +
-        "`motivation` TEXT(" + MySqlProposalDAO.MOTIVATION_SIZE + "), " +
-        "`measures` TEXT(" + MySqlProposalDAO.MEASURES_SIZE + "), " +
-        "`status` VARCHAR(" + MySqlProposalDAO.STATUS_SIZE + "), " +
-
-        "PRIMARY KEY ( id ) " +
-        ") ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;";
-
-    statement.executeUpdate(sql);
-
-    proposalDAO = new MySqlProposalDAO(getConnection());
+    proposalDAO = new MySqlProposalDAO(sqlUtils.getConnection());
   }
 
   @AfterEach
-  public void tearDown() throws SQLException {
-    while (!connectionStack.isEmpty()) {
-      connectionStack.pop().close();
-    }
+  public void tearDown() throws SQLException, ManagedProcessException {
+    sqlUtils.stopDB();
   }
 
   @Test
@@ -78,7 +51,7 @@ public class MySqlProposalDAOTest {
 
     val resultProposal = proposalDAO.create(proposal);
 
-    val connection = getConnection();
+    val connection = sqlUtils.getConnection();
     val sql = "SELECT * FROM `proposals` WHERE id = ?";
     val statement = connection.prepareStatement(sql);
     statement.setString(1, resultProposal.getId().toString());
@@ -119,7 +92,7 @@ public class MySqlProposalDAOTest {
 
     proposalDAO.delete(resultProposal.getId());
 
-    val connection = getConnection();
+    val connection = sqlUtils.getConnection();
     val sql = "SELECT * FROM `proposals` WHERE id = ?";
     val statement = connection.prepareStatement(sql);
     statement.setString(1, resultProposal.getId().toString());
@@ -135,7 +108,7 @@ public class MySqlProposalDAOTest {
     val resultProposal = proposalDAO.create(proposal);
     proposalDAO.setStatus(resultProposal.getId(), ProposalStatus.PUBLISHED);
 
-    val connection = getConnection();
+    val connection = sqlUtils.getConnection();
     val sql = "SELECT * FROM `proposals` WHERE id = ?";
     val statement = connection.prepareStatement(sql);
     statement.setString(1, resultProposal.getId().toString());
@@ -149,17 +122,6 @@ public class MySqlProposalDAOTest {
 
     assertTrue(unpublishedResultSet.next());
     assertEquals(ProposalStatus.UNPUBLISHED.toString(), unpublishedResultSet.getString("status"));
-  }
-
-  private Connection getConnection() {
-    try {
-      val conn = DriverManager
-          .getConnection(configBuilder.getURL("test"), "root", "");
-      connectionStack.push(conn);
-      return conn;
-    } catch (SQLException e) {
-      throw new RuntimeException(e);
-    }
   }
 
   private Proposal createRandomProposal() {

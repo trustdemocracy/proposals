@@ -113,7 +113,7 @@ public class MySqlProposalDAO implements ProposalDAO {
 
       return null;
     } catch (SQLException e) {
-      LOG.error("Failed to create proposal with id " + id, e);
+      LOG.error("Failed to delete proposal with id " + id, e);
       return null;
     }
   }

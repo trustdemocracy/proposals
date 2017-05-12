@@ -7,61 +7,19 @@ import eu.trustdemocracy.proposals.core.interactors.util.TokenUtils;
 import eu.trustdemocracy.proposals.core.models.request.ProposalRequestDTO;
 import eu.trustdemocracy.proposals.core.models.response.ProposalResponseDTO;
 import eu.trustdemocracy.proposals.gateways.mysql.MySqlProposalDAO;
-import eu.trustdemocracy.proposals.infrastructure.FakeInteractorFactory;
-import eu.trustdemocracy.proposals.infrastructure.InteractorFactory;
-import io.vertx.core.DeploymentOptions;
 import io.vertx.core.json.Json;
-import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import io.vertx.rxjava.core.Vertx;
-import io.vertx.rxjava.ext.web.client.WebClient;
-import java.io.IOException;
-import java.net.ServerSocket;
 import java.util.UUID;
 import lombok.val;
-import org.jose4j.lang.JoseException;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(VertxUnitRunner.class)
-public class ProposalControllerTest {
-
-  private static final String HOST = "localhost";
-
-  private Vertx vertx;
-  private Integer port;
-  private WebClient client;
-  private InteractorFactory interactorFactory;
+public class ProposalControllerTest extends ControllerTest {
 
   private Lorem lorem = LoremIpsum.getInstance();
   private String currentUsername;
-
-  @Before
-  public void setUp(TestContext context) throws IOException, JoseException {
-    TokenUtils.generateKeys();
-
-    vertx = Vertx.vertx();
-    client = WebClient.create(vertx);
-
-    val socket = new ServerSocket(0);
-    port = socket.getLocalPort();
-    socket.close();
-
-    val options = new DeploymentOptions().setConfig(new JsonObject().put("http.port", port));
-
-    interactorFactory = new FakeInteractorFactory();
-
-    App.setInteractorFactory(interactorFactory);
-    vertx.deployVerticle(App.class.getName(), options, context.asyncAssertSuccess());
-  }
-
-  @After
-  public void tearDown(TestContext context) {
-    vertx.close(context.asyncAssertSuccess());
-  }
 
   @Test
   public void createProposal(TestContext context) {
