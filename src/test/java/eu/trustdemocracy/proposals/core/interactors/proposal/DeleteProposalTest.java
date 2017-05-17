@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.thedeanda.lorem.LoremIpsum;
 import eu.trustdemocracy.proposals.core.interactors.exceptions.InvalidTokenException;
+import eu.trustdemocracy.proposals.core.interactors.exceptions.NotAllowedActionException;
 import eu.trustdemocracy.proposals.core.interactors.util.TokenUtils;
 import eu.trustdemocracy.proposals.core.models.request.ProposalRequestDTO;
 import eu.trustdemocracy.proposals.core.models.response.ProposalResponseDTO;
@@ -63,7 +64,20 @@ public class DeleteProposalTest {
         .setId(createdProposal.getId())
         .setAuthorToken("");
 
-    assertThrows(InvalidTokenException.class, () -> new DeleteProposal(proposalDAO).execute(inputProposal));
+    assertThrows(InvalidTokenException.class,
+        () -> new DeleteProposal(proposalDAO).execute(inputProposal));
+  }
+
+  @Test
+  public void deleteProposalNonAuthor() {
+    val createdProposal = reponseProposals.values().iterator().next();
+
+    val inputProposal = new ProposalRequestDTO()
+        .setId(createdProposal.getId())
+        .setAuthorToken(TokenUtils.createToken(UUID.randomUUID(), authorUsername));
+
+    assertThrows(NotAllowedActionException.class,
+        () -> new DeleteProposal(proposalDAO).execute(inputProposal));
   }
 
   @Test
