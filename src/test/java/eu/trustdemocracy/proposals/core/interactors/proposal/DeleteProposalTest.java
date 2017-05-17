@@ -2,11 +2,10 @@ package eu.trustdemocracy.proposals.core.interactors.proposal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.thedeanda.lorem.LoremIpsum;
-import eu.trustdemocracy.proposals.core.interactors.proposal.CreateProposal;
-import eu.trustdemocracy.proposals.core.interactors.proposal.DeleteProposal;
-import eu.trustdemocracy.proposals.core.interactors.proposal.GetProposal;
+import eu.trustdemocracy.proposals.core.interactors.exceptions.InvalidTokenException;
 import eu.trustdemocracy.proposals.core.interactors.util.TokenUtils;
 import eu.trustdemocracy.proposals.core.models.request.ProposalRequestDTO;
 import eu.trustdemocracy.proposals.core.models.response.ProposalResponseDTO;
@@ -54,6 +53,17 @@ public class DeleteProposalTest {
       val responseProposal = interactor.execute(inputProposal);
       reponseProposals.put(responseProposal.getId(), responseProposal);
     }
+  }
+
+  @Test
+  public void deleteProposalNonTokenUser() {
+    val createdProposal = reponseProposals.values().iterator().next();
+
+    val inputProposal = new ProposalRequestDTO()
+        .setId(createdProposal.getId())
+        .setAuthorToken("");
+
+    assertThrows(InvalidTokenException.class, () -> new DeleteProposal(proposalDAO).execute(inputProposal));
   }
 
   @Test
