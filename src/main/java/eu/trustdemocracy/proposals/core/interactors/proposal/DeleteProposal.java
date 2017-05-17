@@ -30,8 +30,8 @@ public class DeleteProposal implements Interactor<ProposalRequestDTO, ProposalRe
 
     if (!foundProposal.getAuthor().getId().equals(user.getId())) {
       throw new NotAllowedActionException(
-          "User [" + user.getId() + "] is not the owner of proposal ["
-              + foundProposal.getId() + "]");
+          "Failed to delete proposal [" + foundProposal.getId()
+              + "]. User [" + user.getId() + "] is not the owner");
     }
 
     val proposal = proposalDAO.delete(inputProposal.getId());
