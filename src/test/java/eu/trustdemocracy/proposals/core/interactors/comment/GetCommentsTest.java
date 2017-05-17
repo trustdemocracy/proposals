@@ -5,8 +5,10 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.thedeanda.lorem.LoremIpsum;
 import eu.trustdemocracy.proposals.core.interactors.exceptions.InvalidTokenException;
+import eu.trustdemocracy.proposals.core.interactors.exceptions.ResourceNotFoundException;
 import eu.trustdemocracy.proposals.core.interactors.proposal.CreateProposal;
 import eu.trustdemocracy.proposals.core.interactors.proposal.PublishProposal;
+import eu.trustdemocracy.proposals.core.interactors.proposal.UnpublishProposal;
 import eu.trustdemocracy.proposals.core.interactors.util.TokenUtils;
 import eu.trustdemocracy.proposals.core.models.request.CommentRequestDTO;
 import eu.trustdemocracy.proposals.core.models.request.ProposalRequestDTO;
@@ -27,6 +29,8 @@ public class GetCommentsTest {
   private FakeCommentDAO commentDAO;
   private FakeProposalDAO proposalDAO;
 
+  private String proposalAuthorToken;
+
   @BeforeEach
   public void init() throws JoseException {
     TokenUtils.generateKeys();
@@ -37,7 +41,7 @@ public class GetCommentsTest {
 
     val lorem = LoremIpsum.getInstance();
 
-    val proposalAuthorToken = TokenUtils.createToken(UUID.randomUUID(), lorem.getEmail());
+    proposalAuthorToken = TokenUtils.createToken(UUID.randomUUID(), lorem.getEmail());
     val createdProposal = new CreateProposal(proposalDAO)
         .execute(new ProposalRequestDTO()
             .setAuthorToken(proposalAuthorToken)
@@ -69,7 +73,7 @@ public class GetCommentsTest {
         .setAuthorToken("");
 
     assertThrows(InvalidTokenException.class,
-        () -> new GetComments(commentDAO).execute(inputProposal));
+        () -> new GetComments(commentDAO, proposalDAO).execute(inputProposal));
   }
 
   @Test
@@ -81,7 +85,7 @@ public class GetCommentsTest {
         .setAuthorToken(TokenUtils.createToken(UUID.randomUUID(),
             responseComment.getAuthorUsername()));
 
-    val commentList = new GetComments(commentDAO).execute(inputProposal);
+    val commentList = new GetComments(commentDAO, proposalDAO).execute(inputProposal);
 
     assertEquals(responseComments.size(), commentList.size());
     for (int i = 0; i < commentList.size(); i++) {
@@ -89,4 +93,20 @@ public class GetCommentsTest {
     }
   }
 
+  @Test
+  public void getCommentsFromUnpublished() {
+    val responseComment = responseComments.get(0);
+
+    val inputProposal = new ProposalRequestDTO()
+        .setId(responseComment.getProposalId())
+        .setAuthorToken(TokenUtils.createToken(UUID.randomUUID(),
+            responseComment.getAuthorUsername()));
+
+    new UnpublishProposal(proposalDAO).execute(new ProposalRequestDTO()
+        .setId(responseComment.getProposalId())
+        .setAuthorToken(proposalAuthorToken));
+
+    assertThrows(ResourceNotFoundException.class,
+        () -> new GetComments(commentDAO, proposalDAO).execute(inputProposal));
+  }
 }

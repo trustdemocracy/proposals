@@ -1,8 +1,5 @@
 package eu.trustdemocracy.proposals.core.interactors.proposal;
 
-import eu.trustdemocracy.proposals.core.entities.Proposal;
-import eu.trustdemocracy.proposals.core.entities.ProposalStatus;
-import eu.trustdemocracy.proposals.core.entities.User;
 import eu.trustdemocracy.proposals.core.entities.util.ProposalMapper;
 import eu.trustdemocracy.proposals.core.entities.util.UserMapper;
 import eu.trustdemocracy.proposals.core.interactors.Interactor;
@@ -30,7 +27,7 @@ public class GetProposal implements Interactor<ProposalRequestDTO, ProposalRespo
           "Trying to retrieve non-existing proposal [" + inputProposal.getId() + "]");
     }
 
-    if (!hasAccess(user, proposal)) {
+    if (!user.hasAccess(proposal)) {
       throw new NotAllowedActionException(
           "Failed to retrieve unpublished proposal [" + proposal.getId()
               + "]. User [" + user.getId() + "] is not the owner");
@@ -39,10 +36,4 @@ public class GetProposal implements Interactor<ProposalRequestDTO, ProposalRespo
     return ProposalMapper.createResponse(proposal);
   }
 
-  private static boolean hasAccess(User user, Proposal proposal) {
-    val authorId = proposal.getAuthor().getId();
-
-    return proposal.getStatus().equals(ProposalStatus.PUBLISHED)
-        || authorId.equals(user.getId());
-  }
 }

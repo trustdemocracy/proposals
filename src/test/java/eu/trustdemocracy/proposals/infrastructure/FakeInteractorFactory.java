@@ -49,7 +49,7 @@ public class FakeInteractorFactory implements InteractorFactory {
 
   @Override
   public GetComments createGetCommentsInteractor() {
-    return new GetComments(new MySqlCommentDAO(getConnection()));
+    return new GetComments(new MySqlCommentDAO(getConnection()), new MySqlProposalDAO(getConnection()));
   }
 
   @Override

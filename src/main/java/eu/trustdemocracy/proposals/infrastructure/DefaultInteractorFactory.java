@@ -51,7 +51,7 @@ public class DefaultInteractorFactory implements InteractorFactory {
 
   @Override
   public GetComments createGetCommentsInteractor() {
-    return new GetComments(DAOFactory.getCommentDAO());
+    return new GetComments(DAOFactory.getCommentDAO(), DAOFactory.getProposalDAO());
   }
 
   @Override
