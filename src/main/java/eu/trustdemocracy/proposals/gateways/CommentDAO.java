@@ -14,4 +14,6 @@ public interface CommentDAO {
   Comment vote(UUID commentId, UUID voterId, CommentVoteOption option);
 
   List<Comment> findByProposalId(UUID proposalId);
+
+  Comment findById(UUID id);
 }

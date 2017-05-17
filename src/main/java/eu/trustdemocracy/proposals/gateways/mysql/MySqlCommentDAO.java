@@ -91,7 +91,7 @@ public class MySqlCommentDAO implements CommentDAO {
     }
   }
 
-  private Comment findById(UUID id) {
+  public Comment findById(UUID id) {
     try {
       val sql = "SELECT comments.*, votes.option, COUNT(votes.option) AS `count` "
           + "FROM `" + COMMENTS_TABLE + "` AS comments "

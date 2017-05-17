@@ -71,4 +71,9 @@ public class FakeCommentDAO implements CommentDAO {
     return comments;
   }
 
+  @Override
+  public Comment findById(UUID id) {
+    return comments.get(id);
+  }
+
 }
