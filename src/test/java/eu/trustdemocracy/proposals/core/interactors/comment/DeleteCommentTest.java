@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.thedeanda.lorem.LoremIpsum;
 import eu.trustdemocracy.proposals.core.interactors.exceptions.InvalidTokenException;
+import eu.trustdemocracy.proposals.core.interactors.exceptions.NotAllowedActionException;
 import eu.trustdemocracy.proposals.core.interactors.exceptions.ResourceNotFoundException;
 import eu.trustdemocracy.proposals.core.interactors.proposal.CreateProposal;
 import eu.trustdemocracy.proposals.core.interactors.proposal.PublishProposal;
@@ -87,6 +88,17 @@ public class DeleteCommentTest {
         .setAuthorToken(TokenUtils.createToken(authorId, authorUsername));
 
     assertThrows(ResourceNotFoundException.class,
+        () -> new DeleteComment(commentDAO).execute(inputComment));
+  }
+
+  @Test
+  public void deleteCommentNotOwned() {
+    val responseComment = responseComments.get(0);
+    val inputComment = new CommentRequestDTO()
+        .setId(responseComment.getId())
+        .setAuthorToken(TokenUtils.createToken(UUID.randomUUID(), authorUsername));
+
+    assertThrows(NotAllowedActionException.class,
         () -> new DeleteComment(commentDAO).execute(inputComment));
   }
 
