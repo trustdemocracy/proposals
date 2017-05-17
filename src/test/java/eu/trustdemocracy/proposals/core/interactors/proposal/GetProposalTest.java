@@ -1,10 +1,12 @@
 package eu.trustdemocracy.proposals.core.interactors.proposal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.thedeanda.lorem.LoremIpsum;
-import eu.trustdemocracy.proposals.core.interactors.proposal.CreateProposal;
-import eu.trustdemocracy.proposals.core.interactors.proposal.GetProposal;
+import eu.trustdemocracy.proposals.core.entities.ProposalStatus;
+import eu.trustdemocracy.proposals.core.interactors.exceptions.NotAllowedActionException;
+import eu.trustdemocracy.proposals.core.interactors.exceptions.ResourceNotFoundException;
 import eu.trustdemocracy.proposals.core.interactors.util.TokenUtils;
 import eu.trustdemocracy.proposals.core.models.request.ProposalRequestDTO;
 import eu.trustdemocracy.proposals.core.models.response.ProposalResponseDTO;
@@ -55,10 +57,34 @@ public class GetProposalTest {
   }
 
   @Test
-  public void getProposal() {
+  public void getNonExistingProposal() {
+    val inputProposal = new ProposalRequestDTO()
+        .setId(UUID.randomUUID())
+        .setAuthorToken(TokenUtils.createToken(authorId, authorUsername));
+
+    assertThrows(ResourceNotFoundException.class,
+        () -> new GetProposal(proposalDAO).execute(inputProposal));
+  }
+
+  @Test
+  public void getUnpublishedProposalNonAuthor() {
     val createdProposal = reponseProposals.values().iterator().next();
 
-    val inputProposal = new ProposalRequestDTO().setId(createdProposal.getId());
+    val inputProposal = new ProposalRequestDTO()
+        .setId(createdProposal.getId())
+        .setAuthorToken(TokenUtils.createToken(UUID.randomUUID(), authorUsername));
+
+    assertThrows(NotAllowedActionException.class,
+        () -> new GetProposal(proposalDAO).execute(inputProposal));
+  }
+
+  @Test
+  public void getUnpublishedProposalAuthor() {
+    val createdProposal = reponseProposals.values().iterator().next();
+
+    val inputProposal = new ProposalRequestDTO()
+        .setId(createdProposal.getId())
+        .setAuthorToken(TokenUtils.createToken(authorId, authorUsername));
 
     ProposalResponseDTO responseProposal = new GetProposal(proposalDAO).execute(inputProposal);
 
@@ -68,7 +94,54 @@ public class GetProposalTest {
     assertEquals(createdProposal.getSource(), responseProposal.getSource());
     assertEquals(createdProposal.getMotivation(), responseProposal.getMotivation());
     assertEquals(createdProposal.getMeasures(), responseProposal.getMeasures());
-    assertEquals(createdProposal.getStatus(), responseProposal.getStatus());
+    assertEquals(ProposalStatus.UNPUBLISHED, responseProposal.getStatus());
+  }
+
+  @Test
+  public void getPublishedProposalNonAuthor() {
+    val createdProposal = reponseProposals.values().iterator().next();
+
+    val authorInputProposal = new ProposalRequestDTO()
+        .setId(createdProposal.getId())
+        .setAuthorToken(TokenUtils.createToken(authorId, authorUsername));
+
+    new PublishProposal(proposalDAO).execute(authorInputProposal);
+
+    val inputProposal = new ProposalRequestDTO()
+        .setId(createdProposal.getId())
+        .setAuthorToken(TokenUtils.createToken(UUID.randomUUID(), authorUsername));
+
+
+    ProposalResponseDTO responseProposal = new GetProposal(proposalDAO).execute(inputProposal);
+
+    assertEquals(authorUsername, responseProposal.getAuthorUsername());
+    assertEquals(createdProposal.getTitle(), responseProposal.getTitle());
+    assertEquals(createdProposal.getBrief(), responseProposal.getBrief());
+    assertEquals(createdProposal.getSource(), responseProposal.getSource());
+    assertEquals(createdProposal.getMotivation(), responseProposal.getMotivation());
+    assertEquals(createdProposal.getMeasures(), responseProposal.getMeasures());
+    assertEquals(ProposalStatus.PUBLISHED, responseProposal.getStatus());
+  }
+
+  @Test
+  public void getPublishedProposalAuthor() {
+    val createdProposal = reponseProposals.values().iterator().next();
+
+    val inputProposal = new ProposalRequestDTO()
+        .setId(createdProposal.getId())
+        .setAuthorToken(TokenUtils.createToken(authorId, authorUsername));
+
+    new PublishProposal(proposalDAO).execute(inputProposal);
+
+    ProposalResponseDTO responseProposal = new GetProposal(proposalDAO).execute(inputProposal);
+
+    assertEquals(authorUsername, responseProposal.getAuthorUsername());
+    assertEquals(createdProposal.getTitle(), responseProposal.getTitle());
+    assertEquals(createdProposal.getBrief(), responseProposal.getBrief());
+    assertEquals(createdProposal.getSource(), responseProposal.getSource());
+    assertEquals(createdProposal.getMotivation(), responseProposal.getMotivation());
+    assertEquals(createdProposal.getMeasures(), responseProposal.getMeasures());
+    assertEquals(ProposalStatus.PUBLISHED, responseProposal.getStatus());
   }
 
 }
