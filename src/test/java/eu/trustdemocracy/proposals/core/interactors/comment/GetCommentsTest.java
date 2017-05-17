@@ -1,8 +1,10 @@
 package eu.trustdemocracy.proposals.core.interactors.comment;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.thedeanda.lorem.LoremIpsum;
+import eu.trustdemocracy.proposals.core.interactors.exceptions.InvalidTokenException;
 import eu.trustdemocracy.proposals.core.interactors.util.TokenUtils;
 import eu.trustdemocracy.proposals.core.models.request.CommentRequestDTO;
 import eu.trustdemocracy.proposals.core.models.request.ProposalRequestDTO;
@@ -40,6 +42,18 @@ public class GetCommentsTest {
 
       responseComments.add(interactor.execute(inputComment));
     }
+  }
+
+  @Test
+  public void getCommentsNonTokenUser() {
+    val responseComment = responseComments.get(0);
+
+    val inputProposal = new ProposalRequestDTO()
+        .setId(responseComment.getProposalId())
+        .setAuthorToken("");
+
+    assertThrows(InvalidTokenException.class,
+        () -> new GetComments(commentDAO).execute(inputProposal));
   }
 
   @Test

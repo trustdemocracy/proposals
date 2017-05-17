@@ -2,8 +2,10 @@ package eu.trustdemocracy.proposals.core.interactors.comment;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.thedeanda.lorem.LoremIpsum;
+import eu.trustdemocracy.proposals.core.interactors.exceptions.InvalidTokenException;
 import eu.trustdemocracy.proposals.core.interactors.util.TokenUtils;
 import eu.trustdemocracy.proposals.core.models.request.CommentRequestDTO;
 import eu.trustdemocracy.proposals.core.models.response.CommentResponseDTO;
@@ -39,6 +41,18 @@ public class DeleteCommentTest {
 
       responseComments.add(interactor.execute(inputComment));
     }
+  }
+
+  @Test
+  public void deleteCommentNonTokenUser() {
+    val responseComment = responseComments.get(0);
+
+    val inputComment = new CommentRequestDTO()
+        .setId(responseComment.getId())
+        .setAuthorToken("");
+
+    assertThrows(InvalidTokenException.class,
+        () -> new DeleteComment(commentDAO).execute(inputComment));
   }
 
   @Test

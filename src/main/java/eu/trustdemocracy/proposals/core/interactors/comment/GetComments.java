@@ -2,6 +2,7 @@ package eu.trustdemocracy.proposals.core.interactors.comment;
 
 import eu.trustdemocracy.proposals.core.entities.Comment;
 import eu.trustdemocracy.proposals.core.entities.util.CommentMapper;
+import eu.trustdemocracy.proposals.core.entities.util.UserMapper;
 import eu.trustdemocracy.proposals.core.interactors.Interactor;
 import eu.trustdemocracy.proposals.core.models.request.ProposalRequestDTO;
 import eu.trustdemocracy.proposals.core.models.response.CommentResponseDTO;
@@ -20,6 +21,8 @@ public class GetComments implements Interactor<ProposalRequestDTO, List<CommentR
 
   @Override
   public List<CommentResponseDTO> execute(ProposalRequestDTO proposalRequestDTO) {
+    val user = UserMapper.createEntity(proposalRequestDTO.getAuthorToken());
+
     List<Comment> commentList = commentDAO.findByProposalId(proposalRequestDTO.getId());
 
     List<CommentResponseDTO> responseComments = new ArrayList<>();

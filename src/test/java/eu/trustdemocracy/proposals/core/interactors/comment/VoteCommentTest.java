@@ -2,9 +2,11 @@ package eu.trustdemocracy.proposals.core.interactors.comment;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.thedeanda.lorem.LoremIpsum;
 import eu.trustdemocracy.proposals.core.entities.CommentVoteOption;
+import eu.trustdemocracy.proposals.core.interactors.exceptions.InvalidTokenException;
 import eu.trustdemocracy.proposals.core.interactors.util.TokenUtils;
 import eu.trustdemocracy.proposals.core.models.request.CommentRequestDTO;
 import eu.trustdemocracy.proposals.core.models.request.CommentVoteRequestDTO;
@@ -36,6 +38,17 @@ public class VoteCommentTest {
         .setContent(lorem.getParagraphs(1, 2));
 
     responseComment = new CreateComment(commentDAO).execute(inputComment);
+  }
+
+  @Test
+  public void deleteCommentNonTokenUser() {
+    val inputVote = new CommentVoteRequestDTO()
+        .setCommentId(responseComment.getId())
+        .setVoterToken("")
+        .setOption(CommentVoteOption.UP);
+
+    assertThrows(InvalidTokenException.class,
+        () -> new VoteComment(commentDAO).execute(inputVote));
   }
 
   @Test
