@@ -8,6 +8,7 @@ import com.thedeanda.lorem.LoremIpsum;
 import eu.trustdemocracy.proposals.core.entities.ProposalStatus;
 import eu.trustdemocracy.proposals.core.interactors.exceptions.InvalidTokenException;
 import eu.trustdemocracy.proposals.core.interactors.exceptions.NotAllowedActionException;
+import eu.trustdemocracy.proposals.core.interactors.exceptions.ResourceNotFoundException;
 import eu.trustdemocracy.proposals.core.interactors.util.TokenUtils;
 import eu.trustdemocracy.proposals.core.models.request.ProposalRequestDTO;
 import eu.trustdemocracy.proposals.core.models.response.ProposalResponseDTO;
@@ -77,6 +78,16 @@ public class PublishProposalTest {
         .setAuthorToken(TokenUtils.createToken(UUID.randomUUID(), authorUsername));
 
     assertThrows(NotAllowedActionException.class,
+        () -> new PublishProposal(proposalDAO).execute(inputProposal));
+  }
+
+  @Test
+  public void publishNonExistingProposal() {
+    val inputProposal = new ProposalRequestDTO()
+        .setId(UUID.randomUUID())
+        .setAuthorToken(TokenUtils.createToken(authorId, authorUsername));
+
+    assertThrows(ResourceNotFoundException.class,
         () -> new PublishProposal(proposalDAO).execute(inputProposal));
   }
 
