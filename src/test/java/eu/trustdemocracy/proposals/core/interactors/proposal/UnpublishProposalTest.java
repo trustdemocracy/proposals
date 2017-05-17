@@ -2,12 +2,13 @@ package eu.trustdemocracy.proposals.core.interactors.proposal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.thedeanda.lorem.LoremIpsum;
 import eu.trustdemocracy.proposals.core.entities.ProposalStatus;
-import eu.trustdemocracy.proposals.core.interactors.proposal.CreateProposal;
-import eu.trustdemocracy.proposals.core.interactors.proposal.PublishProposal;
-import eu.trustdemocracy.proposals.core.interactors.proposal.UnpublishProposal;
+import eu.trustdemocracy.proposals.core.interactors.exceptions.InvalidTokenException;
+import eu.trustdemocracy.proposals.core.interactors.exceptions.NotAllowedActionException;
+import eu.trustdemocracy.proposals.core.interactors.exceptions.ResourceNotFoundException;
 import eu.trustdemocracy.proposals.core.interactors.util.TokenUtils;
 import eu.trustdemocracy.proposals.core.models.request.ProposalRequestDTO;
 import eu.trustdemocracy.proposals.core.models.response.ProposalResponseDTO;
@@ -59,6 +60,40 @@ public class UnpublishProposalTest {
 
       reponseProposals.put(responseProposal.getId(), responseProposal);
     }
+  }
+
+  @Test
+  public void unpublishProposalNonTokenUser() {
+    val createdProposal = reponseProposals.values().iterator().next();
+
+    val inputProposal = new ProposalRequestDTO()
+        .setId(createdProposal.getId())
+        .setAuthorToken("");
+
+    assertThrows(InvalidTokenException.class,
+        () -> new UnpublishProposal(proposalDAO).execute(inputProposal));
+  }
+
+  @Test
+  public void unpublishProposalNonAuthor() {
+    val createdProposal = reponseProposals.values().iterator().next();
+
+    val inputProposal = new ProposalRequestDTO()
+        .setId(createdProposal.getId())
+        .setAuthorToken(TokenUtils.createToken(UUID.randomUUID(), authorUsername));
+
+    assertThrows(NotAllowedActionException.class,
+        () -> new UnpublishProposal(proposalDAO).execute(inputProposal));
+  }
+
+  @Test
+  public void unpublishNonExistingProposal() {
+    val inputProposal = new ProposalRequestDTO()
+        .setId(UUID.randomUUID())
+        .setAuthorToken(TokenUtils.createToken(authorId, authorUsername));
+
+    assertThrows(ResourceNotFoundException.class,
+        () -> new UnpublishProposal(proposalDAO).execute(inputProposal));
   }
 
   @Test
