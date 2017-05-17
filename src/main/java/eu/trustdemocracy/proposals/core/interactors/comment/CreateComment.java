@@ -1,5 +1,6 @@
 package eu.trustdemocracy.proposals.core.interactors.comment;
 
+import eu.trustdemocracy.proposals.core.entities.ProposalStatus;
 import eu.trustdemocracy.proposals.core.entities.util.CommentMapper;
 import eu.trustdemocracy.proposals.core.entities.util.UserMapper;
 import eu.trustdemocracy.proposals.core.interactors.Interactor;
@@ -28,6 +29,10 @@ public class CreateComment implements Interactor<CommentRequestDTO, CommentRespo
     if (foundProposal == null) {
       throw new ResourceNotFoundException(
           "Trying to comment on non-existing proposal [" + commentRequestDTO.getProposalId() + "]");
+    }
+    if (foundProposal.getStatus().equals(ProposalStatus.UNPUBLISHED)) {
+      throw new ResourceNotFoundException(
+          "Trying to comment on unpublished proposal [" + commentRequestDTO.getProposalId() + "]");
     }
 
     val comment = CommentMapper.createEntity(commentRequestDTO);

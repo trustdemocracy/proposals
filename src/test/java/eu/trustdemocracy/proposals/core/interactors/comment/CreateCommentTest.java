@@ -8,10 +8,12 @@ import com.thedeanda.lorem.LoremIpsum;
 import eu.trustdemocracy.proposals.core.interactors.exceptions.InvalidTokenException;
 import eu.trustdemocracy.proposals.core.interactors.exceptions.ResourceNotFoundException;
 import eu.trustdemocracy.proposals.core.interactors.proposal.CreateProposal;
+import eu.trustdemocracy.proposals.core.interactors.proposal.PublishProposal;
 import eu.trustdemocracy.proposals.core.interactors.util.TokenUtils;
 import eu.trustdemocracy.proposals.core.models.request.CommentRequestDTO;
 import eu.trustdemocracy.proposals.core.models.request.ProposalRequestDTO;
 import eu.trustdemocracy.proposals.core.models.response.CommentResponseDTO;
+import eu.trustdemocracy.proposals.core.models.response.ProposalResponseDTO;
 import eu.trustdemocracy.proposals.gateways.CommentDAO;
 import eu.trustdemocracy.proposals.gateways.ProposalDAO;
 import eu.trustdemocracy.proposals.gateways.fake.FakeCommentDAO;
@@ -31,6 +33,9 @@ public class CreateCommentTest {
   private ProposalDAO proposalDAO;
 
   private String authorUsername;
+  private String proposalAuthorToken;
+  private ProposalResponseDTO createdProposal;
+
 
   @BeforeEach
   public void init() throws JoseException {
@@ -44,9 +49,10 @@ public class CreateCommentTest {
 
     authorUsername = lorem.getEmail();
 
-    val createdProposal = new CreateProposal(proposalDAO)
+    proposalAuthorToken = TokenUtils.createToken(UUID.randomUUID(), authorUsername);
+    createdProposal = new CreateProposal(proposalDAO)
         .execute(new ProposalRequestDTO()
-            .setAuthorToken(TokenUtils.createToken(UUID.randomUUID(), authorUsername))
+            .setAuthorToken(proposalAuthorToken)
             .setTitle(lorem.getTitle(5, 30))
             .setBrief(lorem.getParagraphs(1, 1))
             .setSource(lorem.getUrl())
@@ -73,8 +79,15 @@ public class CreateCommentTest {
   @Test
   public void createCommentInNonExistingProposal() {
     val inputComment = inputComments.get(0)
-        .setProposalId(UUID.randomUUID())
-        .setAuthorToken(TokenUtils.createToken(UUID.randomUUID(), authorUsername));
+        .setProposalId(UUID.randomUUID());
+
+    assertThrows(ResourceNotFoundException.class,
+        () -> new CreateComment(commentDAO, proposalDAO).execute(inputComment));
+  }
+
+  @Test
+  public void createCommentInNonPublishedProposal() {
+    val inputComment = inputComments.get(0);
 
     assertThrows(ResourceNotFoundException.class,
         () -> new CreateComment(commentDAO, proposalDAO).execute(inputComment));
@@ -82,9 +95,14 @@ public class CreateCommentTest {
 
   @Test
   public void createComment() {
+    new PublishProposal(proposalDAO).execute(new ProposalRequestDTO()
+        .setId(createdProposal.getId())
+        .setAuthorToken(proposalAuthorToken));
+
     val inputComment = inputComments.get(0);
     val timestamp = System.currentTimeMillis();
-    CommentResponseDTO responseComment = new CreateComment(commentDAO, proposalDAO).execute(inputComment);
+    CommentResponseDTO responseComment = new CreateComment(commentDAO, proposalDAO)
+        .execute(inputComment);
 
     assertEquals(authorUsername, responseComment.getAuthorUsername());
     assertEquals(inputComment.getProposalId(), responseComment.getProposalId());

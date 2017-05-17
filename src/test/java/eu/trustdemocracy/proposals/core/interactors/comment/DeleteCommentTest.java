@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import com.thedeanda.lorem.LoremIpsum;
 import eu.trustdemocracy.proposals.core.interactors.exceptions.InvalidTokenException;
 import eu.trustdemocracy.proposals.core.interactors.proposal.CreateProposal;
+import eu.trustdemocracy.proposals.core.interactors.proposal.PublishProposal;
 import eu.trustdemocracy.proposals.core.interactors.util.TokenUtils;
 import eu.trustdemocracy.proposals.core.models.request.CommentRequestDTO;
 import eu.trustdemocracy.proposals.core.models.request.ProposalRequestDTO;
@@ -42,14 +43,19 @@ public class DeleteCommentTest {
     authorId = UUID.randomUUID();
     authorUsername = lorem.getEmail();
 
+    val proposalAuthorToken = TokenUtils.createToken(UUID.randomUUID(), lorem.getEmail());
     val createdProposal = new CreateProposal(proposalDAO)
         .execute(new ProposalRequestDTO()
-            .setAuthorToken(TokenUtils.createToken(UUID.randomUUID(), lorem.getEmail()))
+            .setAuthorToken(proposalAuthorToken)
             .setTitle(lorem.getTitle(5, 30))
             .setBrief(lorem.getParagraphs(1, 1))
             .setSource(lorem.getUrl())
             .setMotivation(lorem.getParagraphs(1, 5))
             .setMeasures(lorem.getParagraphs(1, 5)));
+    new PublishProposal(proposalDAO).execute(new ProposalRequestDTO()
+        .setId(createdProposal.getId())
+        .setAuthorToken(proposalAuthorToken));
+
     val interactor = new CreateComment(commentDAO, proposalDAO);
     for (int i = 0; i < 10; i++) {
       val inputComment = new CommentRequestDTO()
