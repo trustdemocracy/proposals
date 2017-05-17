@@ -7,11 +7,14 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import com.thedeanda.lorem.LoremIpsum;
 import eu.trustdemocracy.proposals.core.entities.CommentVoteOption;
 import eu.trustdemocracy.proposals.core.interactors.exceptions.InvalidTokenException;
+import eu.trustdemocracy.proposals.core.interactors.proposal.CreateProposal;
 import eu.trustdemocracy.proposals.core.interactors.util.TokenUtils;
 import eu.trustdemocracy.proposals.core.models.request.CommentRequestDTO;
 import eu.trustdemocracy.proposals.core.models.request.CommentVoteRequestDTO;
+import eu.trustdemocracy.proposals.core.models.request.ProposalRequestDTO;
 import eu.trustdemocracy.proposals.core.models.response.CommentResponseDTO;
 import eu.trustdemocracy.proposals.gateways.fake.FakeCommentDAO;
+import eu.trustdemocracy.proposals.gateways.fake.FakeProposalDAO;
 import java.util.UUID;
 import lombok.val;
 import org.jose4j.lang.JoseException;
@@ -22,6 +25,7 @@ public class VoteCommentTest {
 
   private CommentResponseDTO responseComment;
   private FakeCommentDAO commentDAO;
+  private FakeProposalDAO proposalDAO;
   private LoremIpsum lorem;
 
   @BeforeEach
@@ -29,15 +33,26 @@ public class VoteCommentTest {
     TokenUtils.generateKeys();
 
     commentDAO = new FakeCommentDAO();
+    proposalDAO = new FakeProposalDAO();
 
     lorem = LoremIpsum.getInstance();
 
+    val createdProposal = new CreateProposal(proposalDAO)
+        .execute(new ProposalRequestDTO()
+            .setAuthorToken(TokenUtils.createToken(UUID.randomUUID(), lorem.getEmail()))
+            .setTitle(lorem.getTitle(5, 30))
+            .setBrief(lorem.getParagraphs(1, 1))
+            .setSource(lorem.getUrl())
+            .setMotivation(lorem.getParagraphs(1, 5))
+            .setMeasures(lorem.getParagraphs(1, 5)));
+
     val inputComment = new CommentRequestDTO()
         .setAuthorToken(TokenUtils.createToken(UUID.randomUUID(), lorem.getEmail()))
-        .setProposalId(UUID.randomUUID())
+        .setProposalId(createdProposal.getId())
         .setContent(lorem.getParagraphs(1, 2));
 
-    responseComment = new CreateComment(commentDAO).execute(inputComment);
+
+    responseComment = new CreateComment(commentDAO, proposalDAO).execute(inputComment);
   }
 
   @Test

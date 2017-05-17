@@ -5,11 +5,13 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.thedeanda.lorem.LoremIpsum;
 import eu.trustdemocracy.proposals.core.interactors.exceptions.InvalidTokenException;
+import eu.trustdemocracy.proposals.core.interactors.proposal.CreateProposal;
 import eu.trustdemocracy.proposals.core.interactors.util.TokenUtils;
 import eu.trustdemocracy.proposals.core.models.request.CommentRequestDTO;
 import eu.trustdemocracy.proposals.core.models.request.ProposalRequestDTO;
 import eu.trustdemocracy.proposals.core.models.response.CommentResponseDTO;
 import eu.trustdemocracy.proposals.gateways.fake.FakeCommentDAO;
+import eu.trustdemocracy.proposals.gateways.fake.FakeProposalDAO;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -22,22 +24,31 @@ public class GetCommentsTest {
 
   private List<CommentResponseDTO> responseComments;
   private FakeCommentDAO commentDAO;
+  private FakeProposalDAO proposalDAO;
 
   @BeforeEach
   public void init() throws JoseException {
     TokenUtils.generateKeys();
 
     commentDAO = new FakeCommentDAO();
+    proposalDAO = new FakeProposalDAO();
     responseComments = new ArrayList<>();
 
     val lorem = LoremIpsum.getInstance();
 
-    val proposalId = UUID.randomUUID();
-    val interactor = new CreateComment(commentDAO);
+    val createdProposal = new CreateProposal(proposalDAO)
+        .execute(new ProposalRequestDTO()
+            .setAuthorToken(TokenUtils.createToken(UUID.randomUUID(), lorem.getEmail()))
+            .setTitle(lorem.getTitle(5, 30))
+            .setBrief(lorem.getParagraphs(1, 1))
+            .setSource(lorem.getUrl())
+            .setMotivation(lorem.getParagraphs(1, 5))
+            .setMeasures(lorem.getParagraphs(1, 5)));
+    val interactor = new CreateComment(commentDAO, proposalDAO);
     for (int i = 0; i < 10; i++) {
       val inputComment = new CommentRequestDTO()
           .setAuthorToken(TokenUtils.createToken(UUID.randomUUID(), lorem.getEmail()))
-          .setProposalId(proposalId)
+          .setProposalId(createdProposal.getId())
           .setContent(lorem.getParagraphs(1, 2));
 
       responseComments.add(interactor.execute(inputComment));
