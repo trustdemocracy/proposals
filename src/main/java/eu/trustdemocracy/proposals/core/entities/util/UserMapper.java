@@ -1,6 +1,7 @@
 package eu.trustdemocracy.proposals.core.entities.util;
 
 import eu.trustdemocracy.proposals.core.entities.User;
+import eu.trustdemocracy.proposals.core.interactors.exceptions.InvalidTokenException;
 import eu.trustdemocracy.proposals.infrastructure.JWTKeyFactory;
 import java.util.Map;
 import java.util.UUID;
@@ -34,7 +35,8 @@ public final class UserMapper {
       val jwtClaims = jwtConsumer.processToClaims(token);
       return jwtClaims.getClaimsMap();
     } catch (InvalidJwtException e) {
-      throw new RuntimeException(e);
+      throw new InvalidTokenException(
+          "The access token provided is not valid. Access token: [" + token + "]");
     }
   }
 }

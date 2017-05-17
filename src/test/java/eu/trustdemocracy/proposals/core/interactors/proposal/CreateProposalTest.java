@@ -1,9 +1,11 @@
 package eu.trustdemocracy.proposals.core.interactors.proposal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.thedeanda.lorem.LoremIpsum;
 import eu.trustdemocracy.proposals.core.entities.ProposalStatus;
+import eu.trustdemocracy.proposals.core.interactors.exceptions.InvalidTokenException;
 import eu.trustdemocracy.proposals.core.interactors.util.TokenUtils;
 import eu.trustdemocracy.proposals.core.models.request.ProposalRequestDTO;
 import eu.trustdemocracy.proposals.core.models.response.ProposalResponseDTO;
@@ -46,6 +48,13 @@ public class CreateProposalTest {
           .setMotivation(lorem.getParagraphs(1, 5))
           .setMeasures(lorem.getParagraphs(1, 5)));
     }
+  }
+
+  @Test
+  public void createProposalNonTokenUser() {
+    val inputProposal = inputProposals.get(0);
+    inputProposal.setAuthorToken("");
+    assertThrows(InvalidTokenException.class, () -> new CreateProposal(proposalDAO).execute(inputProposal));
   }
 
   @Test
