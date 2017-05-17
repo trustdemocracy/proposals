@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import com.thedeanda.lorem.LoremIpsum;
 import eu.trustdemocracy.proposals.core.entities.CommentVoteOption;
 import eu.trustdemocracy.proposals.core.interactors.exceptions.InvalidTokenException;
+import eu.trustdemocracy.proposals.core.interactors.exceptions.ResourceNotFoundException;
 import eu.trustdemocracy.proposals.core.interactors.proposal.CreateProposal;
 import eu.trustdemocracy.proposals.core.interactors.proposal.PublishProposal;
 import eu.trustdemocracy.proposals.core.interactors.util.TokenUtils;
@@ -69,6 +70,17 @@ public class VoteCommentTest {
 
     assertThrows(InvalidTokenException.class,
         () -> new VoteComment(commentDAO).execute(inputVote));
+  }
+
+  @Test
+  public void voteNonExistingComment() {
+    val inputComment = new CommentVoteRequestDTO()
+        .setCommentId(UUID.randomUUID())
+        .setVoterToken(TokenUtils.createToken(UUID.randomUUID(), lorem.getEmail()))
+        .setOption(CommentVoteOption.UP);
+
+    assertThrows(ResourceNotFoundException.class,
+        () -> new VoteComment(commentDAO).execute(inputComment));
   }
 
   @Test
