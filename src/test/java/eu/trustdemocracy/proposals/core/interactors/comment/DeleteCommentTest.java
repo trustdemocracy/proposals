@@ -23,6 +23,9 @@ public class DeleteCommentTest {
   private List<CommentResponseDTO> responseComments;
   private FakeCommentDAO commentDAO;
 
+  private UUID authorId;
+  private String authorUsername;
+
   @BeforeEach
   public void init() throws JoseException {
     TokenUtils.generateKeys();
@@ -31,11 +34,13 @@ public class DeleteCommentTest {
     responseComments = new ArrayList<>();
 
     val lorem = LoremIpsum.getInstance();
+    authorId = UUID.randomUUID();
+    authorUsername = lorem.getEmail();
 
     val interactor = new CreateComment(commentDAO);
     for (int i = 0; i < 10; i++) {
       val inputComment = new CommentRequestDTO()
-          .setAuthorToken(TokenUtils.createToken(UUID.randomUUID(), lorem.getEmail()))
+          .setAuthorToken(TokenUtils.createToken(authorId, authorUsername))
           .setProposalId(UUID.randomUUID())
           .setContent(lorem.getParagraphs(1, 2));
 
@@ -60,7 +65,8 @@ public class DeleteCommentTest {
     val responseComment = responseComments.get(0);
 
     val inputComment = new CommentRequestDTO()
-        .setId(responseComment.getId());
+        .setId(responseComment.getId())
+        .setAuthorToken(TokenUtils.createToken(authorId, authorUsername));
 
     val deletedComment = new DeleteComment(commentDAO).execute(inputComment);
 

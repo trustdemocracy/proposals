@@ -61,7 +61,9 @@ public class GetCommentsTest {
     val responseComment = responseComments.get(0);
 
     val inputProposal = new ProposalRequestDTO()
-        .setId(responseComment.getProposalId());
+        .setId(responseComment.getProposalId())
+        .setAuthorToken(TokenUtils.createToken(UUID.randomUUID(),
+            responseComment.getAuthorUsername()));
 
     val commentList = new GetComments(commentDAO).execute(inputProposal);
 

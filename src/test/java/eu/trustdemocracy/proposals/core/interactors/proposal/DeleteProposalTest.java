@@ -1,7 +1,6 @@
 package eu.trustdemocracy.proposals.core.interactors.proposal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.thedeanda.lorem.LoremIpsum;
@@ -108,7 +107,8 @@ public class DeleteProposalTest {
     assertEquals(createdProposal.getMotivation(), responseProposal.getMotivation());
     assertEquals(createdProposal.getMeasures(), responseProposal.getMeasures());
 
-    assertNull(new GetProposal(proposalDAO).execute(inputProposal));
+    assertThrows(ResourceNotFoundException.class,
+        () -> new GetProposal(proposalDAO).execute(inputProposal));
   }
 
 }
