@@ -48,9 +48,10 @@ public class FakeCommentDAO implements CommentDAO {
 
     for (val key : storedComment.getVotes().keySet()) {
       Integer currentVotes = storedComment.getVotes().get(key);
-      if (previouslyVoted == key) {
+      if (previouslyVoted != null && previouslyVoted.equals(key)) {
         currentVotes--;
-      } else if (option == key) {
+      }
+      if (option.equals(key)) {
         currentVotes++;
       }
       storedComment.getVotes().replace(key, currentVotes);

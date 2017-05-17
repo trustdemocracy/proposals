@@ -83,6 +83,7 @@ public class VoteCommentTest {
         () -> new VoteComment(commentDAO).execute(inputComment));
   }
 
+
   @Test
   public void voteUpComment() {
     val id = UUID.randomUUID();
@@ -96,6 +97,27 @@ public class VoteCommentTest {
     assertEquals(new Integer(1), votedComment.getVotes().get(CommentVoteOption.UP));
     assertNotNull(votedComment.getVotes().get(CommentVoteOption.DOWN));
     assertEquals(new Integer(0), votedComment.getVotes().get(CommentVoteOption.DOWN));
+  }
+
+  @Test
+  public void voteUpCommentTwice() {
+    val id = UUID.randomUUID();
+    val inputVote = new CommentVoteRequestDTO()
+        .setCommentId(responseComment.getId())
+        .setVoterToken(TokenUtils.createToken(id, lorem.getEmail()))
+        .setOption(CommentVoteOption.UP);
+
+    val votedComment = new VoteComment(commentDAO).execute(inputVote);
+
+    assertEquals(new Integer(1), votedComment.getVotes().get(CommentVoteOption.UP));
+    assertNotNull(votedComment.getVotes().get(CommentVoteOption.DOWN));
+    assertEquals(new Integer(0), votedComment.getVotes().get(CommentVoteOption.DOWN));
+
+    val sameComment = new VoteComment(commentDAO).execute(inputVote);
+
+    assertEquals(new Integer(1), sameComment.getVotes().get(CommentVoteOption.UP));
+    assertNotNull(sameComment.getVotes().get(CommentVoteOption.DOWN));
+    assertEquals(new Integer(0), sameComment.getVotes().get(CommentVoteOption.DOWN));
   }
 
   @Test
