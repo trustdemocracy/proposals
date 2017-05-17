@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import com.thedeanda.lorem.LoremIpsum;
 import eu.trustdemocracy.proposals.core.interactors.exceptions.InvalidTokenException;
 import eu.trustdemocracy.proposals.core.interactors.exceptions.NotAllowedActionException;
+import eu.trustdemocracy.proposals.core.interactors.exceptions.ResourceNotFoundException;
 import eu.trustdemocracy.proposals.core.interactors.util.TokenUtils;
 import eu.trustdemocracy.proposals.core.models.request.ProposalRequestDTO;
 import eu.trustdemocracy.proposals.core.models.response.ProposalResponseDTO;
@@ -77,6 +78,16 @@ public class DeleteProposalTest {
         .setAuthorToken(TokenUtils.createToken(UUID.randomUUID(), authorUsername));
 
     assertThrows(NotAllowedActionException.class,
+        () -> new DeleteProposal(proposalDAO).execute(inputProposal));
+  }
+
+  @Test
+  public void deleteNonExistingProposal() {
+    val inputProposal = new ProposalRequestDTO()
+        .setId(UUID.randomUUID())
+        .setAuthorToken(TokenUtils.createToken(authorId, authorUsername));
+
+    assertThrows(ResourceNotFoundException.class,
         () -> new DeleteProposal(proposalDAO).execute(inputProposal));
   }
 
