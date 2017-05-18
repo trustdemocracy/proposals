@@ -1,10 +1,5 @@
 package eu.trustdemocracy.proposals.endpoints.controllers;
 
-import eu.trustdemocracy.proposals.core.interactors.proposal.CreateProposal;
-import eu.trustdemocracy.proposals.core.interactors.proposal.DeleteProposal;
-import eu.trustdemocracy.proposals.core.interactors.proposal.GetProposal;
-import eu.trustdemocracy.proposals.core.interactors.proposal.PublishProposal;
-import eu.trustdemocracy.proposals.core.interactors.proposal.UnpublishProposal;
 import eu.trustdemocracy.proposals.core.models.request.ProposalRequestDTO;
 import eu.trustdemocracy.proposals.endpoints.App;
 import io.vertx.core.json.Json;
@@ -30,7 +25,7 @@ public class ProposalController extends Controller {
   private void createProposal(RoutingContext routingContext) {
     val requestProposal = Json
         .decodeValue(routingContext.getBodyAsString(), ProposalRequestDTO.class);
-    val interactor = getInteractorFactory().createProposalInteractor(CreateProposal.class);
+    val interactor = getInteractorFactory().getCreateProposal();
     val proposal = interactor.execute(requestProposal);
 
     routingContext.response()
@@ -42,7 +37,7 @@ public class ProposalController extends Controller {
   private void getProposal(RoutingContext routingContext) {
     val id = UUID.fromString(routingContext.pathParam("id"));
     val requestProposal = new ProposalRequestDTO().setId(id);
-    val interactor = getInteractorFactory().createProposalInteractor(GetProposal.class);
+    val interactor = getInteractorFactory().getGetProposal();
     val proposal = interactor.execute(requestProposal);
 
     if (proposal == null) {
@@ -61,7 +56,7 @@ public class ProposalController extends Controller {
   private void publishProposal(RoutingContext routingContext) {
     val id = UUID.fromString(routingContext.pathParam("id"));
     val requestProposal = new ProposalRequestDTO().setId(id);
-    val interactor = getInteractorFactory().createProposalInteractor(PublishProposal.class);
+    val interactor = getInteractorFactory().getPublishProposal();
     val proposal = interactor.execute(requestProposal);
 
     routingContext.response()
@@ -73,7 +68,7 @@ public class ProposalController extends Controller {
   private void unpublishProposal(RoutingContext routingContext) {
     val id = UUID.fromString(routingContext.pathParam("id"));
     val requestProposal = new ProposalRequestDTO().setId(id);
-    val interactor = getInteractorFactory().createProposalInteractor(UnpublishProposal.class);
+    val interactor = getInteractorFactory().getUnpublishProposal();
     val proposal = interactor.execute(requestProposal);
 
     routingContext.response()
@@ -85,7 +80,7 @@ public class ProposalController extends Controller {
   private void deleteProposal(RoutingContext routingContext) {
     val id = UUID.fromString(routingContext.pathParam("id"));
     val requestProposal = new ProposalRequestDTO().setId(id);
-    val interactor = getInteractorFactory().createProposalInteractor(DeleteProposal.class);
+    val interactor = getInteractorFactory().getDeleteProposal();
     val proposal = interactor.execute(requestProposal);
 
     routingContext.response()

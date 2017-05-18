@@ -1,22 +1,33 @@
 package eu.trustdemocracy.proposals.infrastructure;
 
-import eu.trustdemocracy.proposals.core.interactors.Interactor;
+import eu.trustdemocracy.proposals.core.interactors.comment.CreateComment;
+import eu.trustdemocracy.proposals.core.interactors.comment.DeleteComment;
 import eu.trustdemocracy.proposals.core.interactors.comment.GetComments;
 import eu.trustdemocracy.proposals.core.interactors.comment.VoteComment;
-import eu.trustdemocracy.proposals.core.models.request.CommentRequestDTO;
-import eu.trustdemocracy.proposals.core.models.request.ProposalRequestDTO;
-import eu.trustdemocracy.proposals.core.models.response.CommentResponseDTO;
-import eu.trustdemocracy.proposals.core.models.response.ProposalResponseDTO;
+import eu.trustdemocracy.proposals.core.interactors.proposal.CreateProposal;
+import eu.trustdemocracy.proposals.core.interactors.proposal.DeleteProposal;
+import eu.trustdemocracy.proposals.core.interactors.proposal.GetProposal;
+import eu.trustdemocracy.proposals.core.interactors.proposal.PublishProposal;
+import eu.trustdemocracy.proposals.core.interactors.proposal.UnpublishProposal;
 
 public interface InteractorFactory {
 
-  Interactor<ProposalRequestDTO, ProposalResponseDTO> createProposalInteractor(
-      Class<? extends Interactor<ProposalRequestDTO, ProposalResponseDTO>> concreteClass);
+  CreateProposal getCreateProposal();
 
-  Interactor<CommentRequestDTO, CommentResponseDTO> createCommentInteractor(
-      Class<? extends Interactor<CommentRequestDTO, CommentResponseDTO>> concreteClass);
+  DeleteProposal getDeleteProposal();
 
-  GetComments createGetCommentsInteractor();
+  GetProposal getGetProposal();
 
-  VoteComment createVoteCommentInteractor();
+  PublishProposal getPublishProposal();
+
+  UnpublishProposal getUnpublishProposal();
+
+
+  CreateComment getCreateComment();
+
+  DeleteComment getDeleteComment();
+
+  GetComments getGetComments();
+
+  VoteComment getVoteComment();
 }

@@ -1,7 +1,5 @@
 package eu.trustdemocracy.proposals.endpoints.controllers;
 
-import eu.trustdemocracy.proposals.core.interactors.comment.CreateComment;
-import eu.trustdemocracy.proposals.core.interactors.comment.DeleteComment;
 import eu.trustdemocracy.proposals.core.models.request.CommentRequestDTO;
 import eu.trustdemocracy.proposals.core.models.request.CommentVoteRequestDTO;
 import eu.trustdemocracy.proposals.core.models.request.ProposalRequestDTO;
@@ -28,7 +26,7 @@ public class CommentController extends Controller {
   private void createComment(RoutingContext routingContext) {
     val requestProposal = Json
         .decodeValue(routingContext.getBodyAsString(), CommentRequestDTO.class);
-    val interactor = getInteractorFactory().createCommentInteractor(CreateComment.class);
+    val interactor = getInteractorFactory().getCreateComment();
     val comment = interactor.execute(requestProposal);
 
     routingContext.response()
@@ -39,7 +37,7 @@ public class CommentController extends Controller {
 
   private void getComments(RoutingContext routingContext) {
     val proposalId = UUID.fromString(routingContext.pathParam("proposalId"));
-    val interactor = getInteractorFactory().createGetCommentsInteractor();
+    val interactor = getInteractorFactory().getGetComments();
     val commentList = interactor.execute(new ProposalRequestDTO().setId(proposalId));
 
     routingContext.response()
@@ -56,7 +54,7 @@ public class CommentController extends Controller {
         .setId(commentId)
         .setProposalId(proposalId);
 
-    val interactor = getInteractorFactory().createCommentInteractor(DeleteComment.class);
+    val interactor = getInteractorFactory().getDeleteComment();
     val comment = interactor.execute(commentRequest);
 
     routingContext.response()
@@ -68,7 +66,7 @@ public class CommentController extends Controller {
   private void voteComment(RoutingContext routingContext) {
     val requestVote = Json
         .decodeValue(routingContext.getBodyAsString(), CommentVoteRequestDTO.class);
-    val interactor = getInteractorFactory().createVoteCommentInteractor();
+    val interactor = getInteractorFactory().getVoteComment();
     val comment = interactor.execute(requestVote);
 
     routingContext.response()

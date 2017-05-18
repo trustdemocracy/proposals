@@ -3,13 +3,15 @@ package eu.trustdemocracy.proposals.infrastructure;
 import ch.vorburger.exec.ManagedProcessException;
 import ch.vorburger.mariadb4j.DB;
 import ch.vorburger.mariadb4j.DBConfigurationBuilder;
-import eu.trustdemocracy.proposals.core.interactors.Interactor;
+import eu.trustdemocracy.proposals.core.interactors.comment.CreateComment;
+import eu.trustdemocracy.proposals.core.interactors.comment.DeleteComment;
 import eu.trustdemocracy.proposals.core.interactors.comment.GetComments;
 import eu.trustdemocracy.proposals.core.interactors.comment.VoteComment;
-import eu.trustdemocracy.proposals.core.models.request.CommentRequestDTO;
-import eu.trustdemocracy.proposals.core.models.request.ProposalRequestDTO;
-import eu.trustdemocracy.proposals.core.models.response.CommentResponseDTO;
-import eu.trustdemocracy.proposals.core.models.response.ProposalResponseDTO;
+import eu.trustdemocracy.proposals.core.interactors.proposal.CreateProposal;
+import eu.trustdemocracy.proposals.core.interactors.proposal.DeleteProposal;
+import eu.trustdemocracy.proposals.core.interactors.proposal.GetProposal;
+import eu.trustdemocracy.proposals.core.interactors.proposal.PublishProposal;
+import eu.trustdemocracy.proposals.core.interactors.proposal.UnpublishProposal;
 import eu.trustdemocracy.proposals.gateways.CommentDAO;
 import eu.trustdemocracy.proposals.gateways.ProposalDAO;
 import eu.trustdemocracy.proposals.gateways.mysql.MySqlCommentDAO;
@@ -24,38 +26,58 @@ public class FakeInteractorFactory implements InteractorFactory {
   private Connection connection;
 
   @Override
-  public Interactor<ProposalRequestDTO, ProposalResponseDTO> createProposalInteractor(
-      Class<? extends Interactor<ProposalRequestDTO, ProposalResponseDTO>> concreteClass) {
-    try {
-      val constructor = concreteClass.getConstructor(ProposalDAO.class);
-      val proposalDAO = new MySqlProposalDAO(getConnection());
-      return constructor.newInstance(proposalDAO);
-    } catch (ReflectiveOperationException e) {
-      throw new RuntimeException(e);
-    }
+  public CreateProposal getCreateProposal() {
+    return new CreateProposal(getProposalDAO());
   }
 
   @Override
-  public Interactor<CommentRequestDTO, CommentResponseDTO> createCommentInteractor(
-      Class<? extends Interactor<CommentRequestDTO, CommentResponseDTO>> concreteClass) {
-    try {
-      val constructor = concreteClass.getConstructor(CommentDAO.class);
-      val commentDAO = new MySqlCommentDAO(getConnection());
-      return constructor.newInstance(commentDAO);
-    } catch (ReflectiveOperationException e) {
-      throw new RuntimeException(e);
-    }
+  public DeleteProposal getDeleteProposal() {
+    return new DeleteProposal(getProposalDAO());
   }
 
   @Override
-  public GetComments createGetCommentsInteractor() {
-    return new GetComments(new MySqlCommentDAO(getConnection()), new MySqlProposalDAO(getConnection()));
+  public GetProposal getGetProposal() {
+    return new GetProposal(getProposalDAO());
   }
 
   @Override
-  public VoteComment createVoteCommentInteractor() {
-    return new VoteComment(new MySqlCommentDAO(getConnection()));
+  public PublishProposal getPublishProposal() {
+    return new PublishProposal(getProposalDAO());
   }
+
+  @Override
+  public UnpublishProposal getUnpublishProposal() {
+    return new UnpublishProposal(getProposalDAO());
+  }
+
+  @Override
+  public CreateComment getCreateComment() {
+    return new CreateComment(getCommentDAO(), getProposalDAO());
+  }
+
+  @Override
+  public DeleteComment getDeleteComment() {
+    return new DeleteComment(getCommentDAO());
+  }
+
+  @Override
+  public GetComments getGetComments() {
+    return new GetComments(getCommentDAO(), getProposalDAO());
+  }
+
+  @Override
+  public VoteComment getVoteComment() {
+    return new VoteComment(getCommentDAO());
+  }
+
+  private ProposalDAO getProposalDAO() {
+    return new MySqlProposalDAO(getConnection());
+  }
+
+  private CommentDAO getCommentDAO() {
+    return new MySqlCommentDAO(getConnection());
+  }
+
 
   private Connection getConnection() {
     if (connection == null) {
