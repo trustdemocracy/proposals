@@ -11,7 +11,7 @@ import eu.trustdemocracy.proposals.core.interactors.exceptions.ResourceNotFoundE
 import eu.trustdemocracy.proposals.core.interactors.proposal.CreateProposal;
 import eu.trustdemocracy.proposals.core.interactors.proposal.PublishProposal;
 import eu.trustdemocracy.proposals.core.interactors.util.TokenUtils;
-import eu.trustdemocracy.proposals.core.models.request.CommentRequestDTO;
+import eu.trustdemocracy.proposals.core.models.FakeModelsFactory;
 import eu.trustdemocracy.proposals.core.models.request.CommentVoteRequestDTO;
 import eu.trustdemocracy.proposals.core.models.request.ProposalRequestDTO;
 import eu.trustdemocracy.proposals.core.models.response.CommentResponseDTO;
@@ -41,22 +41,13 @@ public class VoteCommentTest {
 
     val proposalAuthorToken = TokenUtils.createToken(UUID.randomUUID(), lorem.getEmail());
     val createdProposal = new CreateProposal(proposalDAO)
-        .execute(new ProposalRequestDTO()
-            .setAuthorToken(proposalAuthorToken)
-            .setTitle(lorem.getTitle(5, 30))
-            .setBrief(lorem.getParagraphs(1, 1))
-            .setSource(lorem.getUrl())
-            .setMotivation(lorem.getParagraphs(1, 5))
-            .setMeasures(lorem.getParagraphs(1, 5)));
+        .execute(FakeModelsFactory.getRandomProposal(proposalAuthorToken));
+
     new PublishProposal(proposalDAO).execute(new ProposalRequestDTO()
         .setId(createdProposal.getId())
         .setAuthorToken(proposalAuthorToken));
 
-    val inputComment = new CommentRequestDTO()
-        .setAuthorToken(TokenUtils.createToken(UUID.randomUUID(), lorem.getEmail()))
-        .setProposalId(createdProposal.getId())
-        .setContent(lorem.getParagraphs(1, 2));
-
+    val inputComment = FakeModelsFactory.getRandomComment(createdProposal.getId());
 
     responseComment = new CreateComment(commentDAO, proposalDAO).execute(inputComment);
   }

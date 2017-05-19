@@ -1,10 +1,8 @@
 package eu.trustdemocracy.proposals.endpoints;
 
-import com.thedeanda.lorem.Lorem;
-import com.thedeanda.lorem.LoremIpsum;
 import eu.trustdemocracy.proposals.core.entities.CommentVoteOption;
 import eu.trustdemocracy.proposals.core.interactors.util.TokenUtils;
-import eu.trustdemocracy.proposals.core.models.request.CommentRequestDTO;
+import eu.trustdemocracy.proposals.core.models.FakeModelsFactory;
 import eu.trustdemocracy.proposals.core.models.request.CommentVoteRequestDTO;
 import eu.trustdemocracy.proposals.core.models.response.CommentResponseDTO;
 import io.vertx.core.json.Json;
@@ -18,13 +16,11 @@ import org.junit.runner.RunWith;
 @RunWith(VertxUnitRunner.class)
 public class CommentControllerTest extends ControllerTest {
 
-  private Lorem lorem = LoremIpsum.getInstance();
-  private String username = lorem.getEmail();
 
   @Test
   public void createComment(TestContext context) {
     val async = context.async();
-    val inputComment = createRandomComment();
+    val inputComment = FakeModelsFactory.getRandomComment();
 
     val single = client.post(port, HOST, "/proposals/" + inputComment.getProposalId() + "/comments")
         .rxSendJson(inputComment);
@@ -40,7 +36,7 @@ public class CommentControllerTest extends ControllerTest {
       context.assertEquals(inputComment.getProposalId(), responseComment.getProposalId());
       context.assertEquals(inputComment.getRootCommentId(), responseComment.getRootCommentId());
       context.assertTrue(currentTime < responseComment.getTimestamp());
-      context.assertEquals(username, responseComment.getAuthorUsername());
+      context.assertNotNull(responseComment.getAuthorUsername());
       context.assertNotNull(responseComment.getId());
 
       async.complete();
@@ -53,7 +49,7 @@ public class CommentControllerTest extends ControllerTest {
   @Test
   public void createAndDelete(TestContext context) {
     val async = context.async();
-    val inputComment = createRandomComment();
+    val inputComment = FakeModelsFactory.getRandomComment();
 
     val single = client.post(port, HOST, "/proposals/" + inputComment.getProposalId() + "/comments")
         .rxSendJson(inputComment);
@@ -111,8 +107,10 @@ public class CommentControllerTest extends ControllerTest {
   public void voteComment(TestContext context) {
     val async = context.async(CommentVoteOption.values().length);
 
+
+
     for (val option : CommentVoteOption.values()) {
-      val inputComment = createRandomComment();
+      val inputComment = FakeModelsFactory.getRandomComment();
 
       val single = client
           .post(port, HOST, "/proposals/" + inputComment.getProposalId() + "/comments")
@@ -145,7 +143,7 @@ public class CommentControllerTest extends ControllerTest {
 
                     for (val commentOption : CommentVoteOption.values()) {
                       val count = commentOption == option ? 1 : 0;
-                      context.assertEquals(new Integer(count), comment.getVotes().get(commentOption));
+                      context.assertEquals(count, comment.getVotes().get(commentOption));
                     }
 
                     async.countDown();
@@ -162,14 +160,6 @@ public class CommentControllerTest extends ControllerTest {
         async.complete();
       });
     }
-  }
-
-  private CommentRequestDTO createRandomComment() {
-    return new CommentRequestDTO()
-        .setAuthorToken(TokenUtils.createToken(UUID.randomUUID(), username))
-        .setProposalId(UUID.randomUUID())
-        .setRootCommentId(new UUID(0L, 0L))
-        .setContent(lorem.getParagraphs(1, 2));
   }
 
 }

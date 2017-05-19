@@ -10,6 +10,7 @@ import eu.trustdemocracy.proposals.core.interactors.exceptions.InvalidTokenExcep
 import eu.trustdemocracy.proposals.core.interactors.exceptions.NotAllowedActionException;
 import eu.trustdemocracy.proposals.core.interactors.exceptions.ResourceNotFoundException;
 import eu.trustdemocracy.proposals.core.interactors.util.TokenUtils;
+import eu.trustdemocracy.proposals.core.models.FakeModelsFactory;
 import eu.trustdemocracy.proposals.core.models.request.ProposalRequestDTO;
 import eu.trustdemocracy.proposals.core.models.response.ProposalResponseDTO;
 import eu.trustdemocracy.proposals.gateways.ProposalDAO;
@@ -45,13 +46,8 @@ public class UnpublishProposalTest {
     val publishProposal = new PublishProposal(proposalDAO);
 
     for (int i = 0; i < 10; i++) {
-      val inputProposal = new ProposalRequestDTO()
-          .setAuthorToken(TokenUtils.createToken(authorId, authorUsername))
-          .setTitle(lorem.getTitle(5, 30))
-          .setBrief(lorem.getParagraphs(1, 1))
-          .setSource(lorem.getUrl())
-          .setMotivation(lorem.getParagraphs(1, 5))
-          .setMeasures(lorem.getParagraphs(1, 5));
+      val inputProposal = FakeModelsFactory
+          .getRandomProposal(TokenUtils.createToken(authorId, authorUsername));
 
       val createdProposal = createProposal.execute(inputProposal);
       inputProposal.setId(createdProposal.getId());

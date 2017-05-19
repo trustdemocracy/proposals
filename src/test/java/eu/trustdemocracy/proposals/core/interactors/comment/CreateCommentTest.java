@@ -10,6 +10,7 @@ import eu.trustdemocracy.proposals.core.interactors.exceptions.ResourceNotFoundE
 import eu.trustdemocracy.proposals.core.interactors.proposal.CreateProposal;
 import eu.trustdemocracy.proposals.core.interactors.proposal.PublishProposal;
 import eu.trustdemocracy.proposals.core.interactors.util.TokenUtils;
+import eu.trustdemocracy.proposals.core.models.FakeModelsFactory;
 import eu.trustdemocracy.proposals.core.models.request.CommentRequestDTO;
 import eu.trustdemocracy.proposals.core.models.request.ProposalRequestDTO;
 import eu.trustdemocracy.proposals.core.models.response.CommentResponseDTO;
@@ -32,7 +33,6 @@ public class CreateCommentTest {
   private CommentDAO commentDAO;
   private ProposalDAO proposalDAO;
 
-  private String authorUsername;
   private String proposalAuthorToken;
   private ProposalResponseDTO createdProposal;
 
@@ -47,23 +47,12 @@ public class CreateCommentTest {
 
     val lorem = LoremIpsum.getInstance();
 
-    authorUsername = lorem.getEmail();
-
-    proposalAuthorToken = TokenUtils.createToken(UUID.randomUUID(), authorUsername);
+    proposalAuthorToken = TokenUtils.createToken(UUID.randomUUID(), lorem.getEmail());
     createdProposal = new CreateProposal(proposalDAO)
-        .execute(new ProposalRequestDTO()
-            .setAuthorToken(proposalAuthorToken)
-            .setTitle(lorem.getTitle(5, 30))
-            .setBrief(lorem.getParagraphs(1, 1))
-            .setSource(lorem.getUrl())
-            .setMotivation(lorem.getParagraphs(1, 5))
-            .setMeasures(lorem.getParagraphs(1, 5)));
+        .execute(FakeModelsFactory.getRandomProposal(proposalAuthorToken));
 
     for (int i = 0; i < 10; i++) {
-      inputComments.add(new CommentRequestDTO()
-          .setAuthorToken(TokenUtils.createToken(UUID.randomUUID(), authorUsername))
-          .setProposalId(createdProposal.getId())
-          .setContent(lorem.getParagraphs(1, 2)));
+      inputComments.add(FakeModelsFactory.getRandomComment(createdProposal.getId()));
     }
   }
 
@@ -99,12 +88,14 @@ public class CreateCommentTest {
         .setId(createdProposal.getId())
         .setAuthorToken(proposalAuthorToken));
 
-    val inputComment = inputComments.get(0);
+    val username = "username";
+    val inputComment = inputComments.get(0)
+        .setAuthorToken(TokenUtils.createToken(UUID.randomUUID(), username));
     val timestamp = System.currentTimeMillis();
     CommentResponseDTO responseComment = new CreateComment(commentDAO, proposalDAO)
         .execute(inputComment);
 
-    assertEquals(authorUsername, responseComment.getAuthorUsername());
+    assertEquals(username, responseComment.getAuthorUsername());
     assertEquals(inputComment.getProposalId(), responseComment.getProposalId());
     assertEquals(inputComment.getContent(), responseComment.getContent());
     assertTrue(timestamp <= responseComment.getTimestamp());
