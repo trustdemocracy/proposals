@@ -50,6 +50,12 @@ public abstract class Controller {
     serveJsonResponse(context, 400, Json.encodePrettily(json));
   }
 
+  protected void serveNotFound(RoutingContext context) {
+    val json = new JsonObject()
+        .put("message", APIMessages.NOT_FOUND);
+    serveJsonResponse(context, 404, Json.encodePrettily(json));
+  }
+
   protected String getAuthorizationToken(HttpServerRequest request) {
     val header = request.getHeader(HttpHeaders.AUTHORIZATION);
 

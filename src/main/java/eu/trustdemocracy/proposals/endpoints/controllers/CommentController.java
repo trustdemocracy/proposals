@@ -1,5 +1,7 @@
 package eu.trustdemocracy.proposals.endpoints.controllers;
 
+import eu.trustdemocracy.proposals.core.interactors.exceptions.InvalidTokenException;
+import eu.trustdemocracy.proposals.core.interactors.exceptions.ResourceNotFoundException;
 import eu.trustdemocracy.proposals.core.models.request.CommentRequestDTO;
 import eu.trustdemocracy.proposals.core.models.request.CommentVoteRequestDTO;
 import eu.trustdemocracy.proposals.core.models.request.ProposalRequestDTO;
@@ -39,9 +41,15 @@ public class CommentController extends Controller {
     requestComment.setAuthorToken(authorToken);
 
     val interactor = getInteractorFactory().getCreateComment();
-    val comment = interactor.execute(requestComment);
 
-    serveJsonResponse(routingContext, 201, Json.encodePrettily(comment));
+    try {
+      val comment = interactor.execute(requestComment);
+      serveJsonResponse(routingContext, 201, Json.encodePrettily(comment));
+    } catch (InvalidTokenException e) {
+      serveBadCredentials(routingContext);
+    } catch (ResourceNotFoundException e) {
+      serveNotFound(routingContext);
+    }
   }
 
   private void getComments(RoutingContext routingContext) {
@@ -59,9 +67,14 @@ public class CommentController extends Controller {
         .setAuthorToken(authorToken);
 
     val interactor = getInteractorFactory().getGetComments();
-    val commentList = interactor.execute(requestProposal);
-
-    serveJsonResponse(routingContext, 200, Json.encodePrettily(commentList));
+    try {
+      val commentList = interactor.execute(requestProposal);
+      serveJsonResponse(routingContext, 200, Json.encodePrettily(commentList));
+    } catch (InvalidTokenException e) {
+      serveBadCredentials(routingContext);
+    } catch (ResourceNotFoundException e) {
+      serveNotFound(routingContext);
+    }
   }
 
   private void deleteComment(RoutingContext routingContext) {
@@ -76,15 +89,21 @@ public class CommentController extends Controller {
     }
 
     val authorToken = getAuthorizationToken(routingContext.request());
-    val commentRequest = new CommentRequestDTO()
+    val requestComment = new CommentRequestDTO()
         .setId(commentId)
         .setProposalId(proposalId)
         .setAuthorToken(authorToken);
 
     val interactor = getInteractorFactory().getDeleteComment();
-    val comment = interactor.execute(commentRequest);
 
-    serveJsonResponse(routingContext, 200, Json.encodePrettily(comment));
+    try {
+      val comment = interactor.execute(requestComment);
+      serveJsonResponse(routingContext, 200, Json.encodePrettily(comment));
+    } catch (InvalidTokenException e) {
+      serveBadCredentials(routingContext);
+    } catch (ResourceNotFoundException e) {
+      serveNotFound(routingContext);
+    }
   }
 
   private void voteComment(RoutingContext routingContext) {
@@ -103,8 +122,13 @@ public class CommentController extends Controller {
     requestVote.setVoterToken(authorToken);
 
     val interactor = getInteractorFactory().getVoteComment();
-    val comment = interactor.execute(requestVote);
-
-    serveJsonResponse(routingContext, 200, Json.encodePrettily(comment));
+    try {
+      val comment = interactor.execute(requestVote);
+      serveJsonResponse(routingContext, 200, Json.encodePrettily(comment));
+    } catch (InvalidTokenException e) {
+      serveBadCredentials(routingContext);
+    } catch (ResourceNotFoundException e) {
+      serveNotFound(routingContext);
+    }
   }
 }

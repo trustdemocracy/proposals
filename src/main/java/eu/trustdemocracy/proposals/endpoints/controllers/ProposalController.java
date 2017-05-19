@@ -1,5 +1,7 @@
 package eu.trustdemocracy.proposals.endpoints.controllers;
 
+import eu.trustdemocracy.proposals.core.interactors.exceptions.InvalidTokenException;
+import eu.trustdemocracy.proposals.core.interactors.exceptions.ResourceNotFoundException;
 import eu.trustdemocracy.proposals.core.models.request.ProposalRequestDTO;
 import eu.trustdemocracy.proposals.endpoints.App;
 import io.vertx.core.json.Json;
@@ -28,7 +30,8 @@ public class ProposalController extends Controller {
       if (routingContext.getBodyAsJson().isEmpty()) {
         throw new Exception();
       }
-      requestProposal = Json.decodeValue(routingContext.getBodyAsString(), ProposalRequestDTO.class);
+      requestProposal = Json
+          .decodeValue(routingContext.getBodyAsString(), ProposalRequestDTO.class);
     } catch (Exception e) {
       serveBadRequest(routingContext);
       return;
@@ -37,9 +40,13 @@ public class ProposalController extends Controller {
     requestProposal.setAuthorToken(authorToken);
 
     val interactor = getInteractorFactory().getCreateProposal();
-    val proposal = interactor.execute(requestProposal);
 
-    serveJsonResponse(routingContext, 201, Json.encodePrettily(proposal));
+    try {
+      val proposal = interactor.execute(requestProposal);
+      serveJsonResponse(routingContext, 201, Json.encodePrettily(proposal));
+    } catch (InvalidTokenException e) {
+      serveBadCredentials(routingContext);
+    }
   }
 
   private void getProposal(RoutingContext routingContext) {
@@ -57,15 +64,14 @@ public class ProposalController extends Controller {
         .setAuthorToken(authorToken);
 
     val interactor = getInteractorFactory().getGetProposal();
-    val proposal = interactor.execute(requestProposal);
 
-    if (proposal == null) {
-      routingContext.response()
-          .putHeader("content-type", "application/json")
-          .setStatusCode(404)
-          .end();
-    } else {
+    try {
+      val proposal = interactor.execute(requestProposal);
       serveJsonResponse(routingContext, 200, Json.encodePrettily(proposal));
+    } catch (InvalidTokenException e) {
+      serveBadCredentials(routingContext);
+    } catch (ResourceNotFoundException e) {
+      serveNotFound(routingContext);
     }
   }
 
@@ -82,9 +88,15 @@ public class ProposalController extends Controller {
         .setId(id)
         .setAuthorToken(authorToken);
     val interactor = getInteractorFactory().getPublishProposal();
-    val proposal = interactor.execute(requestProposal);
 
-    serveJsonResponse(routingContext, 200, Json.encodePrettily(proposal));
+    try {
+      val proposal = interactor.execute(requestProposal);
+      serveJsonResponse(routingContext, 200, Json.encodePrettily(proposal));
+    } catch (InvalidTokenException e) {
+      serveBadCredentials(routingContext);
+    } catch (ResourceNotFoundException e) {
+      serveNotFound(routingContext);
+    }
   }
 
   private void unpublishProposal(RoutingContext routingContext) {
@@ -102,9 +114,15 @@ public class ProposalController extends Controller {
         .setAuthorToken(authorToken);
 
     val interactor = getInteractorFactory().getUnpublishProposal();
-    val proposal = interactor.execute(requestProposal);
 
-    serveJsonResponse(routingContext, 200, Json.encodePrettily(proposal));
+    try {
+      val proposal = interactor.execute(requestProposal);
+      serveJsonResponse(routingContext, 200, Json.encodePrettily(proposal));
+    } catch (InvalidTokenException e) {
+      serveBadCredentials(routingContext);
+    } catch (ResourceNotFoundException e) {
+      serveNotFound(routingContext);
+    }
   }
 
   private void deleteProposal(RoutingContext routingContext) {
@@ -122,9 +140,15 @@ public class ProposalController extends Controller {
         .setAuthorToken(authorToken);
 
     val interactor = getInteractorFactory().getDeleteProposal();
-    val proposal = interactor.execute(requestProposal);
 
-    serveJsonResponse(routingContext, 200, Json.encodePrettily(proposal));
+    try {
+      val proposal = interactor.execute(requestProposal);
+      serveJsonResponse(routingContext, 200, Json.encodePrettily(proposal));
+    } catch (InvalidTokenException e) {
+      serveBadCredentials(routingContext);
+    } catch (ResourceNotFoundException e) {
+      serveNotFound(routingContext);
+    }
   }
 
 
