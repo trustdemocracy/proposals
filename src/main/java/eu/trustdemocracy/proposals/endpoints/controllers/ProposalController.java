@@ -1,10 +1,7 @@
 package eu.trustdemocracy.proposals.endpoints.controllers;
 
-import eu.trustdemocracy.proposals.core.interactors.proposal.CreateProposal;
-import eu.trustdemocracy.proposals.core.interactors.proposal.DeleteProposal;
-import eu.trustdemocracy.proposals.core.interactors.proposal.GetProposal;
-import eu.trustdemocracy.proposals.core.interactors.proposal.PublishProposal;
-import eu.trustdemocracy.proposals.core.interactors.proposal.UnpublishProposal;
+import eu.trustdemocracy.proposals.core.interactors.exceptions.InvalidTokenException;
+import eu.trustdemocracy.proposals.core.interactors.exceptions.ResourceNotFoundException;
 import eu.trustdemocracy.proposals.core.models.request.ProposalRequestDTO;
 import eu.trustdemocracy.proposals.endpoints.App;
 import io.vertx.core.json.Json;
@@ -28,70 +25,130 @@ public class ProposalController extends Controller {
   }
 
   private void createProposal(RoutingContext routingContext) {
-    val requestProposal = Json
-        .decodeValue(routingContext.getBodyAsString(), ProposalRequestDTO.class);
-    val interactor = getInteractorFactory().createProposalInteractor(CreateProposal.class);
-    val proposal = interactor.execute(requestProposal);
+    ProposalRequestDTO requestProposal;
+    try {
+      if (routingContext.getBodyAsJson().isEmpty()) {
+        throw new Exception();
+      }
+      requestProposal = Json
+          .decodeValue(routingContext.getBodyAsString(), ProposalRequestDTO.class);
+    } catch (Exception e) {
+      serveBadRequest(routingContext);
+      return;
+    }
+    val authorToken = getAuthorizationToken(routingContext.request());
+    requestProposal.setAuthorToken(authorToken);
 
-    routingContext.response()
-        .putHeader("content-type", "application/json")
-        .setStatusCode(201)
-        .end(Json.encodePrettily(proposal));
+    val interactor = getInteractorFactory().getCreateProposal();
+
+    try {
+      val proposal = interactor.execute(requestProposal);
+      serveJsonResponse(routingContext, 201, Json.encodePrettily(proposal));
+    } catch (InvalidTokenException e) {
+      serveBadCredentials(routingContext);
+    }
   }
 
   private void getProposal(RoutingContext routingContext) {
-    val id = UUID.fromString(routingContext.pathParam("id"));
-    val requestProposal = new ProposalRequestDTO().setId(id);
-    val interactor = getInteractorFactory().createProposalInteractor(GetProposal.class);
-    val proposal = interactor.execute(requestProposal);
+    UUID id;
+    try {
+      id = UUID.fromString(routingContext.pathParam("id"));
+    } catch (Exception e) {
+      serveBadRequest(routingContext);
+      return;
+    }
 
-    if (proposal == null) {
-      routingContext.response()
-          .putHeader("content-type", "application/json")
-          .setStatusCode(404)
-          .end();
-    } else {
-      routingContext.response()
-          .putHeader("content-type", "application/json")
-          .setStatusCode(200)
-          .end(Json.encodePrettily(proposal));
+    val authorToken = getAuthorizationToken(routingContext.request());
+    val requestProposal = new ProposalRequestDTO()
+        .setId(id)
+        .setAuthorToken(authorToken);
+
+    val interactor = getInteractorFactory().getGetProposal();
+
+    try {
+      val proposal = interactor.execute(requestProposal);
+      serveJsonResponse(routingContext, 200, Json.encodePrettily(proposal));
+    } catch (InvalidTokenException e) {
+      serveBadCredentials(routingContext);
+    } catch (ResourceNotFoundException e) {
+      serveNotFound(routingContext);
     }
   }
 
   private void publishProposal(RoutingContext routingContext) {
-    val id = UUID.fromString(routingContext.pathParam("id"));
-    val requestProposal = new ProposalRequestDTO().setId(id);
-    val interactor = getInteractorFactory().createProposalInteractor(PublishProposal.class);
-    val proposal = interactor.execute(requestProposal);
+    UUID id;
+    try {
+      id = UUID.fromString(routingContext.pathParam("id"));
+    } catch (Exception e) {
+      serveBadRequest(routingContext);
+      return;
+    }
+    val authorToken = getAuthorizationToken(routingContext.request());
+    val requestProposal = new ProposalRequestDTO()
+        .setId(id)
+        .setAuthorToken(authorToken);
+    val interactor = getInteractorFactory().getPublishProposal();
 
-    routingContext.response()
-        .putHeader("content-type", "application/json")
-        .setStatusCode(200)
-        .end(Json.encodePrettily(proposal));
+    try {
+      val proposal = interactor.execute(requestProposal);
+      serveJsonResponse(routingContext, 200, Json.encodePrettily(proposal));
+    } catch (InvalidTokenException e) {
+      serveBadCredentials(routingContext);
+    } catch (ResourceNotFoundException e) {
+      serveNotFound(routingContext);
+    }
   }
 
   private void unpublishProposal(RoutingContext routingContext) {
-    val id = UUID.fromString(routingContext.pathParam("id"));
-    val requestProposal = new ProposalRequestDTO().setId(id);
-    val interactor = getInteractorFactory().createProposalInteractor(UnpublishProposal.class);
-    val proposal = interactor.execute(requestProposal);
+    UUID id;
+    try {
+      id = UUID.fromString(routingContext.pathParam("id"));
+    } catch (Exception e) {
+      serveBadRequest(routingContext);
+      return;
+    }
 
-    routingContext.response()
-        .putHeader("content-type", "application/json")
-        .setStatusCode(200)
-        .end(Json.encodePrettily(proposal));
+    val authorToken = getAuthorizationToken(routingContext.request());
+    val requestProposal = new ProposalRequestDTO()
+        .setId(id)
+        .setAuthorToken(authorToken);
+
+    val interactor = getInteractorFactory().getUnpublishProposal();
+
+    try {
+      val proposal = interactor.execute(requestProposal);
+      serveJsonResponse(routingContext, 200, Json.encodePrettily(proposal));
+    } catch (InvalidTokenException e) {
+      serveBadCredentials(routingContext);
+    } catch (ResourceNotFoundException e) {
+      serveNotFound(routingContext);
+    }
   }
 
   private void deleteProposal(RoutingContext routingContext) {
-    val id = UUID.fromString(routingContext.pathParam("id"));
-    val requestProposal = new ProposalRequestDTO().setId(id);
-    val interactor = getInteractorFactory().createProposalInteractor(DeleteProposal.class);
-    val proposal = interactor.execute(requestProposal);
+    UUID id;
+    try {
+      id = UUID.fromString(routingContext.pathParam("id"));
+    } catch (Exception e) {
+      serveBadRequest(routingContext);
+      return;
+    }
 
-    routingContext.response()
-        .putHeader("content-type", "application/json")
-        .setStatusCode(200)
-        .end(Json.encodePrettily(proposal));
+    val authorToken = getAuthorizationToken(routingContext.request());
+    val requestProposal = new ProposalRequestDTO()
+        .setId(id)
+        .setAuthorToken(authorToken);
+
+    val interactor = getInteractorFactory().getDeleteProposal();
+
+    try {
+      val proposal = interactor.execute(requestProposal);
+      serveJsonResponse(routingContext, 200, Json.encodePrettily(proposal));
+    } catch (InvalidTokenException e) {
+      serveBadCredentials(routingContext);
+    } catch (ResourceNotFoundException e) {
+      serveNotFound(routingContext);
+    }
   }
 
 

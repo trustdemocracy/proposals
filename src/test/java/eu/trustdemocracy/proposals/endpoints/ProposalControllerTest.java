@@ -1,16 +1,11 @@
 package eu.trustdemocracy.proposals.endpoints;
 
-import com.thedeanda.lorem.Lorem;
-import com.thedeanda.lorem.LoremIpsum;
 import eu.trustdemocracy.proposals.core.entities.ProposalStatus;
-import eu.trustdemocracy.proposals.core.interactors.util.TokenUtils;
-import eu.trustdemocracy.proposals.core.models.request.ProposalRequestDTO;
+import eu.trustdemocracy.proposals.core.models.FakeModelsFactory;
 import eu.trustdemocracy.proposals.core.models.response.ProposalResponseDTO;
-import eu.trustdemocracy.proposals.gateways.mysql.MySqlProposalDAO;
 import io.vertx.core.json.Json;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import java.util.UUID;
 import lombok.val;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -18,15 +13,13 @@ import org.junit.runner.RunWith;
 @RunWith(VertxUnitRunner.class)
 public class ProposalControllerTest extends ControllerTest {
 
-  private Lorem lorem = LoremIpsum.getInstance();
-  private String currentUsername;
-
   @Test
   public void createProposal(TestContext context) {
     val async = context.async();
-    val inputProposal = createRandomProposal();
+    val inputProposal = FakeModelsFactory.getRandomProposal();
 
     val single = client.post(port, HOST, "/proposals")
+        .putHeader("Authorization", "Bearer " + inputProposal.getAuthorToken())
         .rxSendJson(inputProposal);
 
     single.subscribe(response -> {
@@ -35,7 +28,7 @@ public class ProposalControllerTest extends ControllerTest {
 
       val responseProposal = Json
           .decodeValue(response.body().toString(), ProposalResponseDTO.class);
-      context.assertEquals(currentUsername, responseProposal.getAuthorUsername());
+      context.assertNotNull(responseProposal.getAuthorUsername());
       context.assertEquals(inputProposal.getTitle(), responseProposal.getTitle());
       context.assertEquals(inputProposal.getBrief(), responseProposal.getBrief());
       context.assertEquals(inputProposal.getSource(), responseProposal.getSource());
@@ -54,15 +47,17 @@ public class ProposalControllerTest extends ControllerTest {
   @Test
   public void createAndFindProposal(TestContext context) {
     val async = context.async();
-    val inputProposal = createRandomProposal();
+    val inputProposal = FakeModelsFactory.getRandomProposal();
 
     val single = client.post(port, HOST, "/proposals")
+        .putHeader("Authorization", "Bearer " + inputProposal.getAuthorToken())
         .rxSendJson(inputProposal);
 
     single.subscribe(response -> {
       val responseProposal = Json
           .decodeValue(response.body().toString(), ProposalResponseDTO.class);
       client.get(port, HOST, "/proposals/" + responseProposal.getId())
+          .putHeader("Authorization", "Bearer " + inputProposal.getAuthorToken())
           .rxSend()
 
           .subscribe(getResponse -> {
@@ -73,7 +68,7 @@ public class ProposalControllerTest extends ControllerTest {
                 .decodeValue(getResponse.body().toString(), ProposalResponseDTO.class);
 
             context.assertEquals(responseProposal.getId(), foundProposal.getId());
-            context.assertEquals(currentUsername, foundProposal.getAuthorUsername());
+            context.assertNotNull(foundProposal.getAuthorUsername());
             context.assertEquals(inputProposal.getTitle(), foundProposal.getTitle());
             context.assertEquals(inputProposal.getBrief(), foundProposal.getBrief());
             context.assertEquals(inputProposal.getSource(), foundProposal.getSource());
@@ -96,20 +91,23 @@ public class ProposalControllerTest extends ControllerTest {
   @Test
   public void createAndPublishProposal(TestContext context) {
     val async = context.async();
-    val inputProposal = createRandomProposal();
+    val inputProposal = FakeModelsFactory.getRandomProposal();
 
     val single = client.post(port, HOST, "/proposals")
+        .putHeader("Authorization", "Bearer " + inputProposal.getAuthorToken())
         .rxSendJson(inputProposal);
 
     single.subscribe(response -> {
       val responseProposal = Json
           .decodeValue(response.body().toString(), ProposalResponseDTO.class);
       client.get(port, HOST, "/proposals/" + responseProposal.getId() + "/publish")
+          .putHeader("Authorization", "Bearer " + inputProposal.getAuthorToken())
           .rxSend()
           .subscribe(publishResponse -> {
             context.assertEquals(publishResponse.statusCode(), 200);
 
             client.get(port, HOST, "/proposals/" + responseProposal.getId())
+                .putHeader("Authorization", "Bearer " + inputProposal.getAuthorToken())
                 .rxSend()
 
                 .subscribe(getResponse -> {
@@ -117,7 +115,7 @@ public class ProposalControllerTest extends ControllerTest {
                       .decodeValue(getResponse.body().toString(), ProposalResponseDTO.class);
 
                   context.assertEquals(responseProposal.getId(), updatedProposal.getId());
-                  context.assertEquals(currentUsername, updatedProposal.getAuthorUsername());
+                  context.assertNotNull(updatedProposal.getAuthorUsername());
                   context.assertEquals(inputProposal.getTitle(), updatedProposal.getTitle());
                   context.assertEquals(inputProposal.getBrief(), updatedProposal.getBrief());
                   context.assertEquals(inputProposal.getSource(), updatedProposal.getSource());
@@ -145,24 +143,28 @@ public class ProposalControllerTest extends ControllerTest {
   @Test
   public void createPublishAndUnpublishProposal(TestContext context) {
     val async = context.async();
-    val inputProposal = createRandomProposal();
+    val inputProposal = FakeModelsFactory.getRandomProposal();
 
     val single = client.post(port, HOST, "/proposals")
+        .putHeader("Authorization", "Bearer " + inputProposal.getAuthorToken())
         .rxSendJson(inputProposal);
 
     single.subscribe(response -> {
       val responseProposal = Json
           .decodeValue(response.body().toString(), ProposalResponseDTO.class);
       client.get(port, HOST, "/proposals/" + responseProposal.getId() + "/publish")
+          .putHeader("Authorization", "Bearer " + inputProposal.getAuthorToken())
           .rxSend()
           .subscribe(publishResponse -> {
             context.assertEquals(publishResponse.statusCode(), 200);
 
             client.get(port, HOST, "/proposals/" + responseProposal.getId() + "/unpublish")
+                .putHeader("Authorization", "Bearer " + inputProposal.getAuthorToken())
                 .rxSend()
                 .subscribe(unpublishResponse -> {
                   context.assertEquals(unpublishResponse.statusCode(), 200);
                   client.get(port, HOST, "/proposals/" + responseProposal.getId())
+                      .putHeader("Authorization", "Bearer " + inputProposal.getAuthorToken())
                       .rxSend()
 
                       .subscribe(getResponse -> {
@@ -170,7 +172,7 @@ public class ProposalControllerTest extends ControllerTest {
                             .decodeValue(getResponse.body().toString(), ProposalResponseDTO.class);
 
                         context.assertEquals(responseProposal.getId(), updatedProposal.getId());
-                        context.assertEquals(currentUsername, updatedProposal.getAuthorUsername());
+                        context.assertNotNull(updatedProposal.getAuthorUsername());
                         context.assertEquals(inputProposal.getTitle(), updatedProposal.getTitle());
                         context.assertEquals(inputProposal.getBrief(), updatedProposal.getBrief());
                         context
@@ -206,20 +208,23 @@ public class ProposalControllerTest extends ControllerTest {
   @Test
   public void createAndDeleteProposal(TestContext context) {
     val async = context.async();
-    val inputProposal = createRandomProposal();
+    val inputProposal = FakeModelsFactory.getRandomProposal();
 
     val single = client.post(port, HOST, "/proposals")
+        .putHeader("Authorization", "Bearer " + inputProposal.getAuthorToken())
         .rxSendJson(inputProposal);
 
     single.subscribe(response -> {
       val responseProposal = Json
           .decodeValue(response.body().toString(), ProposalResponseDTO.class);
       client.delete(port, HOST, "/proposals/" + responseProposal.getId())
+          .putHeader("Authorization", "Bearer " + inputProposal.getAuthorToken())
           .rxSend()
           .subscribe(deleteResponse -> {
             context.assertEquals(deleteResponse.statusCode(), 200);
 
             client.get(port, HOST, "/proposals/" + responseProposal.getId())
+                .putHeader("Authorization", "Bearer " + inputProposal.getAuthorToken())
                 .rxSend()
 
                 .subscribe(getResponse -> {
@@ -238,29 +243,6 @@ public class ProposalControllerTest extends ControllerTest {
       context.fail(error);
       async.complete();
     });
-  }
-
-
-  private ProposalRequestDTO createRandomProposal() {
-    currentUsername = truncate(lorem.getEmail(), MySqlProposalDAO.AUTHOR_SIZE);
-    val title = truncate(lorem.getTitle(5, 30), MySqlProposalDAO.TITLE_SIZE);
-    val brief = truncate(lorem.getParagraphs(1, 1), MySqlProposalDAO.BRIEF_SIZE);
-    val source = truncate(lorem.getUrl(), MySqlProposalDAO.SOURCE_SIZE);
-    val motivation = truncate(lorem.getParagraphs(1, 5), MySqlProposalDAO.MOTIVATION_SIZE);
-    val measures = truncate(lorem.getParagraphs(1, 5), MySqlProposalDAO.MEASURES_SIZE);
-
-    val user = TokenUtils.createToken(UUID.randomUUID(), currentUsername);
-    return new ProposalRequestDTO()
-        .setAuthorToken(user)
-        .setTitle(title)
-        .setBrief(brief)
-        .setSource(source)
-        .setMotivation(motivation)
-        .setMeasures(measures);
-  }
-
-  private static String truncate(String string, int limit) {
-    return string.length() > limit ? string.substring(0, limit) : string;
   }
 
 }

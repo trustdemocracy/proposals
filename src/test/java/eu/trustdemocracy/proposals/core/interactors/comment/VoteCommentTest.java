@@ -2,14 +2,21 @@ package eu.trustdemocracy.proposals.core.interactors.comment;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.thedeanda.lorem.LoremIpsum;
 import eu.trustdemocracy.proposals.core.entities.CommentVoteOption;
+import eu.trustdemocracy.proposals.core.interactors.exceptions.InvalidTokenException;
+import eu.trustdemocracy.proposals.core.interactors.exceptions.ResourceNotFoundException;
+import eu.trustdemocracy.proposals.core.interactors.proposal.CreateProposal;
+import eu.trustdemocracy.proposals.core.interactors.proposal.PublishProposal;
 import eu.trustdemocracy.proposals.core.interactors.util.TokenUtils;
-import eu.trustdemocracy.proposals.core.models.request.CommentRequestDTO;
+import eu.trustdemocracy.proposals.core.models.FakeModelsFactory;
 import eu.trustdemocracy.proposals.core.models.request.CommentVoteRequestDTO;
+import eu.trustdemocracy.proposals.core.models.request.ProposalRequestDTO;
 import eu.trustdemocracy.proposals.core.models.response.CommentResponseDTO;
 import eu.trustdemocracy.proposals.gateways.fake.FakeCommentDAO;
+import eu.trustdemocracy.proposals.gateways.fake.FakeProposalDAO;
 import java.util.UUID;
 import lombok.val;
 import org.jose4j.lang.JoseException;
@@ -20,6 +27,7 @@ public class VoteCommentTest {
 
   private CommentResponseDTO responseComment;
   private FakeCommentDAO commentDAO;
+  private FakeProposalDAO proposalDAO;
   private LoremIpsum lorem;
 
   @BeforeEach
@@ -27,16 +35,45 @@ public class VoteCommentTest {
     TokenUtils.generateKeys();
 
     commentDAO = new FakeCommentDAO();
+    proposalDAO = new FakeProposalDAO();
 
     lorem = LoremIpsum.getInstance();
 
-    val inputComment = new CommentRequestDTO()
-        .setAuthorToken(TokenUtils.createToken(UUID.randomUUID(), lorem.getEmail()))
-        .setProposalId(UUID.randomUUID())
-        .setContent(lorem.getParagraphs(1, 2));
+    val proposalAuthorToken = TokenUtils.createToken(UUID.randomUUID(), lorem.getEmail());
+    val createdProposal = new CreateProposal(proposalDAO)
+        .execute(FakeModelsFactory.getRandomProposal(proposalAuthorToken));
 
-    responseComment = new CreateComment(commentDAO).execute(inputComment);
+    new PublishProposal(proposalDAO).execute(new ProposalRequestDTO()
+        .setId(createdProposal.getId())
+        .setAuthorToken(proposalAuthorToken));
+
+    val inputComment = FakeModelsFactory.getRandomComment(createdProposal.getId());
+
+    responseComment = new CreateComment(commentDAO, proposalDAO).execute(inputComment);
   }
+
+  @Test
+  public void deleteCommentNonTokenUser() {
+    val inputVote = new CommentVoteRequestDTO()
+        .setCommentId(responseComment.getId())
+        .setVoterToken("")
+        .setOption(CommentVoteOption.UP);
+
+    assertThrows(InvalidTokenException.class,
+        () -> new VoteComment(commentDAO).execute(inputVote));
+  }
+
+  @Test
+  public void voteNonExistingComment() {
+    val inputComment = new CommentVoteRequestDTO()
+        .setCommentId(UUID.randomUUID())
+        .setVoterToken(TokenUtils.createToken(UUID.randomUUID(), lorem.getEmail()))
+        .setOption(CommentVoteOption.UP);
+
+    assertThrows(ResourceNotFoundException.class,
+        () -> new VoteComment(commentDAO).execute(inputComment));
+  }
+
 
   @Test
   public void voteUpComment() {
@@ -51,6 +88,27 @@ public class VoteCommentTest {
     assertEquals(new Integer(1), votedComment.getVotes().get(CommentVoteOption.UP));
     assertNotNull(votedComment.getVotes().get(CommentVoteOption.DOWN));
     assertEquals(new Integer(0), votedComment.getVotes().get(CommentVoteOption.DOWN));
+  }
+
+  @Test
+  public void voteUpCommentTwice() {
+    val id = UUID.randomUUID();
+    val inputVote = new CommentVoteRequestDTO()
+        .setCommentId(responseComment.getId())
+        .setVoterToken(TokenUtils.createToken(id, lorem.getEmail()))
+        .setOption(CommentVoteOption.UP);
+
+    val votedComment = new VoteComment(commentDAO).execute(inputVote);
+
+    assertEquals(new Integer(1), votedComment.getVotes().get(CommentVoteOption.UP));
+    assertNotNull(votedComment.getVotes().get(CommentVoteOption.DOWN));
+    assertEquals(new Integer(0), votedComment.getVotes().get(CommentVoteOption.DOWN));
+
+    val sameComment = new VoteComment(commentDAO).execute(inputVote);
+
+    assertEquals(new Integer(1), sameComment.getVotes().get(CommentVoteOption.UP));
+    assertNotNull(sameComment.getVotes().get(CommentVoteOption.DOWN));
+    assertEquals(new Integer(0), sameComment.getVotes().get(CommentVoteOption.DOWN));
   }
 
   @Test

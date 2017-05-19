@@ -1,10 +1,13 @@
 package eu.trustdemocracy.proposals.core.interactors.proposal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.thedeanda.lorem.LoremIpsum;
 import eu.trustdemocracy.proposals.core.entities.ProposalStatus;
+import eu.trustdemocracy.proposals.core.interactors.exceptions.InvalidTokenException;
 import eu.trustdemocracy.proposals.core.interactors.util.TokenUtils;
+import eu.trustdemocracy.proposals.core.models.FakeModelsFactory;
 import eu.trustdemocracy.proposals.core.models.request.ProposalRequestDTO;
 import eu.trustdemocracy.proposals.core.models.response.ProposalResponseDTO;
 import eu.trustdemocracy.proposals.gateways.ProposalDAO;
@@ -38,14 +41,17 @@ public class CreateProposalTest {
     authorUsername = lorem.getEmail();
 
     for (int i = 0; i < 10; i++) {
-      inputProposals.add(new ProposalRequestDTO()
-          .setAuthorToken(TokenUtils.createToken(authorId, authorUsername))
-          .setTitle(lorem.getTitle(5, 30))
-          .setBrief(lorem.getParagraphs(1, 1))
-          .setSource(lorem.getUrl())
-          .setMotivation(lorem.getParagraphs(1, 5))
-          .setMeasures(lorem.getParagraphs(1, 5)));
+      inputProposals.add(
+          FakeModelsFactory.getRandomProposal(TokenUtils.createToken(authorId, authorUsername)));
     }
+  }
+
+  @Test
+  public void createProposalNonTokenUser() {
+    val inputProposal = inputProposals.get(0);
+    inputProposal.setAuthorToken("");
+    assertThrows(InvalidTokenException.class,
+        () -> new CreateProposal(proposalDAO).execute(inputProposal));
   }
 
   @Test

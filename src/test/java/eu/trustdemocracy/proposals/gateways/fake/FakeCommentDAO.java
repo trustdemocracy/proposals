@@ -48,9 +48,10 @@ public class FakeCommentDAO implements CommentDAO {
 
     for (val key : storedComment.getVotes().keySet()) {
       Integer currentVotes = storedComment.getVotes().get(key);
-      if (previouslyVoted == key) {
+      if (previouslyVoted != null && previouslyVoted.equals(key)) {
         currentVotes--;
-      } else if (option == key) {
+      }
+      if (option != null && option.equals(key)) {
         currentVotes++;
       }
       storedComment.getVotes().replace(key, currentVotes);
@@ -69,6 +70,11 @@ public class FakeCommentDAO implements CommentDAO {
     }
     comments.sort(Comparator.comparingLong(Comment::getTimestamp));
     return comments;
+  }
+
+  @Override
+  public Comment findById(UUID id) {
+    return comments.get(id);
   }
 
 }
