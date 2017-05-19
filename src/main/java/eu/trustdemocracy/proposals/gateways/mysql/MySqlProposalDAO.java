@@ -41,18 +41,19 @@ public class MySqlProposalDAO implements ProposalDAO {
 
     try {
       val sql = "INSERT INTO `" + TABLE + "` "
-          + "(id, author, title, brief, source, motivation, measures, status) "
-          + "VALUES(?, ?, ?, ?, ?, ?, ?, ?)";
+          + "(id, author_id, author_username, title, brief, source, motivation, measures, status) "
+          + "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)";
       val statement = conn.prepareStatement(sql);
 
       statement.setString(1, id.toString());
-      statement.setString(2, truncate(proposal.getAuthor().getUsername(), AUTHOR_SIZE));
-      statement.setString(3, truncate(proposal.getTitle(), TITLE_SIZE));
-      statement.setString(4, truncate(proposal.getBrief(), BRIEF_SIZE));
-      statement.setString(5, truncate(proposal.getSource(), SOURCE_SIZE));
-      statement.setString(6, truncate(proposal.getMotivation(), MOTIVATION_SIZE));
-      statement.setString(7, truncate(proposal.getMeasures(), MEASURES_SIZE));
-      statement.setString(8, proposal.getStatus().toString());
+      statement.setString(2, proposal.getAuthor().getId().toString());
+      statement.setString(3, truncate(proposal.getAuthor().getUsername(), AUTHOR_SIZE));
+      statement.setString(4, truncate(proposal.getTitle(), TITLE_SIZE));
+      statement.setString(5, truncate(proposal.getBrief(), BRIEF_SIZE));
+      statement.setString(6, truncate(proposal.getSource(), SOURCE_SIZE));
+      statement.setString(7, truncate(proposal.getMotivation(), MOTIVATION_SIZE));
+      statement.setString(8, truncate(proposal.getMeasures(), MEASURES_SIZE));
+      statement.setString(9, proposal.getStatus().toString());
 
       if (statement.executeUpdate() > 0) {
         return proposal;
@@ -68,7 +69,7 @@ public class MySqlProposalDAO implements ProposalDAO {
   @Override
   public Proposal findById(UUID id) {
     try {
-      val sql = "SELECT id, author, title, brief, source, motivation, measures, status "
+      val sql = "SELECT id, author_id, author_username, title, brief, source, motivation, measures, status "
           + "FROM `" + TABLE + "` WHERE id = ?";
       val statement = conn.prepareStatement(sql);
 
@@ -79,9 +80,13 @@ public class MySqlProposalDAO implements ProposalDAO {
         return null;
       }
 
+      val user = new User()
+          .setId(UUID.fromString(resultSet.getString("author_id")))
+          .setUsername(resultSet.getString("author_username"));
+
       return new Proposal()
           .setId(UUID.fromString(resultSet.getString("id")))
-          .setAuthor(new User().setUsername(resultSet.getString("author")))
+          .setAuthor(user)
           .setTitle(resultSet.getString("title"))
           .setBrief(resultSet.getString("brief"))
           .setSource(resultSet.getString("source"))

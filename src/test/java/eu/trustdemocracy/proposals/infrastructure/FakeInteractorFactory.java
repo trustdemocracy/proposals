@@ -101,7 +101,8 @@ public class FakeInteractorFactory implements InteractorFactory {
   private void buildTables(Connection connection) throws SQLException {
     val proposals = "CREATE TABLE `proposals` (" +
         "`id` VARCHAR(" + MySqlProposalDAO.ID_SIZE + ") NOT NULL, " +
-        "`author` VARCHAR(" + MySqlProposalDAO.AUTHOR_SIZE + "), " +
+        "`author_id` VARCHAR(" + MySqlProposalDAO.AUTHOR_SIZE + "), " +
+        "`author_username` VARCHAR(" + MySqlProposalDAO.AUTHOR_SIZE + "), " +
         "`title` VARCHAR(" + MySqlProposalDAO.TITLE_SIZE + "), " +
         "`brief` VARCHAR(" + MySqlProposalDAO.BRIEF_SIZE + "), " +
         "`source` VARCHAR(" + MySqlProposalDAO.SOURCE_SIZE + "), " +

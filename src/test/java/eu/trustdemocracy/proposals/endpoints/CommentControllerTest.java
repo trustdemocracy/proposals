@@ -4,28 +4,44 @@ import eu.trustdemocracy.proposals.core.entities.CommentVoteOption;
 import eu.trustdemocracy.proposals.core.interactors.util.TokenUtils;
 import eu.trustdemocracy.proposals.core.models.FakeModelsFactory;
 import eu.trustdemocracy.proposals.core.models.request.CommentVoteRequestDTO;
+import eu.trustdemocracy.proposals.core.models.request.ProposalRequestDTO;
 import eu.trustdemocracy.proposals.core.models.response.CommentResponseDTO;
+import eu.trustdemocracy.proposals.core.models.response.ProposalResponseDTO;
 import io.vertx.core.json.Json;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import java.util.UUID;
 import lombok.val;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(VertxUnitRunner.class)
 public class CommentControllerTest extends ControllerTest {
 
+  private ProposalResponseDTO existingProposal;
+
+  @Before
+  public void setUp() {
+    val createProposal = interactorFactory.getCreateProposal();
+    val publishProposal = interactorFactory.getPublishProposal();
+
+    val randomProposal = FakeModelsFactory.getRandomProposal();
+
+    val createdProposal = createProposal.execute(randomProposal);
+    existingProposal = publishProposal.execute(new ProposalRequestDTO()
+        .setId(createdProposal.getId())
+        .setAuthorToken(randomProposal.getAuthorToken()));
+  }
 
   @Test
   public void createComment(TestContext context) {
     val async = context.async();
-    val inputComment = FakeModelsFactory.getRandomComment();
+    val inputComment = FakeModelsFactory.getRandomComment()
+        .setProposalId(existingProposal.getId());
 
     val single = client.post(port, HOST, "/proposals/" + inputComment.getProposalId() + "/comments")
         .rxSendJson(inputComment);
-
-    val currentTime = System.currentTimeMillis();
 
     single.subscribe(response -> {
       context.assertEquals(response.statusCode(), 201);
@@ -35,7 +51,7 @@ public class CommentControllerTest extends ControllerTest {
           .decodeValue(response.body().toString(), CommentResponseDTO.class);
       context.assertEquals(inputComment.getProposalId(), responseComment.getProposalId());
       context.assertEquals(inputComment.getRootCommentId(), responseComment.getRootCommentId());
-      context.assertTrue(currentTime < responseComment.getTimestamp());
+      context.assertNotNull(responseComment.getTimestamp());
       context.assertNotNull(responseComment.getAuthorUsername());
       context.assertNotNull(responseComment.getId());
 
@@ -49,7 +65,8 @@ public class CommentControllerTest extends ControllerTest {
   @Test
   public void createAndDelete(TestContext context) {
     val async = context.async();
-    val inputComment = FakeModelsFactory.getRandomComment();
+    val inputComment = FakeModelsFactory.getRandomComment()
+        .setProposalId(existingProposal.getId());
 
     val single = client.post(port, HOST, "/proposals/" + inputComment.getProposalId() + "/comments")
         .rxSendJson(inputComment);
@@ -107,10 +124,9 @@ public class CommentControllerTest extends ControllerTest {
   public void voteComment(TestContext context) {
     val async = context.async(CommentVoteOption.values().length);
 
-
-
     for (val option : CommentVoteOption.values()) {
-      val inputComment = FakeModelsFactory.getRandomComment();
+      val inputComment = FakeModelsFactory.getRandomComment()
+          .setProposalId(existingProposal.getId());
 
       val single = client
           .post(port, HOST, "/proposals/" + inputComment.getProposalId() + "/comments")
