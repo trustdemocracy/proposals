@@ -19,6 +19,7 @@ public class ProposalControllerTest extends ControllerTest {
     val inputProposal = FakeModelsFactory.getRandomProposal();
 
     val single = client.post(port, HOST, "/proposals")
+        .putHeader("Authorization", "Bearer " + inputProposal.getAuthorToken())
         .rxSendJson(inputProposal);
 
     single.subscribe(response -> {
@@ -49,12 +50,14 @@ public class ProposalControllerTest extends ControllerTest {
     val inputProposal = FakeModelsFactory.getRandomProposal();
 
     val single = client.post(port, HOST, "/proposals")
+        .putHeader("Authorization", "Bearer " + inputProposal.getAuthorToken())
         .rxSendJson(inputProposal);
 
     single.subscribe(response -> {
       val responseProposal = Json
           .decodeValue(response.body().toString(), ProposalResponseDTO.class);
       client.get(port, HOST, "/proposals/" + responseProposal.getId())
+          .putHeader("Authorization", "Bearer " + inputProposal.getAuthorToken())
           .rxSend()
 
           .subscribe(getResponse -> {
@@ -91,17 +94,20 @@ public class ProposalControllerTest extends ControllerTest {
     val inputProposal = FakeModelsFactory.getRandomProposal();
 
     val single = client.post(port, HOST, "/proposals")
+        .putHeader("Authorization", "Bearer " + inputProposal.getAuthorToken())
         .rxSendJson(inputProposal);
 
     single.subscribe(response -> {
       val responseProposal = Json
           .decodeValue(response.body().toString(), ProposalResponseDTO.class);
       client.get(port, HOST, "/proposals/" + responseProposal.getId() + "/publish")
+          .putHeader("Authorization", "Bearer " + inputProposal.getAuthorToken())
           .rxSend()
           .subscribe(publishResponse -> {
             context.assertEquals(publishResponse.statusCode(), 200);
 
             client.get(port, HOST, "/proposals/" + responseProposal.getId())
+                .putHeader("Authorization", "Bearer " + inputProposal.getAuthorToken())
                 .rxSend()
 
                 .subscribe(getResponse -> {
@@ -140,21 +146,25 @@ public class ProposalControllerTest extends ControllerTest {
     val inputProposal = FakeModelsFactory.getRandomProposal();
 
     val single = client.post(port, HOST, "/proposals")
+        .putHeader("Authorization", "Bearer " + inputProposal.getAuthorToken())
         .rxSendJson(inputProposal);
 
     single.subscribe(response -> {
       val responseProposal = Json
           .decodeValue(response.body().toString(), ProposalResponseDTO.class);
       client.get(port, HOST, "/proposals/" + responseProposal.getId() + "/publish")
+          .putHeader("Authorization", "Bearer " + inputProposal.getAuthorToken())
           .rxSend()
           .subscribe(publishResponse -> {
             context.assertEquals(publishResponse.statusCode(), 200);
 
             client.get(port, HOST, "/proposals/" + responseProposal.getId() + "/unpublish")
+                .putHeader("Authorization", "Bearer " + inputProposal.getAuthorToken())
                 .rxSend()
                 .subscribe(unpublishResponse -> {
                   context.assertEquals(unpublishResponse.statusCode(), 200);
                   client.get(port, HOST, "/proposals/" + responseProposal.getId())
+                      .putHeader("Authorization", "Bearer " + inputProposal.getAuthorToken())
                       .rxSend()
 
                       .subscribe(getResponse -> {
@@ -201,17 +211,20 @@ public class ProposalControllerTest extends ControllerTest {
     val inputProposal = FakeModelsFactory.getRandomProposal();
 
     val single = client.post(port, HOST, "/proposals")
+        .putHeader("Authorization", "Bearer " + inputProposal.getAuthorToken())
         .rxSendJson(inputProposal);
 
     single.subscribe(response -> {
       val responseProposal = Json
           .decodeValue(response.body().toString(), ProposalResponseDTO.class);
       client.delete(port, HOST, "/proposals/" + responseProposal.getId())
+          .putHeader("Authorization", "Bearer " + inputProposal.getAuthorToken())
           .rxSend()
           .subscribe(deleteResponse -> {
             context.assertEquals(deleteResponse.statusCode(), 200);
 
             client.get(port, HOST, "/proposals/" + responseProposal.getId())
+                .putHeader("Authorization", "Bearer " + inputProposal.getAuthorToken())
                 .rxSend()
 
                 .subscribe(getResponse -> {

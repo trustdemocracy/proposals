@@ -25,6 +25,8 @@ public class ProposalController extends Controller {
   private void createProposal(RoutingContext routingContext) {
     val requestProposal = Json
         .decodeValue(routingContext.getBodyAsString(), ProposalRequestDTO.class);
+    val authorToken = getAuthorizationToken(routingContext.request());
+    requestProposal.setAuthorToken(authorToken);
     val interactor = getInteractorFactory().getCreateProposal();
     val proposal = interactor.execute(requestProposal);
 
@@ -36,7 +38,10 @@ public class ProposalController extends Controller {
 
   private void getProposal(RoutingContext routingContext) {
     val id = UUID.fromString(routingContext.pathParam("id"));
-    val requestProposal = new ProposalRequestDTO().setId(id);
+    val authorToken = getAuthorizationToken(routingContext.request());
+    val requestProposal = new ProposalRequestDTO()
+        .setId(id)
+        .setAuthorToken(authorToken);
     val interactor = getInteractorFactory().getGetProposal();
     val proposal = interactor.execute(requestProposal);
 
@@ -55,7 +60,10 @@ public class ProposalController extends Controller {
 
   private void publishProposal(RoutingContext routingContext) {
     val id = UUID.fromString(routingContext.pathParam("id"));
-    val requestProposal = new ProposalRequestDTO().setId(id);
+    val authorToken = getAuthorizationToken(routingContext.request());
+    val requestProposal = new ProposalRequestDTO()
+        .setId(id)
+        .setAuthorToken(authorToken);
     val interactor = getInteractorFactory().getPublishProposal();
     val proposal = interactor.execute(requestProposal);
 
@@ -67,7 +75,10 @@ public class ProposalController extends Controller {
 
   private void unpublishProposal(RoutingContext routingContext) {
     val id = UUID.fromString(routingContext.pathParam("id"));
-    val requestProposal = new ProposalRequestDTO().setId(id);
+    val authorToken = getAuthorizationToken(routingContext.request());
+    val requestProposal = new ProposalRequestDTO()
+        .setId(id)
+        .setAuthorToken(authorToken);
     val interactor = getInteractorFactory().getUnpublishProposal();
     val proposal = interactor.execute(requestProposal);
 
@@ -79,7 +90,10 @@ public class ProposalController extends Controller {
 
   private void deleteProposal(RoutingContext routingContext) {
     val id = UUID.fromString(routingContext.pathParam("id"));
-    val requestProposal = new ProposalRequestDTO().setId(id);
+    val authorToken = getAuthorizationToken(routingContext.request());
+    val requestProposal = new ProposalRequestDTO()
+        .setId(id)
+        .setAuthorToken(authorToken);
     val interactor = getInteractorFactory().getDeleteProposal();
     val proposal = interactor.execute(requestProposal);
 
