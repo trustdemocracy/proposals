@@ -20,12 +20,14 @@ public class CommentController extends Controller {
     getRouter().post("/proposals/:proposalId/comments").handler(this::createComment);
     getRouter().get("/proposals/:proposalId/comments").handler(this::getComments);
     getRouter().delete("/proposals/:proposalId/comments/:commentId").handler(this::deleteComment);
-    getRouter().post("/proposals/:proposalId/comments/:commentId").handler(this::voteComment);
+    getRouter().post("/proposals/:proposalId/comments/:commentId/vote").handler(this::voteComment);
   }
 
   private void createComment(RoutingContext routingContext) {
     val requestProposal = Json
         .decodeValue(routingContext.getBodyAsString(), CommentRequestDTO.class);
+    val authorToken = getAuthorizationToken(routingContext.request());
+    requestProposal.setAuthorToken(authorToken);
     val interactor = getInteractorFactory().getCreateComment();
     val comment = interactor.execute(requestProposal);
 
@@ -38,7 +40,12 @@ public class CommentController extends Controller {
   private void getComments(RoutingContext routingContext) {
     val proposalId = UUID.fromString(routingContext.pathParam("proposalId"));
     val interactor = getInteractorFactory().getGetComments();
-    val commentList = interactor.execute(new ProposalRequestDTO().setId(proposalId));
+
+    val authorToken = getAuthorizationToken(routingContext.request());
+    val requestProposal = new ProposalRequestDTO()
+        .setId(proposalId)
+        .setAuthorToken(authorToken);
+    val commentList = interactor.execute(requestProposal);
 
     routingContext.response()
         .putHeader("content-type", "application/json")
@@ -50,9 +57,12 @@ public class CommentController extends Controller {
     val proposalId = UUID.fromString(routingContext.pathParam("proposalId"));
     val commentId = UUID.fromString(routingContext.pathParam("commentId"));
 
+    val authorToken = getAuthorizationToken(routingContext.request());
+
     val commentRequest = new CommentRequestDTO()
         .setId(commentId)
-        .setProposalId(proposalId);
+        .setProposalId(proposalId)
+        .setAuthorToken(authorToken);
 
     val interactor = getInteractorFactory().getDeleteComment();
     val comment = interactor.execute(commentRequest);
@@ -66,6 +76,8 @@ public class CommentController extends Controller {
   private void voteComment(RoutingContext routingContext) {
     val requestVote = Json
         .decodeValue(routingContext.getBodyAsString(), CommentVoteRequestDTO.class);
+    val authorToken = getAuthorizationToken(routingContext.request());
+    requestVote.setVoterToken(authorToken);
     val interactor = getInteractorFactory().getVoteComment();
     val comment = interactor.execute(requestVote);
 

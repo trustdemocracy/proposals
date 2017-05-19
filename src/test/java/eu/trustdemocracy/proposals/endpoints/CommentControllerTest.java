@@ -41,6 +41,7 @@ public class CommentControllerTest extends ControllerTest {
         .setProposalId(existingProposal.getId());
 
     val single = client.post(port, HOST, "/proposals/" + inputComment.getProposalId() + "/comments")
+        .putHeader("Authorization", "Bearer " + inputComment.getAuthorToken())
         .rxSendJson(inputComment);
 
     single.subscribe(response -> {
@@ -69,11 +70,13 @@ public class CommentControllerTest extends ControllerTest {
         .setProposalId(existingProposal.getId());
 
     val single = client.post(port, HOST, "/proposals/" + inputComment.getProposalId() + "/comments")
+        .putHeader("Authorization", "Bearer " + inputComment.getAuthorToken())
         .rxSendJson(inputComment);
 
     single.subscribe(response -> {
       context.assertEquals(response.statusCode(), 201);
       client.get(port, HOST, "/proposals/" + inputComment.getProposalId() + "/comments")
+          .putHeader("Authorization", "Bearer " + inputComment.getAuthorToken())
           .rxSend()
           .subscribe(getResponse -> {
             context.assertEquals(getResponse.statusCode(), 200);
@@ -85,6 +88,7 @@ public class CommentControllerTest extends ControllerTest {
 
             client.delete(port, HOST,
                 "/proposals/" + inputComment.getProposalId() + "/comments/" + comment.getId())
+                .putHeader("Authorization", "Bearer " + inputComment.getAuthorToken())
                 .rxSend()
                 .subscribe(deleteResponse -> {
                   context.assertEquals(deleteResponse.statusCode(), 200);
@@ -94,6 +98,7 @@ public class CommentControllerTest extends ControllerTest {
                   context.assertEquals(comment, deleteComment);
 
                   client.get(port, HOST, "/proposals/" + inputComment.getProposalId() + "/comments")
+                      .putHeader("Authorization", "Bearer " + inputComment.getAuthorToken())
                       .rxSend()
                       .subscribe(emptyGetResponse -> {
                         context.assertEquals(emptyGetResponse.statusCode(), 200);
@@ -122,60 +127,65 @@ public class CommentControllerTest extends ControllerTest {
 
   @Test
   public void voteComment(TestContext context) {
-    val async = context.async(CommentVoteOption.values().length);
+    val async = context.async();
 
-    for (val option : CommentVoteOption.values()) {
-      val inputComment = FakeModelsFactory.getRandomComment()
-          .setProposalId(existingProposal.getId());
+    val option = CommentVoteOption.UP;
+    val inputComment = FakeModelsFactory.getRandomComment()
+        .setProposalId(existingProposal.getId());
 
-      val single = client
-          .post(port, HOST, "/proposals/" + inputComment.getProposalId() + "/comments")
-          .rxSendJson(inputComment);
+    val single = client
+        .post(port, HOST, "/proposals/" + inputComment.getProposalId() + "/comments")
+        .putHeader("Authorization", "Bearer " + inputComment.getAuthorToken())
+        .rxSendJson(inputComment);
 
-      single.subscribe(response -> {
-        context.assertEquals(response.statusCode(), 201);
-        val responseComment = Json
-            .decodeValue(response.body().toString(), CommentResponseDTO.class);
+    single.subscribe(response -> {
+      context.assertEquals(response.statusCode(), 201);
+      val responseComment = Json
+          .decodeValue(response.body().toString(), CommentResponseDTO.class);
 
-        val vote = new CommentVoteRequestDTO()
-            .setCommentId(responseComment.getId())
-            .setVoterToken(TokenUtils.createToken(UUID.randomUUID(), "voter"))
-            .setOption(option);
+      val randomVoterToken = TokenUtils.createToken(UUID.randomUUID(), "voter");
+      val vote = new CommentVoteRequestDTO()
+          .setCommentId(responseComment.getId())
+          .setVoterToken(randomVoterToken)
+          .setOption(option);
 
-        client.post(port, HOST,
-            "/proposals/" + responseComment.getProposalId() + "/comments/" + vote.getCommentId())
-            .rxSendJson(vote)
-            .subscribe(voteResponse -> {
-              context.assertEquals(voteResponse.statusCode(), 200);
+      client.post(port, HOST,
+          "/proposals/" + responseComment.getProposalId() + "/comments/" + vote.getCommentId()
+              + "/vote")
+          .putHeader("Authorization", "Bearer " + randomVoterToken)
+          .rxSendJson(vote)
+          .subscribe(voteResponse -> {
+            context.assertEquals(voteResponse.statusCode(), 200);
 
-              client.get(port, HOST, "/proposals/" + inputComment.getProposalId() + "/comments")
-                  .rxSend()
-                  .subscribe(getResponse -> {
-                    context.assertEquals(getResponse.statusCode(), 200);
+            client.get(port, HOST, "/proposals/" + inputComment.getProposalId() + "/comments")
+                .putHeader("Authorization", "Bearer " + inputComment.getAuthorToken())
+                .rxSend()
+                .subscribe(getResponse -> {
+                  context.assertEquals(getResponse.statusCode(), 200);
 
-                    val jsonArray = getResponse.bodyAsJsonArray();
-                    val comment = Json
-                        .decodeValue(jsonArray.getJsonObject(0).encode(), CommentResponseDTO.class);
+                  val jsonArray = getResponse.bodyAsJsonArray();
+                  val comment = Json
+                      .decodeValue(jsonArray.getJsonObject(0).encode(), CommentResponseDTO.class);
 
-                    for (val commentOption : CommentVoteOption.values()) {
-                      val count = commentOption == option ? 1 : 0;
-                      context.assertEquals(count, comment.getVotes().get(commentOption));
-                    }
+                  for (val commentOption : CommentVoteOption.values()) {
+                    val count = commentOption == option ? 1 : 0;
+                    context.assertEquals(count, comment.getVotes().get(commentOption));
+                  }
 
-                    async.countDown();
-                  }, error -> {
-                    context.fail(error);
-                    async.complete();
-                  });
-            }, error -> {
-              context.fail(error);
-              async.complete();
-            });
-      }, error -> {
-        context.fail(error);
-        async.complete();
-      });
-    }
+                  async.countDown();
+                }, error -> {
+                  context.fail(error);
+                  async.complete();
+                });
+          }, error -> {
+            context.fail(error);
+            async.complete();
+          });
+    }, error -> {
+      context.fail(error);
+      async.complete();
+    });
   }
-
 }
+
+

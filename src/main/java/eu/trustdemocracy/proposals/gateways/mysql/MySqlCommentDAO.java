@@ -167,7 +167,7 @@ public class MySqlCommentDAO implements CommentDAO {
           + "ON comments.id = votes.comment_id "
           + "WHERE comments.proposal_id = ? "
           + "GROUP BY comments.id, votes.option "
-          + "ORDER BY comments.created_at";
+          + "ORDER BY comments.created_at, comments.id";
       val statement = conn.prepareStatement(sql);
 
       statement.setString(1, proposalId.toString());
@@ -201,7 +201,7 @@ public class MySqlCommentDAO implements CommentDAO {
           val count = Integer.valueOf(resultSet.getString("count"));
           currentComment.getVotes().put(option, count);
         }
-      };
+      }
 
       return comments;
     } catch (SQLException e) {
