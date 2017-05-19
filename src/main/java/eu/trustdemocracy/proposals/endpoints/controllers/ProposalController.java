@@ -39,10 +39,7 @@ public class ProposalController extends Controller {
     val interactor = getInteractorFactory().getCreateProposal();
     val proposal = interactor.execute(requestProposal);
 
-    routingContext.response()
-        .putHeader("content-type", "application/json")
-        .setStatusCode(201)
-        .end(Json.encodePrettily(proposal));
+    serveJsonResponse(routingContext, 201, Json.encodePrettily(proposal));
   }
 
   private void getProposal(RoutingContext routingContext) {
@@ -68,10 +65,7 @@ public class ProposalController extends Controller {
           .setStatusCode(404)
           .end();
     } else {
-      routingContext.response()
-          .putHeader("content-type", "application/json")
-          .setStatusCode(200)
-          .end(Json.encodePrettily(proposal));
+      serveJsonResponse(routingContext, 200, Json.encodePrettily(proposal));
     }
   }
 
@@ -90,10 +84,7 @@ public class ProposalController extends Controller {
     val interactor = getInteractorFactory().getPublishProposal();
     val proposal = interactor.execute(requestProposal);
 
-    routingContext.response()
-        .putHeader("content-type", "application/json")
-        .setStatusCode(200)
-        .end(Json.encodePrettily(proposal));
+    serveJsonResponse(routingContext, 200, Json.encodePrettily(proposal));
   }
 
   private void unpublishProposal(RoutingContext routingContext) {
@@ -113,10 +104,7 @@ public class ProposalController extends Controller {
     val interactor = getInteractorFactory().getUnpublishProposal();
     val proposal = interactor.execute(requestProposal);
 
-    routingContext.response()
-        .putHeader("content-type", "application/json")
-        .setStatusCode(200)
-        .end(Json.encodePrettily(proposal));
+    serveJsonResponse(routingContext, 200, Json.encodePrettily(proposal));
   }
 
   private void deleteProposal(RoutingContext routingContext) {
@@ -136,10 +124,7 @@ public class ProposalController extends Controller {
     val interactor = getInteractorFactory().getDeleteProposal();
     val proposal = interactor.execute(requestProposal);
 
-    routingContext.response()
-        .putHeader("content-type", "application/json")
-        .setStatusCode(200)
-        .end(Json.encodePrettily(proposal));
+    serveJsonResponse(routingContext, 200, Json.encodePrettily(proposal));
   }
 
 

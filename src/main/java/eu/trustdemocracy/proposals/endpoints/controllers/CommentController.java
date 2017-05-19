@@ -41,10 +41,7 @@ public class CommentController extends Controller {
     val interactor = getInteractorFactory().getCreateComment();
     val comment = interactor.execute(requestComment);
 
-    routingContext.response()
-        .putHeader("content-type", "application/json")
-        .setStatusCode(201)
-        .end(Json.encodePrettily(comment));
+    serveJsonResponse(routingContext, 201, Json.encodePrettily(comment));
   }
 
   private void getComments(RoutingContext routingContext) {
@@ -64,10 +61,7 @@ public class CommentController extends Controller {
     val interactor = getInteractorFactory().getGetComments();
     val commentList = interactor.execute(requestProposal);
 
-    routingContext.response()
-        .putHeader("content-type", "application/json")
-        .setStatusCode(200)
-        .end(Json.encodePrettily(commentList));
+    serveJsonResponse(routingContext, 200, Json.encodePrettily(commentList));
   }
 
   private void deleteComment(RoutingContext routingContext) {
@@ -90,10 +84,7 @@ public class CommentController extends Controller {
     val interactor = getInteractorFactory().getDeleteComment();
     val comment = interactor.execute(commentRequest);
 
-    routingContext.response()
-        .putHeader("content-type", "application/json")
-        .setStatusCode(200)
-        .end(Json.encodePrettily(comment));
+    serveJsonResponse(routingContext, 200, Json.encodePrettily(comment));
   }
 
   private void voteComment(RoutingContext routingContext) {
@@ -114,9 +105,6 @@ public class CommentController extends Controller {
     val interactor = getInteractorFactory().getVoteComment();
     val comment = interactor.execute(requestVote);
 
-    routingContext.response()
-        .putHeader("content-type", "application/json")
-        .setStatusCode(200)
-        .end(Json.encodePrettily(comment));
+    serveJsonResponse(routingContext, 200, Json.encodePrettily(comment));
   }
 }
