@@ -3,6 +3,7 @@ package eu.trustdemocracy.proposals.endpoints;
 import eu.trustdemocracy.proposals.core.entities.CommentVoteOption;
 import eu.trustdemocracy.proposals.core.interactors.util.TokenUtils;
 import eu.trustdemocracy.proposals.core.models.FakeModelsFactory;
+import eu.trustdemocracy.proposals.core.models.request.CommentRequestDTO;
 import eu.trustdemocracy.proposals.core.models.request.CommentVoteRequestDTO;
 import eu.trustdemocracy.proposals.core.models.request.ProposalRequestDTO;
 import eu.trustdemocracy.proposals.core.models.response.CommentResponseDTO;
@@ -54,6 +55,41 @@ public class CommentControllerTest extends ControllerTest {
       context.assertEquals(inputComment.getRootCommentId(), responseComment.getRootCommentId());
       context.assertNotNull(responseComment.getTimestamp());
       context.assertNotNull(responseComment.getAuthorUsername());
+      context.assertNotNull(responseComment.getId());
+
+      async.complete();
+    }, error -> {
+      context.fail(error);
+      async.complete();
+    });
+  }
+
+  @Test
+  public void createCommentOnlyContent(TestContext context) {
+    val async = context.async();
+
+    val userId = UUID.randomUUID();
+    val username = "randomUsername";
+
+    val inputComment = new CommentRequestDTO()
+        .setAuthorToken(TokenUtils.createToken(userId, username))
+        .setContent("content")
+        .setProposalId(existingProposal.getId());
+
+    val single = client.post(port, HOST, "/proposals/" + inputComment.getProposalId() + "/comments")
+        .putHeader("Authorization", "Bearer " + inputComment.getAuthorToken())
+        .rxSendJson(inputComment);
+
+    single.subscribe(response -> {
+      context.assertEquals(response.statusCode(), 201);
+      context.assertTrue(response.headers().get("content-type").contains("application/json"));
+
+      val responseComment = Json
+          .decodeValue(response.body().toString(), CommentResponseDTO.class);
+      context.assertEquals(inputComment.getProposalId(), responseComment.getProposalId());
+      context.assertNotNull(responseComment.getRootCommentId());
+      context.assertNotNull(responseComment.getTimestamp());
+      context.assertEquals(username, responseComment.getAuthorUsername());
       context.assertNotNull(responseComment.getId());
 
       async.complete();
