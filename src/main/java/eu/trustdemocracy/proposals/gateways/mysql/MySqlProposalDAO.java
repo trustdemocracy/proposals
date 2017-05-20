@@ -71,8 +71,10 @@ public class MySqlProposalDAO implements ProposalDAO {
   @Override
   public Proposal findById(UUID id) {
     try {
-      val sql = "SELECT id, author_id, author_username, title, brief, source, motivation, measures, status "
-          + "FROM `" + TABLE + "` WHERE id = ?";
+      val sql = "SELECT id, author_id, author_username, title, "
+          + "brief, source, motivation, measures, status "
+          + "FROM `" + TABLE + "` "
+          + "WHERE id = ?";
       val statement = conn.prepareStatement(sql);
 
       statement.setString(1, id.toString());
@@ -156,7 +158,8 @@ public class MySqlProposalDAO implements ProposalDAO {
   @Override
   public List<Proposal> findByAuthorId(UUID authorId) {
     try {
-      val sql = "SELECT id, author_id, author_username, title, brief, source, motivation, measures, status "
+      val sql = "SELECT id, author_id, author_username, title, "
+          + "brief, source, motivation, measures, status "
           + "FROM `" + TABLE + "` "
           + "WHERE author_id = ? ";
       val statement = conn.prepareStatement(sql);
@@ -193,7 +196,42 @@ public class MySqlProposalDAO implements ProposalDAO {
 
   @Override
   public List<Proposal> findByAuthorId(UUID authorId, ProposalStatus status) {
-    return null;
+    try {
+      val sql = "SELECT id, author_id, author_username, title, "
+          + "brief, source, motivation, measures, status "
+          + "FROM `" + TABLE + "` "
+          + "WHERE author_id = ? AND status = ?";
+      val statement = conn.prepareStatement(sql);
+
+      statement.setString(1, authorId.toString());
+      statement.setString(2, status.toString());
+      val resultSet = statement.executeQuery();
+
+      List<Proposal> proposals = new ArrayList<>();
+
+      while (resultSet.next()) {
+        val user = new User()
+            .setId(UUID.fromString(resultSet.getString("author_id")))
+            .setUsername(resultSet.getString("author_username"));
+
+        val proposal = new Proposal()
+            .setId(UUID.fromString(resultSet.getString("id")))
+            .setAuthor(user)
+            .setTitle(resultSet.getString("title"))
+            .setBrief(resultSet.getString("brief"))
+            .setSource(resultSet.getString("source"))
+            .setMotivation(resultSet.getString("motivation"))
+            .setMeasures(resultSet.getString("measures"))
+            .setStatus(ProposalStatus.valueOf(resultSet.getString("status")));
+
+        proposals.add(proposal);
+      }
+
+      return proposals;
+    } catch (SQLException e) {
+      LOG.error("Failed to find proposals for author " + authorId + " and status " + status, e);
+      return null;
+    }
   }
 
   @Override
