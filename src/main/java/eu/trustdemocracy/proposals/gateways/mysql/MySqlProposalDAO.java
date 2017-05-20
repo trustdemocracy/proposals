@@ -140,6 +140,7 @@ public class MySqlProposalDAO implements ProposalDAO {
       statement.setString(2, id.toString());
 
       if (statement.executeUpdate() > 0) {
+        proposal.setStatus(status);
         return proposal;
       }
 

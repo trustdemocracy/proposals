@@ -106,7 +106,9 @@ public class MySqlProposalDAOTest {
     val proposal = createRandomProposal();
 
     val resultProposal = proposalDAO.create(proposal);
-    proposalDAO.setStatus(resultProposal.getId(), ProposalStatus.PUBLISHED);
+    assertEquals(ProposalStatus.UNPUBLISHED, resultProposal.getStatus());
+    val publishedProposal = proposalDAO.setStatus(resultProposal.getId(), ProposalStatus.PUBLISHED);
+    assertEquals(ProposalStatus.PUBLISHED, publishedProposal.getStatus());
 
     val connection = sqlUtils.getConnection();
     val sql = "SELECT * FROM `proposals` WHERE id = ?";
@@ -117,7 +119,8 @@ public class MySqlProposalDAOTest {
     assertTrue(publishedResultSet.next());
     assertEquals(ProposalStatus.PUBLISHED.toString(), publishedResultSet.getString("status"));
 
-    proposalDAO.setStatus(resultProposal.getId(), ProposalStatus.UNPUBLISHED);
+    val unpublishedProposal = proposalDAO.setStatus(resultProposal.getId(), ProposalStatus.UNPUBLISHED);
+    assertEquals(ProposalStatus.UNPUBLISHED, unpublishedProposal.getStatus());
     val unpublishedResultSet = statement.executeQuery();
 
     assertTrue(unpublishedResultSet.next());
