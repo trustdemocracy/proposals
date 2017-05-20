@@ -68,7 +68,7 @@ public class MySqlProposalDAOTest {
   }
 
   @Test
-  public void findProposal() throws SQLException {
+  public void findProposal() {
     val proposal = createRandomProposal();
 
     val createdProposal = proposalDAO.create(proposal);
@@ -125,6 +125,22 @@ public class MySqlProposalDAOTest {
 
     assertTrue(unpublishedResultSet.next());
     assertEquals(ProposalStatus.UNPUBLISHED.toString(), unpublishedResultSet.getString("status"));
+  }
+
+  @Test
+  public void findByAuthorId() {
+    val authorId = UUID.randomUUID();
+    for (int i = 0; i< 20; i++) {
+      val proposal = createRandomProposal();
+      val user = proposal.getAuthor();
+      user.setId(authorId);
+      proposal.setAuthor(user);
+      proposalDAO.create(proposal);
+    }
+
+    val proposals = proposalDAO.findByAuthorId(authorId);
+
+    assertEquals(20, proposals.size());
   }
 
   private Proposal createRandomProposal() {
