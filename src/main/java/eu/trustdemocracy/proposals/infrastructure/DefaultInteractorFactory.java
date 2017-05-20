@@ -7,6 +7,7 @@ import eu.trustdemocracy.proposals.core.interactors.comment.VoteComment;
 import eu.trustdemocracy.proposals.core.interactors.proposal.CreateProposal;
 import eu.trustdemocracy.proposals.core.interactors.proposal.DeleteProposal;
 import eu.trustdemocracy.proposals.core.interactors.proposal.GetProposal;
+import eu.trustdemocracy.proposals.core.interactors.proposal.GetProposals;
 import eu.trustdemocracy.proposals.core.interactors.proposal.PublishProposal;
 import eu.trustdemocracy.proposals.core.interactors.proposal.UnpublishProposal;
 import eu.trustdemocracy.proposals.gateways.CommentDAO;
@@ -39,6 +40,11 @@ public class DefaultInteractorFactory implements InteractorFactory {
   @Override
   public GetProposal getGetProposal() {
     return new GetProposal(getProposalDAO());
+  }
+
+  @Override
+  public GetProposals getGetProposals() {
+    return new GetProposals(getProposalDAO());
   }
 
   @Override

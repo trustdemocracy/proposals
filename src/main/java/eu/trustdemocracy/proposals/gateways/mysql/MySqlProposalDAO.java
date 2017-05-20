@@ -8,6 +8,8 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import lombok.val;
 
@@ -69,8 +71,10 @@ public class MySqlProposalDAO implements ProposalDAO {
   @Override
   public Proposal findById(UUID id) {
     try {
-      val sql = "SELECT id, author_id, author_username, title, brief, source, motivation, measures, status "
-          + "FROM `" + TABLE + "` WHERE id = ?";
+      val sql = "SELECT id, author_id, author_username, title, "
+          + "brief, source, motivation, measures, status "
+          + "FROM `" + TABLE + "` "
+          + "WHERE id = ?";
       val statement = conn.prepareStatement(sql);
 
       statement.setString(1, id.toString());
@@ -147,6 +151,124 @@ public class MySqlProposalDAO implements ProposalDAO {
       return null;
     } catch (SQLException e) {
       LOG.error("Failed to update status in proposal with id " + id, e);
+      return null;
+    }
+  }
+
+  @Override
+  public List<Proposal> findByAuthorId(UUID authorId) {
+    try {
+      val sql = "SELECT id, author_id, author_username, title, "
+          + "brief, source, motivation, measures, status "
+          + "FROM `" + TABLE + "` "
+          + "WHERE author_id = ? ";
+      val statement = conn.prepareStatement(sql);
+
+      statement.setString(1, authorId.toString());
+      val resultSet = statement.executeQuery();
+
+      List<Proposal> proposals = new ArrayList<>();
+
+      while (resultSet.next()) {
+        val user = new User()
+            .setId(UUID.fromString(resultSet.getString("author_id")))
+            .setUsername(resultSet.getString("author_username"));
+
+        val proposal = new Proposal()
+            .setId(UUID.fromString(resultSet.getString("id")))
+            .setAuthor(user)
+            .setTitle(resultSet.getString("title"))
+            .setBrief(resultSet.getString("brief"))
+            .setSource(resultSet.getString("source"))
+            .setMotivation(resultSet.getString("motivation"))
+            .setMeasures(resultSet.getString("measures"))
+            .setStatus(ProposalStatus.valueOf(resultSet.getString("status")));
+
+        proposals.add(proposal);
+      }
+
+      return proposals;
+    } catch (SQLException e) {
+      LOG.error("Failed to find proposals for author " + authorId, e);
+      return null;
+    }
+  }
+
+  @Override
+  public List<Proposal> findByAuthorId(UUID authorId, ProposalStatus status) {
+    try {
+      val sql = "SELECT id, author_id, author_username, title, "
+          + "brief, source, motivation, measures, status "
+          + "FROM `" + TABLE + "` "
+          + "WHERE author_id = ? AND status = ?";
+      val statement = conn.prepareStatement(sql);
+
+      statement.setString(1, authorId.toString());
+      statement.setString(2, status.toString());
+      val resultSet = statement.executeQuery();
+
+      List<Proposal> proposals = new ArrayList<>();
+
+      while (resultSet.next()) {
+        val user = new User()
+            .setId(UUID.fromString(resultSet.getString("author_id")))
+            .setUsername(resultSet.getString("author_username"));
+
+        val proposal = new Proposal()
+            .setId(UUID.fromString(resultSet.getString("id")))
+            .setAuthor(user)
+            .setTitle(resultSet.getString("title"))
+            .setBrief(resultSet.getString("brief"))
+            .setSource(resultSet.getString("source"))
+            .setMotivation(resultSet.getString("motivation"))
+            .setMeasures(resultSet.getString("measures"))
+            .setStatus(ProposalStatus.valueOf(resultSet.getString("status")));
+
+        proposals.add(proposal);
+      }
+
+      return proposals;
+    } catch (SQLException e) {
+      LOG.error("Failed to find proposals for author " + authorId + " and status " + status, e);
+      return null;
+    }
+  }
+
+  @Override
+  public List<Proposal> findAllPublished() {
+    try {
+      val sql = "SELECT id, author_id, author_username, title, "
+          + "brief, source, motivation, measures, status "
+          + "FROM `" + TABLE + "` "
+          + "WHERE status = ?";
+      val statement = conn.prepareStatement(sql);
+
+      statement.setString(1, ProposalStatus.PUBLISHED.toString());
+      val resultSet = statement.executeQuery();
+
+      List<Proposal> proposals = new ArrayList<>();
+
+      while (resultSet.next()) {
+        val user = new User()
+            .setId(UUID.fromString(resultSet.getString("author_id")))
+            .setUsername(resultSet.getString("author_username"));
+
+        val proposal = new Proposal()
+            .setId(UUID.fromString(resultSet.getString("id")))
+            .setAuthor(user)
+            .setTitle(resultSet.getString("title"))
+            .setBrief(resultSet.getString("brief"))
+            .setSource(resultSet.getString("source"))
+            .setMotivation(resultSet.getString("motivation"))
+            .setMeasures(resultSet.getString("measures"))
+            .setStatus(ProposalStatus.valueOf(resultSet.getString("status")));
+
+        proposals.add(proposal);
+      }
+
+      return proposals;
+    } catch (SQLException e) {
+      LOG.error("Failed to find published proposals", e);
       return null;
     }
   }

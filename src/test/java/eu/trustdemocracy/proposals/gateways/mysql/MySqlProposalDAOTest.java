@@ -68,7 +68,7 @@ public class MySqlProposalDAOTest {
   }
 
   @Test
-  public void findProposal() throws SQLException {
+  public void findProposal() {
     val proposal = createRandomProposal();
 
     val createdProposal = proposalDAO.create(proposal);
@@ -119,12 +119,64 @@ public class MySqlProposalDAOTest {
     assertTrue(publishedResultSet.next());
     assertEquals(ProposalStatus.PUBLISHED.toString(), publishedResultSet.getString("status"));
 
-    val unpublishedProposal = proposalDAO.setStatus(resultProposal.getId(), ProposalStatus.UNPUBLISHED);
+    val unpublishedProposal = proposalDAO
+        .setStatus(resultProposal.getId(), ProposalStatus.UNPUBLISHED);
     assertEquals(ProposalStatus.UNPUBLISHED, unpublishedProposal.getStatus());
     val unpublishedResultSet = statement.executeQuery();
 
     assertTrue(unpublishedResultSet.next());
     assertEquals(ProposalStatus.UNPUBLISHED.toString(), unpublishedResultSet.getString("status"));
+  }
+
+  @Test
+  public void findByAuthorId() {
+    val authorId = UUID.randomUUID();
+    for (int i = 0; i < 20; i++) {
+      val proposal = createRandomProposal();
+      val user = proposal.getAuthor();
+      user.setId(authorId);
+      proposal.setAuthor(user);
+      proposalDAO.create(proposal);
+    }
+
+    val proposals = proposalDAO.findByAuthorId(authorId);
+
+    assertEquals(20, proposals.size());
+  }
+
+  @Test
+  public void findByAuthorIdAndStatus() {
+    val authorId = UUID.randomUUID();
+    for (int i = 0; i < 30; i++) {
+      val proposal = createRandomProposal();
+      val user = proposal.getAuthor();
+      user.setId(authorId);
+      proposal.setAuthor(user);
+      proposalDAO.create(proposal);
+      if (i % 3 == 0) {
+        proposalDAO.setStatus(proposal.getId(), ProposalStatus.PUBLISHED);
+      }
+    }
+
+    val publishedProposals = proposalDAO.findByAuthorId(authorId, ProposalStatus.PUBLISHED);
+    assertEquals(10, publishedProposals.size());
+
+    val unpublishedProposals = proposalDAO.findByAuthorId(authorId, ProposalStatus.UNPUBLISHED);
+    assertEquals(20, unpublishedProposals.size());
+  }
+
+  @Test
+  public void findAllPublished() {
+    for (int i = 0; i < 30; i++) {
+      val proposal = createRandomProposal();
+      proposalDAO.create(proposal);
+      if (i % 3 == 0) {
+        proposalDAO.setStatus(proposal.getId(), ProposalStatus.PUBLISHED);
+      }
+    }
+
+    val publishedProposals = proposalDAO.findAllPublished();
+    assertEquals(10, publishedProposals.size());
   }
 
   private Proposal createRandomProposal() {

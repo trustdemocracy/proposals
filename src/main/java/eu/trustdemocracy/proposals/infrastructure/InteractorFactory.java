@@ -7,6 +7,7 @@ import eu.trustdemocracy.proposals.core.interactors.comment.VoteComment;
 import eu.trustdemocracy.proposals.core.interactors.proposal.CreateProposal;
 import eu.trustdemocracy.proposals.core.interactors.proposal.DeleteProposal;
 import eu.trustdemocracy.proposals.core.interactors.proposal.GetProposal;
+import eu.trustdemocracy.proposals.core.interactors.proposal.GetProposals;
 import eu.trustdemocracy.proposals.core.interactors.proposal.PublishProposal;
 import eu.trustdemocracy.proposals.core.interactors.proposal.UnpublishProposal;
 
@@ -17,6 +18,8 @@ public interface InteractorFactory {
   DeleteProposal getDeleteProposal();
 
   GetProposal getGetProposal();
+
+  GetProposals getGetProposals();
 
   PublishProposal getPublishProposal();
 

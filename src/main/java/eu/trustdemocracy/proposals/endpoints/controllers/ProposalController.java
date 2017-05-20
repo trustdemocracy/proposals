@@ -3,6 +3,7 @@ package eu.trustdemocracy.proposals.endpoints.controllers;
 import eu.trustdemocracy.proposals.core.interactors.exceptions.InvalidTokenException;
 import eu.trustdemocracy.proposals.core.interactors.exceptions.NotAllowedActionException;
 import eu.trustdemocracy.proposals.core.interactors.exceptions.ResourceNotFoundException;
+import eu.trustdemocracy.proposals.core.models.request.GetProposalsRequestDTO;
 import eu.trustdemocracy.proposals.core.models.request.ProposalRequestDTO;
 import eu.trustdemocracy.proposals.endpoints.App;
 import io.vertx.core.json.Json;
@@ -18,11 +19,36 @@ public class ProposalController extends Controller {
 
   @Override
   public void buildRoutes() {
+    getRouter().get("/proposals").handler(this::getProposals);
     getRouter().post("/proposals").handler(this::createProposal);
     getRouter().get("/proposals/:id").handler(this::getProposal);
     getRouter().delete("/proposals/:id").handler(this::deleteProposal);
     getRouter().get("/proposals/:id/publish").handler(this::publishProposal);
     getRouter().get("/proposals/:id/unpublish").handler(this::unpublishProposal);
+  }
+
+  private void getProposals(RoutingContext routingContext) {
+    UUID authorId = null;
+    String authorIdParam = routingContext.request().getParam("authorId");
+    if (authorIdParam != null && !authorIdParam.isEmpty()) {
+      authorId = UUID.fromString(authorIdParam);
+    }
+
+    val authorToken = getAuthorizationToken(routingContext.request());
+    val requestProposal = new GetProposalsRequestDTO()
+        .setAccessToken(authorToken)
+        .setAuthorId(authorId);
+
+    val interactor = getInteractorFactory().getGetProposals();
+
+    try {
+      val proposals = interactor.execute(requestProposal);
+      serveJsonResponse(routingContext, 200, Json.encodePrettily(proposals));
+    } catch (InvalidTokenException e) {
+      serveBadCredentials(routingContext);
+    } catch (ResourceNotFoundException | NotAllowedActionException e) {
+      serveNotFound(routingContext);
+    }
   }
 
   private void createProposal(RoutingContext routingContext) {
