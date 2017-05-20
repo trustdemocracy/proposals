@@ -119,7 +119,8 @@ public class MySqlProposalDAOTest {
     assertTrue(publishedResultSet.next());
     assertEquals(ProposalStatus.PUBLISHED.toString(), publishedResultSet.getString("status"));
 
-    val unpublishedProposal = proposalDAO.setStatus(resultProposal.getId(), ProposalStatus.UNPUBLISHED);
+    val unpublishedProposal = proposalDAO
+        .setStatus(resultProposal.getId(), ProposalStatus.UNPUBLISHED);
     assertEquals(ProposalStatus.UNPUBLISHED, unpublishedProposal.getStatus());
     val unpublishedResultSet = statement.executeQuery();
 
@@ -130,7 +131,7 @@ public class MySqlProposalDAOTest {
   @Test
   public void findByAuthorId() {
     val authorId = UUID.randomUUID();
-    for (int i = 0; i< 20; i++) {
+    for (int i = 0; i < 20; i++) {
       val proposal = createRandomProposal();
       val user = proposal.getAuthor();
       user.setId(authorId);
@@ -146,7 +147,7 @@ public class MySqlProposalDAOTest {
   @Test
   public void findByAuthorIdAndStatus() {
     val authorId = UUID.randomUUID();
-    for (int i = 0; i< 30; i++) {
+    for (int i = 0; i < 30; i++) {
       val proposal = createRandomProposal();
       val user = proposal.getAuthor();
       user.setId(authorId);
@@ -159,7 +160,6 @@ public class MySqlProposalDAOTest {
 
     val publishedProposals = proposalDAO.findByAuthorId(authorId, ProposalStatus.PUBLISHED);
     assertEquals(10, publishedProposals.size());
-
 
     val unpublishedProposals = proposalDAO.findByAuthorId(authorId, ProposalStatus.UNPUBLISHED);
     assertEquals(20, unpublishedProposals.size());
