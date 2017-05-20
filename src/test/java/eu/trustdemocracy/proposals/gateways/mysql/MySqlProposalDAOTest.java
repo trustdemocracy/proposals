@@ -143,6 +143,28 @@ public class MySqlProposalDAOTest {
     assertEquals(20, proposals.size());
   }
 
+  @Test
+  public void findByAuthorIdAndStatus() {
+    val authorId = UUID.randomUUID();
+    for (int i = 0; i< 30; i++) {
+      val proposal = createRandomProposal();
+      val user = proposal.getAuthor();
+      user.setId(authorId);
+      proposal.setAuthor(user);
+      proposalDAO.create(proposal);
+      if (i % 3 == 0) {
+        proposalDAO.setStatus(proposal.getId(), ProposalStatus.PUBLISHED);
+      }
+    }
+
+    val publishedProposals = proposalDAO.findByAuthorId(authorId, ProposalStatus.PUBLISHED);
+    assertEquals(10, publishedProposals.size());
+
+
+    val unpublishedProposals = proposalDAO.findByAuthorId(authorId, ProposalStatus.UNPUBLISHED);
+    assertEquals(20, unpublishedProposals.size());
+  }
+
   private Proposal createRandomProposal() {
     val username = MySqlProposalDAO.truncate(lorem.getEmail(), MySqlProposalDAO.AUTHOR_SIZE);
     val title = MySqlProposalDAO.truncate(lorem.getTitle(5, 30), MySqlProposalDAO.TITLE_SIZE);
