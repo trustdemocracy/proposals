@@ -2,7 +2,10 @@ package eu.trustdemocracy.proposals.core.entities.util;
 
 import eu.trustdemocracy.proposals.core.entities.Proposal;
 import eu.trustdemocracy.proposals.core.models.request.ProposalRequestDTO;
+import eu.trustdemocracy.proposals.core.models.response.GetProposalsResponseDTO;
 import eu.trustdemocracy.proposals.core.models.response.ProposalResponseDTO;
+import java.util.List;
+import lombok.val;
 
 public class ProposalMapper {
 
@@ -27,5 +30,15 @@ public class ProposalMapper {
         .setMotivation(proposal.getMotivation())
         .setMeasures(proposal.getMeasures())
         .setStatus(proposal.getStatus());
+  }
+
+  public static GetProposalsResponseDTO createResponse(List<Proposal> proposalList) {
+    val response = new GetProposalsResponseDTO();
+
+    for (val proposal : proposalList) {
+      response.getProposals().add(createResponse(proposal));
+    }
+
+    return response;
   }
 }

@@ -3,7 +3,9 @@ package eu.trustdemocracy.proposals.gateways.fake;
 import eu.trustdemocracy.proposals.core.entities.Proposal;
 import eu.trustdemocracy.proposals.core.entities.ProposalStatus;
 import eu.trustdemocracy.proposals.gateways.ProposalDAO;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import lombok.val;
@@ -39,6 +41,37 @@ public class FakeProposalDAO implements ProposalDAO {
   public Proposal setStatus(UUID id, ProposalStatus status) {
     val proposal = findById(id);
     return proposal.setStatus(status);
+  }
+
+  @Override
+  public List<Proposal> findByAuthorId(UUID authorId) {
+    List<Proposal> result = new ArrayList<>();
+
+    for (val proposal : proposals.values()) {
+      if (proposal.getAuthor().getId().equals(authorId)) {
+        result.add(proposal);
+      }
+    }
+
+    return result;
+  }
+
+  @Override
+  public List<Proposal> findByAuthorId(UUID authorId, ProposalStatus status) {
+    List<Proposal> result = new ArrayList<>();
+
+    for (val proposal : proposals.values()) {
+      if (proposal.getAuthor().getId().equals(authorId) && proposal.getStatus().equals(status)) {
+        result.add(proposal);
+      }
+    }
+
+    return result;
+  }
+
+  @Override
+  public List<Proposal> findAll() {
+    return new ArrayList<>(proposals.values());
   }
 
 }

@@ -8,6 +8,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.UUID;
 import lombok.val;
 
@@ -149,6 +150,21 @@ public class MySqlProposalDAO implements ProposalDAO {
       LOG.error("Failed to update status in proposal with id " + id, e);
       return null;
     }
+  }
+
+  @Override
+  public List<Proposal> findByAuthorId(UUID authorId) {
+    return null;
+  }
+
+  @Override
+  public List<Proposal> findByAuthorId(UUID authorId, ProposalStatus status) {
+    return null;
+  }
+
+  @Override
+  public List<Proposal> findAll() {
+    return null;
   }
 
   protected static String truncate(String string, int limit) {
