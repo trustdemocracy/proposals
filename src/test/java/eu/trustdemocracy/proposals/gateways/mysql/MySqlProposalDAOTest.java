@@ -165,6 +165,20 @@ public class MySqlProposalDAOTest {
     assertEquals(20, unpublishedProposals.size());
   }
 
+  @Test
+  public void findAllPublished() {
+    for (int i = 0; i < 30; i++) {
+      val proposal = createRandomProposal();
+      proposalDAO.create(proposal);
+      if (i % 3 == 0) {
+        proposalDAO.setStatus(proposal.getId(), ProposalStatus.PUBLISHED);
+      }
+    }
+
+    val publishedProposals = proposalDAO.findAllPublished();
+    assertEquals(10, publishedProposals.size());
+  }
+
   private Proposal createRandomProposal() {
     val username = MySqlProposalDAO.truncate(lorem.getEmail(), MySqlProposalDAO.AUTHOR_SIZE);
     val title = MySqlProposalDAO.truncate(lorem.getTitle(5, 30), MySqlProposalDAO.TITLE_SIZE);
