@@ -1,6 +1,7 @@
 package eu.trustdemocracy.proposals.endpoints.controllers;
 
 import eu.trustdemocracy.proposals.core.interactors.exceptions.InvalidTokenException;
+import eu.trustdemocracy.proposals.core.interactors.exceptions.NotAllowedActionException;
 import eu.trustdemocracy.proposals.core.interactors.exceptions.ResourceNotFoundException;
 import eu.trustdemocracy.proposals.core.models.request.CommentRequestDTO;
 import eu.trustdemocracy.proposals.core.models.request.CommentVoteRequestDTO;
@@ -72,7 +73,7 @@ public class CommentController extends Controller {
       serveJsonResponse(routingContext, 200, Json.encodePrettily(commentList));
     } catch (InvalidTokenException e) {
       serveBadCredentials(routingContext);
-    } catch (ResourceNotFoundException e) {
+    } catch (ResourceNotFoundException | NotAllowedActionException e) {
       serveNotFound(routingContext);
     }
   }
@@ -101,7 +102,7 @@ public class CommentController extends Controller {
       serveJsonResponse(routingContext, 200, Json.encodePrettily(comment));
     } catch (InvalidTokenException e) {
       serveBadCredentials(routingContext);
-    } catch (ResourceNotFoundException e) {
+    } catch (ResourceNotFoundException | NotAllowedActionException e) {
       serveNotFound(routingContext);
     }
   }
@@ -127,7 +128,7 @@ public class CommentController extends Controller {
       serveJsonResponse(routingContext, 200, Json.encodePrettily(comment));
     } catch (InvalidTokenException e) {
       serveBadCredentials(routingContext);
-    } catch (ResourceNotFoundException e) {
+    } catch (ResourceNotFoundException | NotAllowedActionException e) {
       serveNotFound(routingContext);
     }
   }
