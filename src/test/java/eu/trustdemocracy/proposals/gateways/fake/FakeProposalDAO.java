@@ -70,8 +70,16 @@ public class FakeProposalDAO implements ProposalDAO {
   }
 
   @Override
-  public List<Proposal> findAll() {
-    return new ArrayList<>(proposals.values());
+  public List<Proposal> findAllPublished() {
+    List<Proposal> result = new ArrayList<>();
+
+    for (val proposal : proposals.values()) {
+      if (proposal.getStatus().equals(ProposalStatus.PUBLISHED)) {
+        result.add(proposal);
+      }
+    }
+
+    return result;
   }
 
 }

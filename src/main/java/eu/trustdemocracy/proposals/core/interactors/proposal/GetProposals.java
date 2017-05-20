@@ -30,7 +30,7 @@ public class GetProposals implements Interactor<GetProposalsRequestDTO, GetPropo
     } else if (requestDTO.getAuthorId() != null) {
       proposalList = proposalDAO.findByAuthorId(user.getId(), ProposalStatus.PUBLISHED);
     } else {
-      proposalList = proposalDAO.findAll();
+      proposalList = proposalDAO.findAllPublished();
     }
 
     return ProposalMapper.createResponse(proposalList);

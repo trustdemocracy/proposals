@@ -163,7 +163,7 @@ public class MySqlProposalDAO implements ProposalDAO {
   }
 
   @Override
-  public List<Proposal> findAll() {
+  public List<Proposal> findAllPublished() {
     return null;
   }
 

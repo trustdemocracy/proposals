@@ -19,6 +19,6 @@ public interface ProposalDAO {
 
   List<Proposal> findByAuthorId(UUID authorId, ProposalStatus status);
 
-  List<Proposal> findAll();
+  List<Proposal> findAllPublished();
 
 }
