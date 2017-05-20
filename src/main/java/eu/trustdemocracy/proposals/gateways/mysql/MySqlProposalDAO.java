@@ -8,6 +8,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import lombok.val;
@@ -154,7 +155,40 @@ public class MySqlProposalDAO implements ProposalDAO {
 
   @Override
   public List<Proposal> findByAuthorId(UUID authorId) {
-    return null;
+    try {
+      val sql = "SELECT id, author_id, author_username, title, brief, source, motivation, measures, status "
+          + "FROM `" + TABLE + "` "
+          + "WHERE author_id = ? ";
+      val statement = conn.prepareStatement(sql);
+
+      statement.setString(1, authorId.toString());
+      val resultSet = statement.executeQuery();
+
+      List<Proposal> proposals = new ArrayList<>();
+
+      while (resultSet.next()) {
+        val user = new User()
+            .setId(UUID.fromString(resultSet.getString("author_id")))
+            .setUsername(resultSet.getString("author_username"));
+
+        val proposal = new Proposal()
+            .setId(UUID.fromString(resultSet.getString("id")))
+            .setAuthor(user)
+            .setTitle(resultSet.getString("title"))
+            .setBrief(resultSet.getString("brief"))
+            .setSource(resultSet.getString("source"))
+            .setMotivation(resultSet.getString("motivation"))
+            .setMeasures(resultSet.getString("measures"))
+            .setStatus(ProposalStatus.valueOf(resultSet.getString("status")));
+
+        proposals.add(proposal);
+      }
+
+      return proposals;
+    } catch (SQLException e) {
+      LOG.error("Failed to find proposals for author " + authorId, e);
+      return null;
+    }
   }
 
   @Override
