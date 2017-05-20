@@ -26,6 +26,7 @@ public class GetProposalsTest {
   private UUID authorId;
   private String authorUsername;
   private UUID strangerId;
+  private String strangerUsername;
 
   @BeforeEach
   public void init() throws JoseException {
@@ -37,6 +38,7 @@ public class GetProposalsTest {
     val lorem = LoremIpsum.getInstance();
 
     strangerId = UUID.randomUUID();
+    strangerUsername = lorem.getEmail();
     authorId = UUID.randomUUID();
     authorUsername = lorem.getEmail();
 
@@ -56,7 +58,7 @@ public class GetProposalsTest {
 
     for (int i = 0; i < 10; i++) {
       val inputProposal = FakeModelsFactory
-          .getRandomProposal(TokenUtils.createToken(strangerId, "otherUser"));
+          .getRandomProposal(TokenUtils.createToken(strangerId, strangerUsername));
 
       val responseProposal = create.execute(inputProposal);
       if (i % 2 == 0) {
@@ -86,6 +88,25 @@ public class GetProposalsTest {
     GetProposalsResponseDTO responseDTO = new GetProposals(proposalDAO).execute(inputRequest);
 
     assertEquals(5, responseDTO.getProposals().size());
+  }
+
+  @Test
+  public void getAllPublishedProposals() {
+    val inputRequest = new GetProposalsRequestDTO()
+        .setAccessToken(TokenUtils.createToken(authorId, authorUsername));
+
+    GetProposalsResponseDTO responseDTO = new GetProposals(proposalDAO).execute(inputRequest);
+
+    assertEquals(10, responseDTO.getProposals().size());
+
+    int countOfPublishedByStranger = 5;
+    for (val proposal : responseDTO.getProposals()) {
+      if (proposal.getAuthorUsername().equals(strangerUsername)) {
+        countOfPublishedByStranger--;
+      }
+    }
+
+    assertEquals(0, countOfPublishedByStranger);
   }
 
 }
