@@ -1,11 +1,11 @@
-package eu.trustdemocracy.proposals.gateways;
+package eu.trustdemocracy.proposals.gateways.repositories;
 
 import eu.trustdemocracy.proposals.core.entities.Comment;
 import eu.trustdemocracy.proposals.core.entities.CommentVoteOption;
 import java.util.List;
 import java.util.UUID;
 
-public interface CommentDAO {
+public interface CommentRepository {
 
   Comment create(Comment comment);
 

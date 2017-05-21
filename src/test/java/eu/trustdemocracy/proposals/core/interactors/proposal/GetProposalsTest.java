@@ -8,8 +8,9 @@ import eu.trustdemocracy.proposals.core.models.FakeModelsFactory;
 import eu.trustdemocracy.proposals.core.models.request.GetProposalsRequestDTO;
 import eu.trustdemocracy.proposals.core.models.response.GetProposalsResponseDTO;
 import eu.trustdemocracy.proposals.core.models.response.ProposalResponseDTO;
-import eu.trustdemocracy.proposals.gateways.ProposalDAO;
-import eu.trustdemocracy.proposals.gateways.fake.FakeProposalDAO;
+import eu.trustdemocracy.proposals.gateways.events.FakeEventsGateway;
+import eu.trustdemocracy.proposals.gateways.repositories.ProposalRepository;
+import eu.trustdemocracy.proposals.gateways.repositories.fake.FakeProposalRepository;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -21,7 +22,8 @@ import org.junit.jupiter.api.Test;
 public class GetProposalsTest {
 
   private Map<UUID, ProposalResponseDTO> reponseProposals;
-  private ProposalDAO proposalDAO;
+  private ProposalRepository proposalRepository;
+  private FakeEventsGateway eventsGateway;
 
   private UUID authorId;
   private String authorUsername;
@@ -32,7 +34,8 @@ public class GetProposalsTest {
   public void init() throws JoseException {
     TokenUtils.generateKeys();
 
-    proposalDAO = new FakeProposalDAO();
+    proposalRepository = new FakeProposalRepository();
+    eventsGateway = new FakeEventsGateway();
     reponseProposals = new HashMap<>();
 
     val lorem = LoremIpsum.getInstance();
@@ -42,8 +45,8 @@ public class GetProposalsTest {
     authorId = UUID.randomUUID();
     authorUsername = lorem.getEmail();
 
-    val create = new CreateProposal(proposalDAO);
-    val publish = new PublishProposal(proposalDAO);
+    val create = new CreateProposal(proposalRepository);
+    val publish = new PublishProposal(proposalRepository, eventsGateway);
 
     for (int i = 0; i < 10; i++) {
       val inputProposal = FakeModelsFactory
@@ -74,7 +77,7 @@ public class GetProposalsTest {
         .setAccessToken(TokenUtils.createToken(authorId, authorUsername))
         .setAuthorId(authorId);
 
-    GetProposalsResponseDTO responseDTO = new GetProposals(proposalDAO).execute(inputRequest);
+    GetProposalsResponseDTO responseDTO = new GetProposals(proposalRepository).execute(inputRequest);
 
     assertEquals(10, responseDTO.getProposals().size());
   }
@@ -85,7 +88,7 @@ public class GetProposalsTest {
         .setAccessToken(TokenUtils.createToken(authorId, authorUsername))
         .setAuthorId(strangerId);
 
-    GetProposalsResponseDTO responseDTO = new GetProposals(proposalDAO).execute(inputRequest);
+    GetProposalsResponseDTO responseDTO = new GetProposals(proposalRepository).execute(inputRequest);
 
     assertEquals(15, responseDTO.getProposals().size());
     for (val proposal : responseDTO.getProposals()) {
@@ -98,7 +101,7 @@ public class GetProposalsTest {
     val inputRequest = new GetProposalsRequestDTO()
         .setAccessToken(TokenUtils.createToken(authorId, authorUsername));
 
-    GetProposalsResponseDTO responseDTO = new GetProposals(proposalDAO).execute(inputRequest);
+    GetProposalsResponseDTO responseDTO = new GetProposals(proposalRepository).execute(inputRequest);
 
     assertEquals(20, responseDTO.getProposals().size());
 

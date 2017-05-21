@@ -1,4 +1,4 @@
-package eu.trustdemocracy.proposals.gateways.mysql;
+package eu.trustdemocracy.proposals.gateways.repositories.mysql;
 
 import ch.vorburger.exec.ManagedProcessException;
 import ch.vorburger.mariadb4j.DB;
@@ -19,15 +19,15 @@ public final class SqlUtils {
     val statement = getConnection().createStatement();
     val sql = "CREATE TABLE `proposals` (" +
 
-        "`id` VARCHAR(" + MySqlProposalDAO.ID_SIZE + ") NOT NULL, " +
-        "`author_id` VARCHAR(" + MySqlProposalDAO.ID_SIZE + "), " +
-        "`author_username` VARCHAR(" + MySqlProposalDAO.AUTHOR_SIZE + "), " +
-        "`title` VARCHAR(" + MySqlProposalDAO.TITLE_SIZE + "), " +
-        "`brief` VARCHAR(" + MySqlProposalDAO.BRIEF_SIZE + "), " +
-        "`source` VARCHAR(" + MySqlProposalDAO.SOURCE_SIZE + "), " +
-        "`motivation` TEXT(" + MySqlProposalDAO.MOTIVATION_SIZE + "), " +
-        "`measures` TEXT(" + MySqlProposalDAO.MEASURES_SIZE + "), " +
-        "`status` VARCHAR(" + MySqlProposalDAO.STATUS_SIZE + "), " +
+        "`id` VARCHAR(" + MySqlProposalRepository.ID_SIZE + ") NOT NULL, " +
+        "`author_id` VARCHAR(" + MySqlProposalRepository.ID_SIZE + "), " +
+        "`author_username` VARCHAR(" + MySqlProposalRepository.AUTHOR_SIZE + "), " +
+        "`title` VARCHAR(" + MySqlProposalRepository.TITLE_SIZE + "), " +
+        "`brief` VARCHAR(" + MySqlProposalRepository.BRIEF_SIZE + "), " +
+        "`source` VARCHAR(" + MySqlProposalRepository.SOURCE_SIZE + "), " +
+        "`motivation` TEXT(" + MySqlProposalRepository.MOTIVATION_SIZE + "), " +
+        "`measures` TEXT(" + MySqlProposalRepository.MEASURES_SIZE + "), " +
+        "`status` VARCHAR(" + MySqlProposalRepository.STATUS_SIZE + "), " +
 
         "PRIMARY KEY ( id ) " +
         ") ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;";
@@ -37,7 +37,8 @@ public final class SqlUtils {
     connectionStack.pop();
   }
 
-  public void createCommentsAndVotesTables() throws SQLException {
+  public void createAllTables() throws SQLException {
+    createProposalsTable();
     createCommentsTable();
     createVotesTable();
   }
@@ -46,12 +47,12 @@ public final class SqlUtils {
     val statement = getConnection().createStatement();
     val sql = "CREATE TABLE `comments` (" +
 
-        "`id` VARCHAR(" + MySqlCommentDAO.ID_SIZE + ") NOT NULL, " +
-        "`proposal_id` VARCHAR(" + MySqlCommentDAO.ID_SIZE + ") NOT NULL, " +
-        "`root_comment_id` VARCHAR(" + MySqlCommentDAO.ID_SIZE + ") NOT NULL, " +
-        "`author_id` VARCHAR(" + MySqlCommentDAO.ID_SIZE + ") NOT NULL, " +
-        "`author_username` VARCHAR(" + MySqlCommentDAO.ID_SIZE + ") NOT NULL, " +
-        "`content` VARCHAR(" + MySqlCommentDAO.CONTENT_SIZE + "), " +
+        "`id` VARCHAR(" + MySqlCommentRepository.ID_SIZE + ") NOT NULL, " +
+        "`proposal_id` VARCHAR(" + MySqlCommentRepository.ID_SIZE + ") NOT NULL, " +
+        "`root_comment_id` VARCHAR(" + MySqlCommentRepository.ID_SIZE + ") NOT NULL, " +
+        "`author_id` VARCHAR(" + MySqlCommentRepository.ID_SIZE + ") NOT NULL, " +
+        "`author_username` VARCHAR(" + MySqlCommentRepository.ID_SIZE + ") NOT NULL, " +
+        "`content` VARCHAR(" + MySqlCommentRepository.CONTENT_SIZE + "), " +
         "`created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, " +
 
         "PRIMARY KEY ( id ) " +
@@ -66,9 +67,9 @@ public final class SqlUtils {
     val statement = getConnection().createStatement();
     val sql = "CREATE TABLE `votes` (" +
 
-        "`comment_id` VARCHAR(" + MySqlCommentDAO.ID_SIZE + ") NOT NULL, " +
-        "`voter_id` VARCHAR(" + MySqlCommentDAO.ID_SIZE + ") NOT NULL, " +
-        "`option` VARCHAR(" + MySqlCommentDAO.OPTION_SIZE + ") NOT NULL, " +
+        "`comment_id` VARCHAR(" + MySqlCommentRepository.ID_SIZE + ") NOT NULL, " +
+        "`voter_id` VARCHAR(" + MySqlCommentRepository.ID_SIZE + ") NOT NULL, " +
+        "`option` VARCHAR(" + MySqlCommentRepository.OPTION_SIZE + ") NOT NULL, " +
 
         "PRIMARY KEY ( comment_id, voter_id ) " +
         ") ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;";

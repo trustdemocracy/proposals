@@ -1,11 +1,11 @@
-package eu.trustdemocracy.proposals.gateways;
+package eu.trustdemocracy.proposals.gateways.repositories;
 
 import eu.trustdemocracy.proposals.core.entities.Proposal;
 import eu.trustdemocracy.proposals.core.entities.ProposalStatus;
 import java.util.List;
 import java.util.UUID;
 
-public interface ProposalDAO {
+public interface ProposalRepository {
 
   Proposal create(Proposal proposal);
 

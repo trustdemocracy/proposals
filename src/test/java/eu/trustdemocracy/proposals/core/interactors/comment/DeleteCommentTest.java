@@ -15,8 +15,9 @@ import eu.trustdemocracy.proposals.core.models.FakeModelsFactory;
 import eu.trustdemocracy.proposals.core.models.request.CommentRequestDTO;
 import eu.trustdemocracy.proposals.core.models.request.ProposalRequestDTO;
 import eu.trustdemocracy.proposals.core.models.response.CommentResponseDTO;
-import eu.trustdemocracy.proposals.gateways.fake.FakeCommentDAO;
-import eu.trustdemocracy.proposals.gateways.fake.FakeProposalDAO;
+import eu.trustdemocracy.proposals.gateways.events.FakeEventsGateway;
+import eu.trustdemocracy.proposals.gateways.repositories.fake.FakeCommentRepository;
+import eu.trustdemocracy.proposals.gateways.repositories.fake.FakeProposalRepository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -28,8 +29,9 @@ import org.junit.jupiter.api.Test;
 public class DeleteCommentTest {
 
   private List<CommentResponseDTO> responseComments;
-  private FakeCommentDAO commentDAO;
-  private FakeProposalDAO proposalDAO;
+  private FakeCommentRepository commentDAO;
+  private FakeProposalRepository proposalDAO;
+  private FakeEventsGateway eventsGateway;
 
   private UUID authorId;
   private String authorUsername;
@@ -38,8 +40,9 @@ public class DeleteCommentTest {
   public void init() throws JoseException {
     TokenUtils.generateKeys();
 
-    commentDAO = new FakeCommentDAO();
-    proposalDAO = new FakeProposalDAO();
+    commentDAO = new FakeCommentRepository();
+    proposalDAO = new FakeProposalRepository();
+    eventsGateway = new FakeEventsGateway();
     responseComments = new ArrayList<>();
 
     val lorem = LoremIpsum.getInstance();
@@ -50,11 +53,11 @@ public class DeleteCommentTest {
     val createdProposal = new CreateProposal(proposalDAO)
         .execute(FakeModelsFactory.getRandomProposal(proposalAuthorToken));
 
-    new PublishProposal(proposalDAO).execute(new ProposalRequestDTO()
+    new PublishProposal(proposalDAO, eventsGateway).execute(new ProposalRequestDTO()
         .setId(createdProposal.getId())
         .setAuthorToken(proposalAuthorToken));
 
-    val interactor = new CreateComment(commentDAO, proposalDAO);
+    val interactor = new CreateComment(commentDAO, proposalDAO, eventsGateway);
     for (int i = 0; i < 10; i++) {
       val inputComment = FakeModelsFactory
           .getRandomComment(authorId, authorUsername, createdProposal.getId());

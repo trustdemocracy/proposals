@@ -15,7 +15,7 @@ public class Comment {
 
   private UUID id;
   private UUID rootCommentId;
-  private UUID proposalId;
+  private Proposal proposal = new Proposal();
   private User author;
   private String content;
   private long timestamp;

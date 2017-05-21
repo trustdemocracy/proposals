@@ -7,22 +7,22 @@ import eu.trustdemocracy.proposals.core.interactors.exceptions.NotAllowedActionE
 import eu.trustdemocracy.proposals.core.interactors.exceptions.ResourceNotFoundException;
 import eu.trustdemocracy.proposals.core.models.request.CommentRequestDTO;
 import eu.trustdemocracy.proposals.core.models.response.CommentResponseDTO;
-import eu.trustdemocracy.proposals.gateways.CommentDAO;
+import eu.trustdemocracy.proposals.gateways.repositories.CommentRepository;
 import lombok.val;
 
 public class DeleteComment implements Interactor<CommentRequestDTO, CommentResponseDTO> {
 
-  private CommentDAO commentDAO;
+  private CommentRepository commentRepository;
 
-  public DeleteComment(CommentDAO commentDAO) {
-    this.commentDAO = commentDAO;
+  public DeleteComment(CommentRepository commentRepository) {
+    this.commentRepository = commentRepository;
   }
 
   @Override
   public CommentResponseDTO execute(CommentRequestDTO commentRequestDTO) {
     val user = UserMapper.createEntity(commentRequestDTO.getAuthorToken());
 
-    val foundComment = commentDAO.findById(commentRequestDTO.getId());
+    val foundComment = commentRepository.findById(commentRequestDTO.getId());
 
     if (foundComment == null) {
       throw new ResourceNotFoundException(
@@ -32,11 +32,11 @@ public class DeleteComment implements Interactor<CommentRequestDTO, CommentRespo
     if (!foundComment.getAuthor().getId().equals(user.getId())) {
       throw new NotAllowedActionException(
           "Failed to delete comment [" + foundComment.getId()
-              + "] in proposal [" + foundComment.getProposalId()
+              + "] in proposal [" + foundComment.getProposal().getId()
               + "]. User [" + user.getId() + "] is not the owner");
     }
 
-    val comment = commentDAO.deleteById(commentRequestDTO.getId());
+    val comment = commentRepository.deleteById(commentRequestDTO.getId());
     return CommentMapper.createResponse(comment);
   }
 }

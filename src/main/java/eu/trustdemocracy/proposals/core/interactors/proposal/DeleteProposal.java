@@ -7,21 +7,21 @@ import eu.trustdemocracy.proposals.core.interactors.exceptions.NotAllowedActionE
 import eu.trustdemocracy.proposals.core.interactors.exceptions.ResourceNotFoundException;
 import eu.trustdemocracy.proposals.core.models.request.ProposalRequestDTO;
 import eu.trustdemocracy.proposals.core.models.response.ProposalResponseDTO;
-import eu.trustdemocracy.proposals.gateways.ProposalDAO;
+import eu.trustdemocracy.proposals.gateways.repositories.ProposalRepository;
 import lombok.val;
 
 public class DeleteProposal implements Interactor<ProposalRequestDTO, ProposalResponseDTO> {
 
-  private ProposalDAO proposalDAO;
+  private ProposalRepository proposalRepository;
 
-  public DeleteProposal(ProposalDAO proposalDAO) {
-    this.proposalDAO = proposalDAO;
+  public DeleteProposal(ProposalRepository proposalRepository) {
+    this.proposalRepository = proposalRepository;
   }
 
   public ProposalResponseDTO execute(ProposalRequestDTO inputProposal) {
     val user = UserMapper.createEntity(inputProposal.getAuthorToken());
 
-    val foundProposal = proposalDAO.findById(inputProposal.getId());
+    val foundProposal = proposalRepository.findById(inputProposal.getId());
 
     if (foundProposal == null) {
       throw new ResourceNotFoundException(
@@ -34,7 +34,7 @@ public class DeleteProposal implements Interactor<ProposalRequestDTO, ProposalRe
               + "]. User [" + user.getId() + "] is not the owner");
     }
 
-    val proposal = proposalDAO.delete(inputProposal.getId());
+    val proposal = proposalRepository.delete(inputProposal.getId());
     return ProposalMapper.createResponse(proposal);
   }
 }

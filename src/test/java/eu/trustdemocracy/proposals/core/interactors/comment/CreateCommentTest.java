@@ -15,10 +15,11 @@ import eu.trustdemocracy.proposals.core.models.request.CommentRequestDTO;
 import eu.trustdemocracy.proposals.core.models.request.ProposalRequestDTO;
 import eu.trustdemocracy.proposals.core.models.response.CommentResponseDTO;
 import eu.trustdemocracy.proposals.core.models.response.ProposalResponseDTO;
-import eu.trustdemocracy.proposals.gateways.CommentDAO;
-import eu.trustdemocracy.proposals.gateways.ProposalDAO;
-import eu.trustdemocracy.proposals.gateways.fake.FakeCommentDAO;
-import eu.trustdemocracy.proposals.gateways.fake.FakeProposalDAO;
+import eu.trustdemocracy.proposals.gateways.events.FakeEventsGateway;
+import eu.trustdemocracy.proposals.gateways.repositories.CommentRepository;
+import eu.trustdemocracy.proposals.gateways.repositories.ProposalRepository;
+import eu.trustdemocracy.proposals.gateways.repositories.fake.FakeCommentRepository;
+import eu.trustdemocracy.proposals.gateways.repositories.fake.FakeProposalRepository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -30,8 +31,9 @@ import org.junit.jupiter.api.Test;
 public class CreateCommentTest {
 
   private List<CommentRequestDTO> inputComments;
-  private CommentDAO commentDAO;
-  private ProposalDAO proposalDAO;
+  private CommentRepository commentRepository;
+  private ProposalRepository proposalRepository;
+  private FakeEventsGateway eventsGateway;
 
   private String proposalAuthorToken;
   private ProposalResponseDTO createdProposal;
@@ -41,14 +43,15 @@ public class CreateCommentTest {
   public void init() throws JoseException {
     TokenUtils.generateKeys();
 
-    commentDAO = new FakeCommentDAO();
-    proposalDAO = new FakeProposalDAO();
+    commentRepository = new FakeCommentRepository();
+    proposalRepository = new FakeProposalRepository();
+    eventsGateway = new FakeEventsGateway();
     inputComments = new ArrayList<>();
 
     val lorem = LoremIpsum.getInstance();
 
     proposalAuthorToken = TokenUtils.createToken(UUID.randomUUID(), lorem.getEmail());
-    createdProposal = new CreateProposal(proposalDAO)
+    createdProposal = new CreateProposal(proposalRepository)
         .execute(FakeModelsFactory.getRandomProposal(proposalAuthorToken));
 
     for (int i = 0; i < 10; i++) {
@@ -62,7 +65,7 @@ public class CreateCommentTest {
     inputComment.setAuthorToken("");
 
     assertThrows(InvalidTokenException.class,
-        () -> new CreateComment(commentDAO, proposalDAO).execute(inputComment));
+        () -> new CreateComment(commentRepository, proposalRepository, eventsGateway).execute(inputComment));
   }
 
   @Test
@@ -71,7 +74,7 @@ public class CreateCommentTest {
         .setProposalId(UUID.randomUUID());
 
     assertThrows(ResourceNotFoundException.class,
-        () -> new CreateComment(commentDAO, proposalDAO).execute(inputComment));
+        () -> new CreateComment(commentRepository, proposalRepository, eventsGateway).execute(inputComment));
   }
 
   @Test
@@ -79,12 +82,12 @@ public class CreateCommentTest {
     val inputComment = inputComments.get(0);
 
     assertThrows(ResourceNotFoundException.class,
-        () -> new CreateComment(commentDAO, proposalDAO).execute(inputComment));
+        () -> new CreateComment(commentRepository, proposalRepository, eventsGateway).execute(inputComment));
   }
 
   @Test
   public void createComment() {
-    new PublishProposal(proposalDAO).execute(new ProposalRequestDTO()
+    new PublishProposal(proposalRepository, eventsGateway).execute(new ProposalRequestDTO()
         .setId(createdProposal.getId())
         .setAuthorToken(proposalAuthorToken));
 
@@ -92,7 +95,7 @@ public class CreateCommentTest {
     val inputComment = inputComments.get(0)
         .setAuthorToken(TokenUtils.createToken(UUID.randomUUID(), username));
     val timestamp = System.currentTimeMillis();
-    CommentResponseDTO responseComment = new CreateComment(commentDAO, proposalDAO)
+    CommentResponseDTO responseComment = new CreateComment(commentRepository, proposalRepository, eventsGateway)
         .execute(inputComment);
 
     assertEquals(username, responseComment.getAuthorUsername());

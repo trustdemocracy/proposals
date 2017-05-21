@@ -1,8 +1,8 @@
-package eu.trustdemocracy.proposals.gateways.fake;
+package eu.trustdemocracy.proposals.gateways.repositories.fake;
 
 import eu.trustdemocracy.proposals.core.entities.Comment;
 import eu.trustdemocracy.proposals.core.entities.CommentVoteOption;
-import eu.trustdemocracy.proposals.gateways.CommentDAO;
+import eu.trustdemocracy.proposals.gateways.repositories.CommentRepository;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.UUID;
 import lombok.val;
 
-public class FakeCommentDAO implements CommentDAO {
+public class FakeCommentRepository implements CommentRepository {
 
   public Map<UUID, Comment> comments = new HashMap<>();
   public Map<String, CommentVoteOption> votes = new HashMap<>();
@@ -64,7 +64,7 @@ public class FakeCommentDAO implements CommentDAO {
   public List<Comment> findByProposalId(UUID proposalId) {
     List<Comment> comments = new ArrayList<>();
     for (val comment : this.comments.values()) {
-      if (comment.getProposalId().equals(proposalId)) {
+      if (comment.getProposal().getId().equals(proposalId)) {
         comments.add(comment);
       }
     }

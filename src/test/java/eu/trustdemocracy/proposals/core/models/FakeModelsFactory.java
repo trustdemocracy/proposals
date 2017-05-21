@@ -5,7 +5,7 @@ import com.thedeanda.lorem.LoremIpsum;
 import eu.trustdemocracy.proposals.core.interactors.util.TokenUtils;
 import eu.trustdemocracy.proposals.core.models.request.CommentRequestDTO;
 import eu.trustdemocracy.proposals.core.models.request.ProposalRequestDTO;
-import eu.trustdemocracy.proposals.gateways.mysql.MySqlProposalDAO;
+import eu.trustdemocracy.proposals.gateways.repositories.mysql.MySqlProposalRepository;
 import java.util.UUID;
 import lombok.val;
 
@@ -14,18 +14,18 @@ public class FakeModelsFactory {
   private static Lorem lorem = LoremIpsum.getInstance();
 
   public static ProposalRequestDTO getRandomProposal() {
-    val currentUsername = truncate(lorem.getEmail(), MySqlProposalDAO.AUTHOR_SIZE);
+    val currentUsername = truncate(lorem.getEmail(), MySqlProposalRepository.AUTHOR_SIZE);
     val authorToken = TokenUtils.createToken(UUID.randomUUID(), currentUsername);
 
     return getRandomProposal(authorToken);
   }
 
   public static ProposalRequestDTO getRandomProposal(String authorToken) {
-    val title = truncate(lorem.getTitle(5, 30), MySqlProposalDAO.TITLE_SIZE);
-    val brief = truncate(lorem.getParagraphs(1, 1), MySqlProposalDAO.BRIEF_SIZE);
-    val source = truncate(lorem.getUrl(), MySqlProposalDAO.SOURCE_SIZE);
-    val motivation = truncate(lorem.getParagraphs(1, 5), MySqlProposalDAO.MOTIVATION_SIZE);
-    val measures = truncate(lorem.getParagraphs(1, 5), MySqlProposalDAO.MEASURES_SIZE);
+    val title = truncate(lorem.getTitle(5, 30), MySqlProposalRepository.TITLE_SIZE);
+    val brief = truncate(lorem.getParagraphs(1, 1), MySqlProposalRepository.BRIEF_SIZE);
+    val source = truncate(lorem.getUrl(), MySqlProposalRepository.SOURCE_SIZE);
+    val motivation = truncate(lorem.getParagraphs(1, 5), MySqlProposalRepository.MOTIVATION_SIZE);
+    val measures = truncate(lorem.getParagraphs(1, 5), MySqlProposalRepository.MEASURES_SIZE);
 
     return new ProposalRequestDTO()
         .setAuthorToken(authorToken)

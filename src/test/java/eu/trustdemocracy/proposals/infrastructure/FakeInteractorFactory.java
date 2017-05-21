@@ -13,10 +13,12 @@ import eu.trustdemocracy.proposals.core.interactors.proposal.GetProposal;
 import eu.trustdemocracy.proposals.core.interactors.proposal.GetProposals;
 import eu.trustdemocracy.proposals.core.interactors.proposal.PublishProposal;
 import eu.trustdemocracy.proposals.core.interactors.proposal.UnpublishProposal;
-import eu.trustdemocracy.proposals.gateways.CommentDAO;
-import eu.trustdemocracy.proposals.gateways.ProposalDAO;
-import eu.trustdemocracy.proposals.gateways.mysql.MySqlCommentDAO;
-import eu.trustdemocracy.proposals.gateways.mysql.MySqlProposalDAO;
+import eu.trustdemocracy.proposals.gateways.events.EventsGateway;
+import eu.trustdemocracy.proposals.gateways.events.FakeEventsGateway;
+import eu.trustdemocracy.proposals.gateways.repositories.CommentRepository;
+import eu.trustdemocracy.proposals.gateways.repositories.ProposalRepository;
+import eu.trustdemocracy.proposals.gateways.repositories.mysql.MySqlCommentRepository;
+import eu.trustdemocracy.proposals.gateways.repositories.mysql.MySqlProposalRepository;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -48,7 +50,7 @@ public class FakeInteractorFactory implements InteractorFactory {
 
   @Override
   public PublishProposal getPublishProposal() {
-    return new PublishProposal(getProposalDAO());
+    return new PublishProposal(getProposalDAO(), getEventsGateway());
   }
 
   @Override
@@ -58,7 +60,7 @@ public class FakeInteractorFactory implements InteractorFactory {
 
   @Override
   public CreateComment getCreateComment() {
-    return new CreateComment(getCommentDAO(), getProposalDAO());
+    return new CreateComment(getCommentDAO(), getProposalDAO(), getEventsGateway());
   }
 
   @Override
@@ -76,14 +78,17 @@ public class FakeInteractorFactory implements InteractorFactory {
     return new VoteComment(getCommentDAO());
   }
 
-  private ProposalDAO getProposalDAO() {
-    return new MySqlProposalDAO(getConnection());
+  private ProposalRepository getProposalDAO() {
+    return new MySqlProposalRepository(getConnection());
   }
 
-  private CommentDAO getCommentDAO() {
-    return new MySqlCommentDAO(getConnection());
+  private CommentRepository getCommentDAO() {
+    return new MySqlCommentRepository(getConnection());
   }
 
+  private EventsGateway getEventsGateway() {
+    return new FakeEventsGateway();
+  }
 
   private Connection getConnection() {
     if (connection == null) {
@@ -106,33 +111,33 @@ public class FakeInteractorFactory implements InteractorFactory {
 
   private void buildTables(Connection connection) throws SQLException {
     val proposals = "CREATE TABLE `proposals` (" +
-        "`id` VARCHAR(" + MySqlProposalDAO.ID_SIZE + ") NOT NULL, " +
-        "`author_id` VARCHAR(" + MySqlProposalDAO.AUTHOR_SIZE + "), " +
-        "`author_username` VARCHAR(" + MySqlProposalDAO.AUTHOR_SIZE + "), " +
-        "`title` VARCHAR(" + MySqlProposalDAO.TITLE_SIZE + "), " +
-        "`brief` VARCHAR(" + MySqlProposalDAO.BRIEF_SIZE + "), " +
-        "`source` VARCHAR(" + MySqlProposalDAO.SOURCE_SIZE + "), " +
-        "`motivation` TEXT(" + MySqlProposalDAO.MOTIVATION_SIZE + "), " +
-        "`measures` TEXT(" + MySqlProposalDAO.MEASURES_SIZE + "), " +
-        "`status` VARCHAR(" + MySqlProposalDAO.STATUS_SIZE + "), " +
+        "`id` VARCHAR(" + MySqlProposalRepository.ID_SIZE + ") NOT NULL, " +
+        "`author_id` VARCHAR(" + MySqlProposalRepository.AUTHOR_SIZE + "), " +
+        "`author_username` VARCHAR(" + MySqlProposalRepository.AUTHOR_SIZE + "), " +
+        "`title` VARCHAR(" + MySqlProposalRepository.TITLE_SIZE + "), " +
+        "`brief` VARCHAR(" + MySqlProposalRepository.BRIEF_SIZE + "), " +
+        "`source` VARCHAR(" + MySqlProposalRepository.SOURCE_SIZE + "), " +
+        "`motivation` TEXT(" + MySqlProposalRepository.MOTIVATION_SIZE + "), " +
+        "`measures` TEXT(" + MySqlProposalRepository.MEASURES_SIZE + "), " +
+        "`status` VARCHAR(" + MySqlProposalRepository.STATUS_SIZE + "), " +
         "PRIMARY KEY ( id ) " +
         ") ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;";
 
     val comments = "CREATE TABLE `comments` (" +
-        "`id` VARCHAR(" + MySqlCommentDAO.ID_SIZE + ") NOT NULL, " +
-        "`proposal_id` VARCHAR(" + MySqlCommentDAO.ID_SIZE + ") NOT NULL, " +
-        "`root_comment_id` VARCHAR(" + MySqlCommentDAO.ID_SIZE + ") NOT NULL, " +
-        "`author_id` VARCHAR(" + MySqlCommentDAO.ID_SIZE + ") NOT NULL, " +
-        "`author_username` VARCHAR(" + MySqlCommentDAO.ID_SIZE + ") NOT NULL, " +
-        "`content` VARCHAR(" + MySqlCommentDAO.CONTENT_SIZE + "), " +
+        "`id` VARCHAR(" + MySqlCommentRepository.ID_SIZE + ") NOT NULL, " +
+        "`proposal_id` VARCHAR(" + MySqlCommentRepository.ID_SIZE + ") NOT NULL, " +
+        "`root_comment_id` VARCHAR(" + MySqlCommentRepository.ID_SIZE + ") NOT NULL, " +
+        "`author_id` VARCHAR(" + MySqlCommentRepository.ID_SIZE + ") NOT NULL, " +
+        "`author_username` VARCHAR(" + MySqlCommentRepository.ID_SIZE + ") NOT NULL, " +
+        "`content` VARCHAR(" + MySqlCommentRepository.CONTENT_SIZE + "), " +
         "`created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, " +
         "PRIMARY KEY ( id ) " +
         ") ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci; ";
 
     val votes = "CREATE TABLE `votes` (" +
-        "`comment_id` VARCHAR(" + MySqlCommentDAO.ID_SIZE + ") NOT NULL, " +
-        "`voter_id` VARCHAR(" + MySqlCommentDAO.ID_SIZE + ") NOT NULL, " +
-        "`option` VARCHAR(" + MySqlCommentDAO.OPTION_SIZE + ") NOT NULL, " +
+        "`comment_id` VARCHAR(" + MySqlCommentRepository.ID_SIZE + ") NOT NULL, " +
+        "`voter_id` VARCHAR(" + MySqlCommentRepository.ID_SIZE + ") NOT NULL, " +
+        "`option` VARCHAR(" + MySqlCommentRepository.OPTION_SIZE + ") NOT NULL, " +
         "PRIMARY KEY ( comment_id, voter_id ) " +
         ") ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;";
 

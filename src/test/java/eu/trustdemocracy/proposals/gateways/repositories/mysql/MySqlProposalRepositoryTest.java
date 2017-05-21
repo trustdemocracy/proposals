@@ -1,4 +1,4 @@
-package eu.trustdemocracy.proposals.gateways.mysql;
+package eu.trustdemocracy.proposals.gateways.repositories.mysql;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -12,7 +12,7 @@ import eu.trustdemocracy.proposals.core.entities.Proposal;
 import eu.trustdemocracy.proposals.core.entities.ProposalStatus;
 import eu.trustdemocracy.proposals.core.entities.util.UserMapper;
 import eu.trustdemocracy.proposals.core.interactors.util.TokenUtils;
-import eu.trustdemocracy.proposals.gateways.ProposalDAO;
+import eu.trustdemocracy.proposals.gateways.repositories.ProposalRepository;
 import java.sql.SQLException;
 import java.util.UUID;
 import lombok.val;
@@ -20,13 +20,13 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class MySqlProposalDAOTest {
+public class MySqlProposalRepositoryTest {
 
   private SqlUtils sqlUtils;
 
   private Lorem lorem = LoremIpsum.getInstance();
 
-  private ProposalDAO proposalDAO;
+  private ProposalRepository proposalRepository;
 
   @BeforeEach
   public void init() throws Exception {
@@ -37,7 +37,7 @@ public class MySqlProposalDAOTest {
 
     sqlUtils.createProposalsTable();
 
-    proposalDAO = new MySqlProposalDAO(sqlUtils.getConnection());
+    proposalRepository = new eu.trustdemocracy.proposals.gateways.repositories.mysql.MySqlProposalRepository(sqlUtils.getConnection());
   }
 
   @AfterEach
@@ -49,7 +49,7 @@ public class MySqlProposalDAOTest {
   public void createProposal() throws SQLException {
     val proposal = createRandomProposal();
 
-    val resultProposal = proposalDAO.create(proposal);
+    val resultProposal = proposalRepository.create(proposal);
 
     val connection = sqlUtils.getConnection();
     val sql = "SELECT * FROM `proposals` WHERE id = ?";
@@ -71,8 +71,8 @@ public class MySqlProposalDAOTest {
   public void findProposal() {
     val proposal = createRandomProposal();
 
-    val createdProposal = proposalDAO.create(proposal);
-    val resultProposal = proposalDAO.findById(createdProposal.getId());
+    val createdProposal = proposalRepository.create(proposal);
+    val resultProposal = proposalRepository.findById(createdProposal.getId());
 
     assertEquals(createdProposal.getId(), resultProposal.getId());
     assertEquals(proposal.getTitle(), resultProposal.getTitle());
@@ -86,11 +86,11 @@ public class MySqlProposalDAOTest {
   @Test
   public void deleteProposal() throws SQLException {
     val proposal = createRandomProposal();
-    val resultProposal = proposalDAO.create(proposal);
+    val resultProposal = proposalRepository.create(proposal);
 
     assertNotNull(resultProposal.getId());
 
-    proposalDAO.delete(resultProposal.getId());
+    proposalRepository.delete(resultProposal.getId());
 
     val connection = sqlUtils.getConnection();
     val sql = "SELECT * FROM `proposals` WHERE id = ?";
@@ -105,9 +105,9 @@ public class MySqlProposalDAOTest {
   public void setStatus() throws SQLException {
     val proposal = createRandomProposal();
 
-    val resultProposal = proposalDAO.create(proposal);
+    val resultProposal = proposalRepository.create(proposal);
     assertEquals(ProposalStatus.UNPUBLISHED, resultProposal.getStatus());
-    val publishedProposal = proposalDAO.setStatus(resultProposal.getId(), ProposalStatus.PUBLISHED);
+    val publishedProposal = proposalRepository.setStatus(resultProposal.getId(), ProposalStatus.PUBLISHED);
     assertEquals(ProposalStatus.PUBLISHED, publishedProposal.getStatus());
 
     val connection = sqlUtils.getConnection();
@@ -119,7 +119,7 @@ public class MySqlProposalDAOTest {
     assertTrue(publishedResultSet.next());
     assertEquals(ProposalStatus.PUBLISHED.toString(), publishedResultSet.getString("status"));
 
-    val unpublishedProposal = proposalDAO
+    val unpublishedProposal = proposalRepository
         .setStatus(resultProposal.getId(), ProposalStatus.UNPUBLISHED);
     assertEquals(ProposalStatus.UNPUBLISHED, unpublishedProposal.getStatus());
     val unpublishedResultSet = statement.executeQuery();
@@ -136,10 +136,10 @@ public class MySqlProposalDAOTest {
       val user = proposal.getAuthor();
       user.setId(authorId);
       proposal.setAuthor(user);
-      proposalDAO.create(proposal);
+      proposalRepository.create(proposal);
     }
 
-    val proposals = proposalDAO.findByAuthorId(authorId);
+    val proposals = proposalRepository.findByAuthorId(authorId);
 
     assertEquals(20, proposals.size());
   }
@@ -152,16 +152,16 @@ public class MySqlProposalDAOTest {
       val user = proposal.getAuthor();
       user.setId(authorId);
       proposal.setAuthor(user);
-      proposalDAO.create(proposal);
+      proposalRepository.create(proposal);
       if (i % 3 == 0) {
-        proposalDAO.setStatus(proposal.getId(), ProposalStatus.PUBLISHED);
+        proposalRepository.setStatus(proposal.getId(), ProposalStatus.PUBLISHED);
       }
     }
 
-    val publishedProposals = proposalDAO.findByAuthorId(authorId, ProposalStatus.PUBLISHED);
+    val publishedProposals = proposalRepository.findByAuthorId(authorId, ProposalStatus.PUBLISHED);
     assertEquals(10, publishedProposals.size());
 
-    val unpublishedProposals = proposalDAO.findByAuthorId(authorId, ProposalStatus.UNPUBLISHED);
+    val unpublishedProposals = proposalRepository.findByAuthorId(authorId, ProposalStatus.UNPUBLISHED);
     assertEquals(20, unpublishedProposals.size());
   }
 
@@ -169,25 +169,31 @@ public class MySqlProposalDAOTest {
   public void findAllPublished() {
     for (int i = 0; i < 30; i++) {
       val proposal = createRandomProposal();
-      proposalDAO.create(proposal);
+      proposalRepository.create(proposal);
       if (i % 3 == 0) {
-        proposalDAO.setStatus(proposal.getId(), ProposalStatus.PUBLISHED);
+        proposalRepository.setStatus(proposal.getId(), ProposalStatus.PUBLISHED);
       }
     }
 
-    val publishedProposals = proposalDAO.findAllPublished();
+    val publishedProposals = proposalRepository.findAllPublished();
     assertEquals(10, publishedProposals.size());
   }
 
   private Proposal createRandomProposal() {
-    val username = MySqlProposalDAO.truncate(lorem.getEmail(), MySqlProposalDAO.AUTHOR_SIZE);
-    val title = MySqlProposalDAO.truncate(lorem.getTitle(5, 30), MySqlProposalDAO.TITLE_SIZE);
-    val brief = MySqlProposalDAO.truncate(lorem.getParagraphs(1, 1), MySqlProposalDAO.BRIEF_SIZE);
-    val source = MySqlProposalDAO.truncate(lorem.getUrl(), MySqlProposalDAO.SOURCE_SIZE);
+    val username = eu.trustdemocracy.proposals.gateways.repositories.mysql.MySqlProposalRepository
+        .truncate(lorem.getEmail(), eu.trustdemocracy.proposals.gateways.repositories.mysql.MySqlProposalRepository.AUTHOR_SIZE);
+    val title = eu.trustdemocracy.proposals.gateways.repositories.mysql.MySqlProposalRepository
+        .truncate(lorem.getTitle(5, 30), eu.trustdemocracy.proposals.gateways.repositories.mysql.MySqlProposalRepository.TITLE_SIZE);
+    val brief = eu.trustdemocracy.proposals.gateways.repositories.mysql.MySqlProposalRepository
+        .truncate(lorem.getParagraphs(1, 1), eu.trustdemocracy.proposals.gateways.repositories.mysql.MySqlProposalRepository.BRIEF_SIZE);
+    val source = eu.trustdemocracy.proposals.gateways.repositories.mysql.MySqlProposalRepository
+        .truncate(lorem.getUrl(), eu.trustdemocracy.proposals.gateways.repositories.mysql.MySqlProposalRepository.SOURCE_SIZE);
     val motivation =
-        MySqlProposalDAO.truncate(lorem.getParagraphs(1, 5), MySqlProposalDAO.MOTIVATION_SIZE);
+        eu.trustdemocracy.proposals.gateways.repositories.mysql.MySqlProposalRepository
+            .truncate(lorem.getParagraphs(1, 5), eu.trustdemocracy.proposals.gateways.repositories.mysql.MySqlProposalRepository.MOTIVATION_SIZE);
     val measures =
-        MySqlProposalDAO.truncate(lorem.getParagraphs(1, 5), MySqlProposalDAO.MEASURES_SIZE);
+        eu.trustdemocracy.proposals.gateways.repositories.mysql.MySqlProposalRepository
+            .truncate(lorem.getParagraphs(1, 5), eu.trustdemocracy.proposals.gateways.repositories.mysql.MySqlProposalRepository.MEASURES_SIZE);
 
     val user = UserMapper.createEntity(TokenUtils.createToken(UUID.randomUUID(), username));
     return new Proposal()

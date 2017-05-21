@@ -10,8 +10,10 @@ import eu.trustdemocracy.proposals.core.interactors.proposal.GetProposal;
 import eu.trustdemocracy.proposals.core.interactors.proposal.GetProposals;
 import eu.trustdemocracy.proposals.core.interactors.proposal.PublishProposal;
 import eu.trustdemocracy.proposals.core.interactors.proposal.UnpublishProposal;
-import eu.trustdemocracy.proposals.gateways.CommentDAO;
-import eu.trustdemocracy.proposals.gateways.ProposalDAO;
+import eu.trustdemocracy.proposals.gateways.events.EventsGateway;
+import eu.trustdemocracy.proposals.gateways.events.EventsGatewayImpl;
+import eu.trustdemocracy.proposals.gateways.repositories.CommentRepository;
+import eu.trustdemocracy.proposals.gateways.repositories.ProposalRepository;
 
 public class DefaultInteractorFactory implements InteractorFactory {
 
@@ -49,7 +51,7 @@ public class DefaultInteractorFactory implements InteractorFactory {
 
   @Override
   public PublishProposal getPublishProposal() {
-    return new PublishProposal(getProposalDAO());
+    return new PublishProposal(getProposalDAO(), getEventsGateway());
   }
 
   @Override
@@ -59,7 +61,7 @@ public class DefaultInteractorFactory implements InteractorFactory {
 
   @Override
   public CreateComment getCreateComment() {
-    return new CreateComment(getCommentDAO(), getProposalDAO());
+    return new CreateComment(getCommentDAO(), getProposalDAO(), getEventsGateway());
   }
 
   @Override
@@ -77,11 +79,15 @@ public class DefaultInteractorFactory implements InteractorFactory {
     return new VoteComment(getCommentDAO());
   }
 
-  public CommentDAO getCommentDAO() {
-    return DAOFactory.getCommentDAO();
+  private CommentRepository getCommentDAO() {
+    return RepositoryFactory.getCommentRepository();
   }
 
-  public ProposalDAO getProposalDAO() {
-    return DAOFactory.getProposalDAO();
+  private ProposalRepository getProposalDAO() {
+    return RepositoryFactory.getProposalRepository();
+  }
+
+  private EventsGateway getEventsGateway() {
+    return new EventsGatewayImpl();
   }
 }

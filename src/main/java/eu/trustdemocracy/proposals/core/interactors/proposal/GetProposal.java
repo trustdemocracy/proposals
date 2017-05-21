@@ -7,20 +7,20 @@ import eu.trustdemocracy.proposals.core.interactors.exceptions.NotAllowedActionE
 import eu.trustdemocracy.proposals.core.interactors.exceptions.ResourceNotFoundException;
 import eu.trustdemocracy.proposals.core.models.request.ProposalRequestDTO;
 import eu.trustdemocracy.proposals.core.models.response.ProposalResponseDTO;
-import eu.trustdemocracy.proposals.gateways.ProposalDAO;
+import eu.trustdemocracy.proposals.gateways.repositories.ProposalRepository;
 import lombok.val;
 
 public class GetProposal implements Interactor<ProposalRequestDTO, ProposalResponseDTO> {
 
-  private ProposalDAO proposalDAO;
+  private ProposalRepository proposalRepository;
 
-  public GetProposal(ProposalDAO proposalDAO) {
-    this.proposalDAO = proposalDAO;
+  public GetProposal(ProposalRepository proposalRepository) {
+    this.proposalRepository = proposalRepository;
   }
 
   public ProposalResponseDTO execute(ProposalRequestDTO inputProposal) {
     val user = UserMapper.createEntity(inputProposal.getAuthorToken());
-    val proposal = proposalDAO.findById(inputProposal.getId());
+    val proposal = proposalRepository.findById(inputProposal.getId());
 
     if (proposal == null) {
       throw new ResourceNotFoundException(

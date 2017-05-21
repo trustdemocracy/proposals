@@ -11,8 +11,8 @@ import eu.trustdemocracy.proposals.core.interactors.util.TokenUtils;
 import eu.trustdemocracy.proposals.core.models.FakeModelsFactory;
 import eu.trustdemocracy.proposals.core.models.request.ProposalRequestDTO;
 import eu.trustdemocracy.proposals.core.models.response.ProposalResponseDTO;
-import eu.trustdemocracy.proposals.gateways.ProposalDAO;
-import eu.trustdemocracy.proposals.gateways.fake.FakeProposalDAO;
+import eu.trustdemocracy.proposals.gateways.repositories.ProposalRepository;
+import eu.trustdemocracy.proposals.gateways.repositories.fake.FakeProposalRepository;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -24,7 +24,7 @@ import org.junit.jupiter.api.Test;
 public class DeleteProposalTest {
 
   private Map<UUID, ProposalResponseDTO> reponseProposals;
-  private ProposalDAO proposalDAO;
+  private ProposalRepository proposalRepository;
 
   private UUID authorId;
   private String authorUsername;
@@ -33,7 +33,7 @@ public class DeleteProposalTest {
   public void init() throws JoseException {
     TokenUtils.generateKeys();
 
-    proposalDAO = new FakeProposalDAO();
+    proposalRepository = new FakeProposalRepository();
     reponseProposals = new HashMap<>();
 
     val lorem = LoremIpsum.getInstance();
@@ -41,7 +41,7 @@ public class DeleteProposalTest {
     authorUsername = lorem.getEmail();
     authorId = UUID.randomUUID();
 
-    val interactor = new CreateProposal(proposalDAO);
+    val interactor = new CreateProposal(proposalRepository);
 
     for (int i = 0; i < 10; i++) {
       val inputProposal = FakeModelsFactory
@@ -61,7 +61,7 @@ public class DeleteProposalTest {
         .setAuthorToken("");
 
     assertThrows(InvalidTokenException.class,
-        () -> new DeleteProposal(proposalDAO).execute(inputProposal));
+        () -> new DeleteProposal(proposalRepository).execute(inputProposal));
   }
 
   @Test
@@ -73,7 +73,7 @@ public class DeleteProposalTest {
         .setAuthorToken(TokenUtils.createToken(UUID.randomUUID(), authorUsername));
 
     assertThrows(NotAllowedActionException.class,
-        () -> new DeleteProposal(proposalDAO).execute(inputProposal));
+        () -> new DeleteProposal(proposalRepository).execute(inputProposal));
   }
 
   @Test
@@ -83,7 +83,7 @@ public class DeleteProposalTest {
         .setAuthorToken(TokenUtils.createToken(authorId, authorUsername));
 
     assertThrows(ResourceNotFoundException.class,
-        () -> new DeleteProposal(proposalDAO).execute(inputProposal));
+        () -> new DeleteProposal(proposalRepository).execute(inputProposal));
   }
 
   @Test
@@ -94,7 +94,7 @@ public class DeleteProposalTest {
         .setId(createdProposal.getId())
         .setAuthorToken(TokenUtils.createToken(authorId, authorUsername));
 
-    ProposalResponseDTO responseProposal = new DeleteProposal(proposalDAO).execute(inputProposal);
+    ProposalResponseDTO responseProposal = new DeleteProposal(proposalRepository).execute(inputProposal);
 
     assertEquals(authorUsername, responseProposal.getAuthorUsername());
     assertEquals(createdProposal.getTitle(), responseProposal.getTitle());
@@ -104,7 +104,7 @@ public class DeleteProposalTest {
     assertEquals(createdProposal.getMeasures(), responseProposal.getMeasures());
 
     assertThrows(ResourceNotFoundException.class,
-        () -> new GetProposal(proposalDAO).execute(inputProposal));
+        () -> new GetProposal(proposalRepository).execute(inputProposal));
   }
 
 }

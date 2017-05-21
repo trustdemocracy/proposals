@@ -1,9 +1,9 @@
-package eu.trustdemocracy.proposals.gateways.mysql;
+package eu.trustdemocracy.proposals.gateways.repositories.mysql;
 
 import eu.trustdemocracy.proposals.core.entities.Proposal;
 import eu.trustdemocracy.proposals.core.entities.ProposalStatus;
 import eu.trustdemocracy.proposals.core.entities.User;
-import eu.trustdemocracy.proposals.gateways.ProposalDAO;
+import eu.trustdemocracy.proposals.gateways.repositories.ProposalRepository;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import java.sql.Connection;
@@ -13,9 +13,9 @@ import java.util.List;
 import java.util.UUID;
 import lombok.val;
 
-public class MySqlProposalDAO implements ProposalDAO {
+public class MySqlProposalRepository implements ProposalRepository {
 
-  private static final Logger LOG = LoggerFactory.getLogger(MySqlProposalDAO.class);
+  private static final Logger LOG = LoggerFactory.getLogger(MySqlProposalRepository.class);
 
   private static final String TABLE = "proposals";
   public static final int ID_SIZE = 36;
@@ -29,7 +29,7 @@ public class MySqlProposalDAO implements ProposalDAO {
 
   private Connection conn;
 
-  public MySqlProposalDAO(Connection conn) {
+  public MySqlProposalRepository(Connection conn) {
     this.conn = conn;
   }
 

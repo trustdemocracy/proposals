@@ -15,8 +15,9 @@ import eu.trustdemocracy.proposals.core.models.FakeModelsFactory;
 import eu.trustdemocracy.proposals.core.models.request.CommentVoteRequestDTO;
 import eu.trustdemocracy.proposals.core.models.request.ProposalRequestDTO;
 import eu.trustdemocracy.proposals.core.models.response.CommentResponseDTO;
-import eu.trustdemocracy.proposals.gateways.fake.FakeCommentDAO;
-import eu.trustdemocracy.proposals.gateways.fake.FakeProposalDAO;
+import eu.trustdemocracy.proposals.gateways.events.FakeEventsGateway;
+import eu.trustdemocracy.proposals.gateways.repositories.fake.FakeCommentRepository;
+import eu.trustdemocracy.proposals.gateways.repositories.fake.FakeProposalRepository;
 import java.util.UUID;
 import lombok.val;
 import org.jose4j.lang.JoseException;
@@ -26,16 +27,18 @@ import org.junit.jupiter.api.Test;
 public class VoteCommentTest {
 
   private CommentResponseDTO responseComment;
-  private FakeCommentDAO commentDAO;
-  private FakeProposalDAO proposalDAO;
+  private FakeCommentRepository commentDAO;
+  private FakeProposalRepository proposalDAO;
+  private FakeEventsGateway eventsGateway;
   private LoremIpsum lorem;
 
   @BeforeEach
   public void init() throws JoseException {
     TokenUtils.generateKeys();
 
-    commentDAO = new FakeCommentDAO();
-    proposalDAO = new FakeProposalDAO();
+    commentDAO = new FakeCommentRepository();
+    proposalDAO = new FakeProposalRepository();
+    eventsGateway = new FakeEventsGateway();
 
     lorem = LoremIpsum.getInstance();
 
@@ -43,13 +46,14 @@ public class VoteCommentTest {
     val createdProposal = new CreateProposal(proposalDAO)
         .execute(FakeModelsFactory.getRandomProposal(proposalAuthorToken));
 
-    new PublishProposal(proposalDAO).execute(new ProposalRequestDTO()
+    new PublishProposal(proposalDAO, eventsGateway).execute(new ProposalRequestDTO()
         .setId(createdProposal.getId())
         .setAuthorToken(proposalAuthorToken));
 
     val inputComment = FakeModelsFactory.getRandomComment(createdProposal.getId());
 
-    responseComment = new CreateComment(commentDAO, proposalDAO).execute(inputComment);
+    responseComment = new CreateComment(commentDAO, proposalDAO, eventsGateway)
+        .execute(inputComment);
   }
 
   @Test

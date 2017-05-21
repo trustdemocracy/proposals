@@ -11,8 +11,9 @@ import eu.trustdemocracy.proposals.core.interactors.util.TokenUtils;
 import eu.trustdemocracy.proposals.core.models.FakeModelsFactory;
 import eu.trustdemocracy.proposals.core.models.request.ProposalRequestDTO;
 import eu.trustdemocracy.proposals.core.models.response.ProposalResponseDTO;
-import eu.trustdemocracy.proposals.gateways.ProposalDAO;
-import eu.trustdemocracy.proposals.gateways.fake.FakeProposalDAO;
+import eu.trustdemocracy.proposals.gateways.events.FakeEventsGateway;
+import eu.trustdemocracy.proposals.gateways.repositories.ProposalRepository;
+import eu.trustdemocracy.proposals.gateways.repositories.fake.FakeProposalRepository;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -24,7 +25,8 @@ import org.junit.jupiter.api.Test;
 public class GetProposalTest {
 
   private Map<UUID, ProposalResponseDTO> reponseProposals;
-  private ProposalDAO proposalDAO;
+  private ProposalRepository proposalRepository;
+  private FakeEventsGateway eventsGateway;
 
   private UUID authorId;
   private String authorUsername;
@@ -33,7 +35,8 @@ public class GetProposalTest {
   public void init() throws JoseException {
     TokenUtils.generateKeys();
 
-    proposalDAO = new FakeProposalDAO();
+    proposalRepository = new FakeProposalRepository();
+    eventsGateway = new FakeEventsGateway();
     reponseProposals = new HashMap<>();
 
     val lorem = LoremIpsum.getInstance();
@@ -41,7 +44,7 @@ public class GetProposalTest {
     authorId = UUID.randomUUID();
     authorUsername = lorem.getEmail();
 
-    val interactor = new CreateProposal(proposalDAO);
+    val interactor = new CreateProposal(proposalRepository);
 
     for (int i = 0; i < 10; i++) {
       val inputProposal = FakeModelsFactory
@@ -59,7 +62,7 @@ public class GetProposalTest {
         .setAuthorToken(TokenUtils.createToken(authorId, authorUsername));
 
     assertThrows(ResourceNotFoundException.class,
-        () -> new GetProposal(proposalDAO).execute(inputProposal));
+        () -> new GetProposal(proposalRepository).execute(inputProposal));
   }
 
   @Test
@@ -71,7 +74,7 @@ public class GetProposalTest {
         .setAuthorToken(TokenUtils.createToken(UUID.randomUUID(), authorUsername));
 
     assertThrows(NotAllowedActionException.class,
-        () -> new GetProposal(proposalDAO).execute(inputProposal));
+        () -> new GetProposal(proposalRepository).execute(inputProposal));
   }
 
   @Test
@@ -82,7 +85,7 @@ public class GetProposalTest {
         .setId(createdProposal.getId())
         .setAuthorToken(TokenUtils.createToken(authorId, authorUsername));
 
-    ProposalResponseDTO responseProposal = new GetProposal(proposalDAO).execute(inputProposal);
+    ProposalResponseDTO responseProposal = new GetProposal(proposalRepository).execute(inputProposal);
 
     assertEquals(authorUsername, responseProposal.getAuthorUsername());
     assertEquals(createdProposal.getTitle(), responseProposal.getTitle());
@@ -101,14 +104,14 @@ public class GetProposalTest {
         .setId(createdProposal.getId())
         .setAuthorToken(TokenUtils.createToken(authorId, authorUsername));
 
-    new PublishProposal(proposalDAO).execute(authorInputProposal);
+    new PublishProposal(proposalRepository, eventsGateway).execute(authorInputProposal);
 
     val inputProposal = new ProposalRequestDTO()
         .setId(createdProposal.getId())
         .setAuthorToken(TokenUtils.createToken(UUID.randomUUID(), authorUsername));
 
 
-    ProposalResponseDTO responseProposal = new GetProposal(proposalDAO).execute(inputProposal);
+    ProposalResponseDTO responseProposal = new GetProposal(proposalRepository).execute(inputProposal);
 
     assertEquals(authorUsername, responseProposal.getAuthorUsername());
     assertEquals(createdProposal.getTitle(), responseProposal.getTitle());
@@ -127,9 +130,9 @@ public class GetProposalTest {
         .setId(createdProposal.getId())
         .setAuthorToken(TokenUtils.createToken(authorId, authorUsername));
 
-    new PublishProposal(proposalDAO).execute(inputProposal);
+    new PublishProposal(proposalRepository, eventsGateway).execute(inputProposal);
 
-    ProposalResponseDTO responseProposal = new GetProposal(proposalDAO).execute(inputProposal);
+    ProposalResponseDTO responseProposal = new GetProposal(proposalRepository).execute(inputProposal);
 
     assertEquals(authorUsername, responseProposal.getAuthorUsername());
     assertEquals(createdProposal.getTitle(), responseProposal.getTitle());
