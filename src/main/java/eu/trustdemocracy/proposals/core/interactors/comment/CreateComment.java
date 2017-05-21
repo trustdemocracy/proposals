@@ -25,6 +25,7 @@ public class CreateComment implements Interactor<CommentRequestDTO, CommentRespo
   ) {
     this.commentRepository = commentRepository;
     this.proposalRepository = proposalRepository;
+    this.eventsGateway = eventsGateway;
   }
 
   @Override
@@ -43,6 +44,12 @@ public class CreateComment implements Interactor<CommentRequestDTO, CommentRespo
 
     val comment = CommentMapper.createEntity(commentRequestDTO);
     comment.setProposal(foundProposal);
-    return CommentMapper.createResponse(commentRepository.create(comment));
+
+    val createdComment = commentRepository.create(comment);
+    createdComment.setProposal(foundProposal);
+
+    eventsGateway.createCommentEvent(comment);
+
+    return CommentMapper.createResponse(createdComment);
   }
 }
