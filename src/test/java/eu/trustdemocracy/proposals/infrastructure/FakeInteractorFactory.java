@@ -13,6 +13,8 @@ import eu.trustdemocracy.proposals.core.interactors.proposal.GetProposal;
 import eu.trustdemocracy.proposals.core.interactors.proposal.GetProposals;
 import eu.trustdemocracy.proposals.core.interactors.proposal.PublishProposal;
 import eu.trustdemocracy.proposals.core.interactors.proposal.UnpublishProposal;
+import eu.trustdemocracy.proposals.gateways.events.EventsGateway;
+import eu.trustdemocracy.proposals.gateways.events.FakeEventsGateway;
 import eu.trustdemocracy.proposals.gateways.repositories.CommentRepository;
 import eu.trustdemocracy.proposals.gateways.repositories.ProposalRepository;
 import eu.trustdemocracy.proposals.gateways.repositories.mysql.MySqlCommentRepository;
@@ -28,7 +30,7 @@ public class FakeInteractorFactory implements InteractorFactory {
 
   @Override
   public CreateProposal getCreateProposal() {
-    return new CreateProposal(getProposalDAO());
+    return new CreateProposal(getProposalDAO(), getEventsGateway());
   }
 
   @Override
@@ -58,7 +60,7 @@ public class FakeInteractorFactory implements InteractorFactory {
 
   @Override
   public CreateComment getCreateComment() {
-    return new CreateComment(getCommentDAO(), getProposalDAO());
+    return new CreateComment(getCommentDAO(), getProposalDAO(), getEventsGateway());
   }
 
   @Override
@@ -84,6 +86,9 @@ public class FakeInteractorFactory implements InteractorFactory {
     return new MySqlCommentRepository(getConnection());
   }
 
+  private EventsGateway getEventsGateway() {
+    return new FakeEventsGateway();
+  }
 
   private Connection getConnection() {
     if (connection == null) {

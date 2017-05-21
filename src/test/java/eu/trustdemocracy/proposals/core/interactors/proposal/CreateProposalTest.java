@@ -10,6 +10,7 @@ import eu.trustdemocracy.proposals.core.interactors.util.TokenUtils;
 import eu.trustdemocracy.proposals.core.models.FakeModelsFactory;
 import eu.trustdemocracy.proposals.core.models.request.ProposalRequestDTO;
 import eu.trustdemocracy.proposals.core.models.response.ProposalResponseDTO;
+import eu.trustdemocracy.proposals.gateways.events.FakeEventsGateway;
 import eu.trustdemocracy.proposals.gateways.repositories.ProposalRepository;
 import eu.trustdemocracy.proposals.gateways.repositories.fake.FakeProposalRepository;
 import java.util.ArrayList;
@@ -24,6 +25,7 @@ public class CreateProposalTest {
 
   private List<ProposalRequestDTO> inputProposals;
   private ProposalRepository proposalRepository;
+  private FakeEventsGateway eventsGateway;
 
   private UUID authorId;
   private String authorUsername;
@@ -33,6 +35,7 @@ public class CreateProposalTest {
     TokenUtils.generateKeys();
 
     proposalRepository = new FakeProposalRepository();
+    eventsGateway = new FakeEventsGateway();
     inputProposals = new ArrayList<>();
 
     val lorem = LoremIpsum.getInstance();
@@ -51,13 +54,13 @@ public class CreateProposalTest {
     val inputProposal = inputProposals.get(0);
     inputProposal.setAuthorToken("");
     assertThrows(InvalidTokenException.class,
-        () -> new CreateProposal(proposalRepository).execute(inputProposal));
+        () -> new CreateProposal(proposalRepository, eventsGateway).execute(inputProposal));
   }
 
   @Test
   public void createProposal() {
     val inputProposal = inputProposals.get(0);
-    ProposalResponseDTO responseProposal = new CreateProposal(proposalRepository).execute(inputProposal);
+    ProposalResponseDTO responseProposal = new CreateProposal(proposalRepository, eventsGateway).execute(inputProposal);
 
     assertEquals(authorUsername, responseProposal.getAuthorUsername());
     assertEquals(inputProposal.getTitle(), responseProposal.getTitle());

@@ -8,6 +8,7 @@ import eu.trustdemocracy.proposals.core.models.FakeModelsFactory;
 import eu.trustdemocracy.proposals.core.models.request.GetProposalsRequestDTO;
 import eu.trustdemocracy.proposals.core.models.response.GetProposalsResponseDTO;
 import eu.trustdemocracy.proposals.core.models.response.ProposalResponseDTO;
+import eu.trustdemocracy.proposals.gateways.events.FakeEventsGateway;
 import eu.trustdemocracy.proposals.gateways.repositories.ProposalRepository;
 import eu.trustdemocracy.proposals.gateways.repositories.fake.FakeProposalRepository;
 import java.util.HashMap;
@@ -22,6 +23,7 @@ public class GetProposalsTest {
 
   private Map<UUID, ProposalResponseDTO> reponseProposals;
   private ProposalRepository proposalRepository;
+  private FakeEventsGateway eventsGateway;
 
   private UUID authorId;
   private String authorUsername;
@@ -33,6 +35,7 @@ public class GetProposalsTest {
     TokenUtils.generateKeys();
 
     proposalRepository = new FakeProposalRepository();
+    eventsGateway = new FakeEventsGateway();
     reponseProposals = new HashMap<>();
 
     val lorem = LoremIpsum.getInstance();
@@ -42,7 +45,7 @@ public class GetProposalsTest {
     authorId = UUID.randomUUID();
     authorUsername = lorem.getEmail();
 
-    val create = new CreateProposal(proposalRepository);
+    val create = new CreateProposal(proposalRepository, eventsGateway);
     val publish = new PublishProposal(proposalRepository);
 
     for (int i = 0; i < 10; i++) {

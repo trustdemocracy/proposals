@@ -7,6 +7,7 @@ import eu.trustdemocracy.proposals.core.interactors.Interactor;
 import eu.trustdemocracy.proposals.core.interactors.exceptions.ResourceNotFoundException;
 import eu.trustdemocracy.proposals.core.models.request.CommentRequestDTO;
 import eu.trustdemocracy.proposals.core.models.response.CommentResponseDTO;
+import eu.trustdemocracy.proposals.gateways.events.EventsGateway;
 import eu.trustdemocracy.proposals.gateways.repositories.CommentRepository;
 import eu.trustdemocracy.proposals.gateways.repositories.ProposalRepository;
 import lombok.val;
@@ -15,8 +16,13 @@ public class CreateComment implements Interactor<CommentRequestDTO, CommentRespo
 
   private CommentRepository commentRepository;
   private ProposalRepository proposalRepository;
+  private EventsGateway eventsGateway;
 
-  public CreateComment(CommentRepository commentRepository, ProposalRepository proposalRepository) {
+  public CreateComment(
+      CommentRepository commentRepository,
+      ProposalRepository proposalRepository,
+      EventsGateway eventsGateway
+  ) {
     this.commentRepository = commentRepository;
     this.proposalRepository = proposalRepository;
   }

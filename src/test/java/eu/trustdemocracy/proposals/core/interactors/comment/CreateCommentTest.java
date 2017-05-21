@@ -15,6 +15,7 @@ import eu.trustdemocracy.proposals.core.models.request.CommentRequestDTO;
 import eu.trustdemocracy.proposals.core.models.request.ProposalRequestDTO;
 import eu.trustdemocracy.proposals.core.models.response.CommentResponseDTO;
 import eu.trustdemocracy.proposals.core.models.response.ProposalResponseDTO;
+import eu.trustdemocracy.proposals.gateways.events.FakeEventsGateway;
 import eu.trustdemocracy.proposals.gateways.repositories.CommentRepository;
 import eu.trustdemocracy.proposals.gateways.repositories.ProposalRepository;
 import eu.trustdemocracy.proposals.gateways.repositories.fake.FakeCommentRepository;
@@ -32,6 +33,7 @@ public class CreateCommentTest {
   private List<CommentRequestDTO> inputComments;
   private CommentRepository commentRepository;
   private ProposalRepository proposalRepository;
+  private FakeEventsGateway eventsGateway;
 
   private String proposalAuthorToken;
   private ProposalResponseDTO createdProposal;
@@ -43,12 +45,13 @@ public class CreateCommentTest {
 
     commentRepository = new FakeCommentRepository();
     proposalRepository = new FakeProposalRepository();
+    eventsGateway = new FakeEventsGateway();
     inputComments = new ArrayList<>();
 
     val lorem = LoremIpsum.getInstance();
 
     proposalAuthorToken = TokenUtils.createToken(UUID.randomUUID(), lorem.getEmail());
-    createdProposal = new CreateProposal(proposalRepository)
+    createdProposal = new CreateProposal(proposalRepository, eventsGateway)
         .execute(FakeModelsFactory.getRandomProposal(proposalAuthorToken));
 
     for (int i = 0; i < 10; i++) {
@@ -62,7 +65,7 @@ public class CreateCommentTest {
     inputComment.setAuthorToken("");
 
     assertThrows(InvalidTokenException.class,
-        () -> new CreateComment(commentRepository, proposalRepository).execute(inputComment));
+        () -> new CreateComment(commentRepository, proposalRepository, eventsGateway).execute(inputComment));
   }
 
   @Test
@@ -71,7 +74,7 @@ public class CreateCommentTest {
         .setProposalId(UUID.randomUUID());
 
     assertThrows(ResourceNotFoundException.class,
-        () -> new CreateComment(commentRepository, proposalRepository).execute(inputComment));
+        () -> new CreateComment(commentRepository, proposalRepository, eventsGateway).execute(inputComment));
   }
 
   @Test
@@ -79,7 +82,7 @@ public class CreateCommentTest {
     val inputComment = inputComments.get(0);
 
     assertThrows(ResourceNotFoundException.class,
-        () -> new CreateComment(commentRepository, proposalRepository).execute(inputComment));
+        () -> new CreateComment(commentRepository, proposalRepository, eventsGateway).execute(inputComment));
   }
 
   @Test
@@ -92,7 +95,7 @@ public class CreateCommentTest {
     val inputComment = inputComments.get(0)
         .setAuthorToken(TokenUtils.createToken(UUID.randomUUID(), username));
     val timestamp = System.currentTimeMillis();
-    CommentResponseDTO responseComment = new CreateComment(commentRepository, proposalRepository)
+    CommentResponseDTO responseComment = new CreateComment(commentRepository, proposalRepository, eventsGateway)
         .execute(inputComment);
 
     assertEquals(username, responseComment.getAuthorUsername());

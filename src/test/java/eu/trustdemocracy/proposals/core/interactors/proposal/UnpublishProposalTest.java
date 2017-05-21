@@ -13,6 +13,7 @@ import eu.trustdemocracy.proposals.core.interactors.util.TokenUtils;
 import eu.trustdemocracy.proposals.core.models.FakeModelsFactory;
 import eu.trustdemocracy.proposals.core.models.request.ProposalRequestDTO;
 import eu.trustdemocracy.proposals.core.models.response.ProposalResponseDTO;
+import eu.trustdemocracy.proposals.gateways.events.FakeEventsGateway;
 import eu.trustdemocracy.proposals.gateways.repositories.ProposalRepository;
 import eu.trustdemocracy.proposals.gateways.repositories.fake.FakeProposalRepository;
 import java.util.HashMap;
@@ -27,6 +28,7 @@ public class UnpublishProposalTest {
 
   private Map<UUID, ProposalResponseDTO> reponseProposals;
   private ProposalRepository proposalRepository;
+  private FakeEventsGateway eventsGateway;
 
   private UUID authorId;
   private String authorUsername;
@@ -34,6 +36,7 @@ public class UnpublishProposalTest {
   @BeforeEach
   public void init() throws JoseException {
     proposalRepository = new FakeProposalRepository();
+    eventsGateway = new FakeEventsGateway();
     reponseProposals = new HashMap<>();
     TokenUtils.generateKeys();
 
@@ -42,7 +45,7 @@ public class UnpublishProposalTest {
     authorId = UUID.randomUUID();
     authorUsername = lorem.getEmail();
 
-    val createProposal = new CreateProposal(proposalRepository);
+    val createProposal = new CreateProposal(proposalRepository, eventsGateway);
     val publishProposal = new PublishProposal(proposalRepository);
 
     for (int i = 0; i < 10; i++) {
