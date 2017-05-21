@@ -7,15 +7,15 @@ import eu.trustdemocracy.proposals.core.interactors.exceptions.NotAllowedActionE
 import eu.trustdemocracy.proposals.core.interactors.exceptions.ResourceNotFoundException;
 import eu.trustdemocracy.proposals.core.models.request.CommentVoteRequestDTO;
 import eu.trustdemocracy.proposals.core.models.response.CommentResponseDTO;
-import eu.trustdemocracy.proposals.gateways.CommentDAO;
+import eu.trustdemocracy.proposals.gateways.CommentRepository;
 import lombok.val;
 
 public class VoteComment implements Interactor<CommentVoteRequestDTO, CommentResponseDTO> {
 
-  private CommentDAO commentDAO;
+  private CommentRepository commentRepository;
 
-  public VoteComment(CommentDAO commentDAO) {
-    this.commentDAO = commentDAO;
+  public VoteComment(CommentRepository commentRepository) {
+    this.commentRepository = commentRepository;
   }
 
   @Override
@@ -23,7 +23,7 @@ public class VoteComment implements Interactor<CommentVoteRequestDTO, CommentRes
     val voter = UserMapper.createEntity(commentVoteRequestDTO.getVoterToken());
     val commentId = commentVoteRequestDTO.getCommentId();
 
-    val foundComment = commentDAO.findById(commentId);
+    val foundComment = commentRepository.findById(commentId);
 
     if (foundComment == null) {
       throw new ResourceNotFoundException(
@@ -39,7 +39,7 @@ public class VoteComment implements Interactor<CommentVoteRequestDTO, CommentRes
 
     val option = commentVoteRequestDTO.getOption();
 
-    val comment = commentDAO.vote(commentId, voter.getId(), option);
+    val comment = commentRepository.vote(commentId, voter.getId(), option);
     return CommentMapper.createResponse(comment);
   }
 }

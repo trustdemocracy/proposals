@@ -13,8 +13,8 @@ import eu.trustdemocracy.proposals.core.interactors.util.TokenUtils;
 import eu.trustdemocracy.proposals.core.models.FakeModelsFactory;
 import eu.trustdemocracy.proposals.core.models.request.ProposalRequestDTO;
 import eu.trustdemocracy.proposals.core.models.response.ProposalResponseDTO;
-import eu.trustdemocracy.proposals.gateways.ProposalDAO;
-import eu.trustdemocracy.proposals.gateways.fake.FakeProposalDAO;
+import eu.trustdemocracy.proposals.gateways.ProposalRepository;
+import eu.trustdemocracy.proposals.gateways.fake.FakeProposalRepository;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -26,14 +26,14 @@ import org.junit.jupiter.api.Test;
 public class UnpublishProposalTest {
 
   private Map<UUID, ProposalResponseDTO> reponseProposals;
-  private ProposalDAO proposalDAO;
+  private ProposalRepository proposalRepository;
 
   private UUID authorId;
   private String authorUsername;
 
   @BeforeEach
   public void init() throws JoseException {
-    proposalDAO = new FakeProposalDAO();
+    proposalRepository = new FakeProposalRepository();
     reponseProposals = new HashMap<>();
     TokenUtils.generateKeys();
 
@@ -42,8 +42,8 @@ public class UnpublishProposalTest {
     authorId = UUID.randomUUID();
     authorUsername = lorem.getEmail();
 
-    val createProposal = new CreateProposal(proposalDAO);
-    val publishProposal = new PublishProposal(proposalDAO);
+    val createProposal = new CreateProposal(proposalRepository);
+    val publishProposal = new PublishProposal(proposalRepository);
 
     for (int i = 0; i < 10; i++) {
       val inputProposal = FakeModelsFactory
@@ -67,7 +67,7 @@ public class UnpublishProposalTest {
         .setAuthorToken("");
 
     assertThrows(InvalidTokenException.class,
-        () -> new UnpublishProposal(proposalDAO).execute(inputProposal));
+        () -> new UnpublishProposal(proposalRepository).execute(inputProposal));
   }
 
   @Test
@@ -79,7 +79,7 @@ public class UnpublishProposalTest {
         .setAuthorToken(TokenUtils.createToken(UUID.randomUUID(), authorUsername));
 
     assertThrows(NotAllowedActionException.class,
-        () -> new UnpublishProposal(proposalDAO).execute(inputProposal));
+        () -> new UnpublishProposal(proposalRepository).execute(inputProposal));
   }
 
   @Test
@@ -89,7 +89,7 @@ public class UnpublishProposalTest {
         .setAuthorToken(TokenUtils.createToken(authorId, authorUsername));
 
     assertThrows(ResourceNotFoundException.class,
-        () -> new UnpublishProposal(proposalDAO).execute(inputProposal));
+        () -> new UnpublishProposal(proposalRepository).execute(inputProposal));
   }
 
   @Test
@@ -100,7 +100,7 @@ public class UnpublishProposalTest {
         .setId(publishedProposal.getId())
         .setAuthorToken(TokenUtils.createToken(authorId, authorUsername));
 
-    ProposalResponseDTO responseProposal = new UnpublishProposal(proposalDAO).execute(inputProposal);
+    ProposalResponseDTO responseProposal = new UnpublishProposal(proposalRepository).execute(inputProposal);
 
     assertEquals(authorUsername, responseProposal.getAuthorUsername());
     assertEquals(publishedProposal.getTitle(), responseProposal.getTitle());

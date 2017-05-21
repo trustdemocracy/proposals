@@ -3,7 +3,7 @@ package eu.trustdemocracy.proposals.gateways.mysql;
 import eu.trustdemocracy.proposals.core.entities.Comment;
 import eu.trustdemocracy.proposals.core.entities.CommentVoteOption;
 import eu.trustdemocracy.proposals.core.entities.User;
-import eu.trustdemocracy.proposals.gateways.CommentDAO;
+import eu.trustdemocracy.proposals.gateways.CommentRepository;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import java.sql.Connection;
@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.UUID;
 import lombok.val;
 
-public class MySqlCommentDAO implements CommentDAO {
+public class MySqlCommentRepository implements CommentRepository {
 
   private static final int DUPLICATE_PK_ERROR_CODE = 1062;
   private static final String COMMENTS_TABLE = "comments";
@@ -23,12 +23,12 @@ public class MySqlCommentDAO implements CommentDAO {
   public static final int CONTENT_SIZE = 5000;
   public static final int OPTION_SIZE = 10;
 
-  private static final Logger LOG = LoggerFactory.getLogger(MySqlProposalDAO.class);
+  private static final Logger LOG = LoggerFactory.getLogger(MySqlProposalRepository.class);
 
 
   private Connection conn;
 
-  public MySqlCommentDAO(Connection conn) {
+  public MySqlCommentRepository(Connection conn) {
     this.conn = conn;
   }
 

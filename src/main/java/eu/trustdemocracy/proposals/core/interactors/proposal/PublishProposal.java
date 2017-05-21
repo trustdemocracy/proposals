@@ -8,21 +8,21 @@ import eu.trustdemocracy.proposals.core.interactors.exceptions.NotAllowedActionE
 import eu.trustdemocracy.proposals.core.interactors.exceptions.ResourceNotFoundException;
 import eu.trustdemocracy.proposals.core.models.request.ProposalRequestDTO;
 import eu.trustdemocracy.proposals.core.models.response.ProposalResponseDTO;
-import eu.trustdemocracy.proposals.gateways.ProposalDAO;
+import eu.trustdemocracy.proposals.gateways.ProposalRepository;
 import lombok.val;
 
 public class PublishProposal implements Interactor<ProposalRequestDTO, ProposalResponseDTO> {
 
-  private ProposalDAO proposalDAO;
+  private ProposalRepository proposalRepository;
 
-  public PublishProposal(ProposalDAO proposalDAO) {
-    this.proposalDAO = proposalDAO;
+  public PublishProposal(ProposalRepository proposalRepository) {
+    this.proposalRepository = proposalRepository;
   }
 
   public ProposalResponseDTO execute(ProposalRequestDTO inputProposal) {
     val user = UserMapper.createEntity(inputProposal.getAuthorToken());
 
-    val foundProposal = proposalDAO.findById(inputProposal.getId());
+    val foundProposal = proposalRepository.findById(inputProposal.getId());
 
     if (foundProposal == null) {
       throw new ResourceNotFoundException(
@@ -35,7 +35,7 @@ public class PublishProposal implements Interactor<ProposalRequestDTO, ProposalR
               + "]. User [" + user.getId() + "] is not the owner");
     }
 
-    val proposal = proposalDAO.setStatus(inputProposal.getId(), ProposalStatus.PUBLISHED);
+    val proposal = proposalRepository.setStatus(inputProposal.getId(), ProposalStatus.PUBLISHED);
     return ProposalMapper.createResponse(proposal);
   }
 }

@@ -1,28 +1,28 @@
 package eu.trustdemocracy.proposals.infrastructure;
 
-import eu.trustdemocracy.proposals.gateways.CommentDAO;
-import eu.trustdemocracy.proposals.gateways.ProposalDAO;
-import eu.trustdemocracy.proposals.gateways.mysql.MySqlCommentDAO;
-import eu.trustdemocracy.proposals.gateways.mysql.MySqlProposalDAO;
+import eu.trustdemocracy.proposals.gateways.CommentRepository;
+import eu.trustdemocracy.proposals.gateways.ProposalRepository;
+import eu.trustdemocracy.proposals.gateways.mysql.MySqlCommentRepository;
+import eu.trustdemocracy.proposals.gateways.mysql.MySqlProposalRepository;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
 import lombok.val;
 
-public class DAOFactory {
+public class RepositoryFactory {
 
   private static final String DATABASE_PROPERTIES_FILE = "database.properties";
   private static final String PROPERTIES_KEY_URL = "db_url";
   private static final String PROPERTIES_KEY_USERNAME = "db_username";
   private static final String PROPERTIES_KEY_PASSWORD = "db_password";
 
-  public static ProposalDAO getProposalDAO() {
-    return new MySqlProposalDAO(getConnection());
+  public static ProposalRepository getProposalRepository() {
+    return new MySqlProposalRepository(getConnection());
   }
 
-  public static CommentDAO getCommentDAO() {
-    return new MySqlCommentDAO(getConnection());
+  public static CommentRepository getCommentRepository() {
+    return new MySqlCommentRepository(getConnection());
   }
 
   private static Connection getConnection() {
@@ -58,7 +58,7 @@ public class DAOFactory {
 
   private static Properties getProperties() throws Exception {
     val properties = new Properties();
-    val inputStream = DAOFactory.class.getClassLoader()
+    val inputStream = RepositoryFactory.class.getClassLoader()
         .getResourceAsStream(DATABASE_PROPERTIES_FILE);
     properties.load(inputStream);
     inputStream.close();

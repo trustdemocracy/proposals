@@ -15,8 +15,8 @@ import eu.trustdemocracy.proposals.core.models.FakeModelsFactory;
 import eu.trustdemocracy.proposals.core.models.request.CommentRequestDTO;
 import eu.trustdemocracy.proposals.core.models.request.ProposalRequestDTO;
 import eu.trustdemocracy.proposals.core.models.response.CommentResponseDTO;
-import eu.trustdemocracy.proposals.gateways.fake.FakeCommentDAO;
-import eu.trustdemocracy.proposals.gateways.fake.FakeProposalDAO;
+import eu.trustdemocracy.proposals.gateways.fake.FakeCommentRepository;
+import eu.trustdemocracy.proposals.gateways.fake.FakeProposalRepository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -28,8 +28,8 @@ import org.junit.jupiter.api.Test;
 public class DeleteCommentTest {
 
   private List<CommentResponseDTO> responseComments;
-  private FakeCommentDAO commentDAO;
-  private FakeProposalDAO proposalDAO;
+  private FakeCommentRepository commentDAO;
+  private FakeProposalRepository proposalDAO;
 
   private UUID authorId;
   private String authorUsername;
@@ -38,8 +38,8 @@ public class DeleteCommentTest {
   public void init() throws JoseException {
     TokenUtils.generateKeys();
 
-    commentDAO = new FakeCommentDAO();
-    proposalDAO = new FakeProposalDAO();
+    commentDAO = new FakeCommentRepository();
+    proposalDAO = new FakeProposalRepository();
     responseComments = new ArrayList<>();
 
     val lorem = LoremIpsum.getInstance();

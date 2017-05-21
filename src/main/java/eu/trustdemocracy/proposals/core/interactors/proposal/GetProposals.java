@@ -7,16 +7,16 @@ import eu.trustdemocracy.proposals.core.entities.util.UserMapper;
 import eu.trustdemocracy.proposals.core.interactors.Interactor;
 import eu.trustdemocracy.proposals.core.models.request.GetProposalsRequestDTO;
 import eu.trustdemocracy.proposals.core.models.response.GetProposalsResponseDTO;
-import eu.trustdemocracy.proposals.gateways.ProposalDAO;
+import eu.trustdemocracy.proposals.gateways.ProposalRepository;
 import java.util.List;
 import lombok.val;
 
 public class GetProposals implements Interactor<GetProposalsRequestDTO, GetProposalsResponseDTO> {
 
-  private ProposalDAO proposalDAO;
+  private ProposalRepository proposalRepository;
 
-  public GetProposals(ProposalDAO proposalDAO) {
-    this.proposalDAO = proposalDAO;
+  public GetProposals(ProposalRepository proposalRepository) {
+    this.proposalRepository = proposalRepository;
   }
 
   @Override
@@ -26,11 +26,11 @@ public class GetProposals implements Interactor<GetProposalsRequestDTO, GetPropo
     List<Proposal> proposalList;
 
     if (user.getId().equals(requestDTO.getAuthorId())) {
-      proposalList = proposalDAO.findByAuthorId(user.getId());
+      proposalList = proposalRepository.findByAuthorId(user.getId());
     } else if (requestDTO.getAuthorId() != null) {
-      proposalList = proposalDAO.findByAuthorId(requestDTO.getAuthorId(), ProposalStatus.PUBLISHED);
+      proposalList = proposalRepository.findByAuthorId(requestDTO.getAuthorId(), ProposalStatus.PUBLISHED);
     } else {
-      proposalList = proposalDAO.findAllPublished();
+      proposalList = proposalRepository.findAllPublished();
     }
 
     return ProposalMapper.createResponse(proposalList);

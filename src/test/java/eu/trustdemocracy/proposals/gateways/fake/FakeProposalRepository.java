@@ -2,7 +2,7 @@ package eu.trustdemocracy.proposals.gateways.fake;
 
 import eu.trustdemocracy.proposals.core.entities.Proposal;
 import eu.trustdemocracy.proposals.core.entities.ProposalStatus;
-import eu.trustdemocracy.proposals.gateways.ProposalDAO;
+import eu.trustdemocracy.proposals.gateways.ProposalRepository;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.UUID;
 import lombok.val;
 
-public class FakeProposalDAO implements ProposalDAO {
+public class FakeProposalRepository implements ProposalRepository {
 
   private Map<UUID, Proposal> proposals = new HashMap<>();
 

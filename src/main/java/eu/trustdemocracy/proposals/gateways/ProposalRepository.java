@@ -5,7 +5,7 @@ import eu.trustdemocracy.proposals.core.entities.ProposalStatus;
 import java.util.List;
 import java.util.UUID;
 
-public interface ProposalDAO {
+public interface ProposalRepository {
 
   Proposal create(Proposal proposal);
 
