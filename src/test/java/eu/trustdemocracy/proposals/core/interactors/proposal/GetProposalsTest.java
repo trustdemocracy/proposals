@@ -56,7 +56,7 @@ public class GetProposalsTest {
       reponseProposals.put(responseProposal.getId(), responseProposal);
     }
 
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < 30; i++) {
       val inputProposal = FakeModelsFactory
           .getRandomProposal(TokenUtils.createToken(strangerId, strangerUsername));
 
@@ -87,7 +87,10 @@ public class GetProposalsTest {
 
     GetProposalsResponseDTO responseDTO = new GetProposals(proposalDAO).execute(inputRequest);
 
-    assertEquals(5, responseDTO.getProposals().size());
+    assertEquals(15, responseDTO.getProposals().size());
+    for (val proposal : responseDTO.getProposals()) {
+      assertEquals(strangerUsername, proposal.getAuthorUsername());
+    }
   }
 
   @Test
@@ -97,9 +100,9 @@ public class GetProposalsTest {
 
     GetProposalsResponseDTO responseDTO = new GetProposals(proposalDAO).execute(inputRequest);
 
-    assertEquals(10, responseDTO.getProposals().size());
+    assertEquals(20, responseDTO.getProposals().size());
 
-    int countOfPublishedByStranger = 5;
+    int countOfPublishedByStranger = 15;
     for (val proposal : responseDTO.getProposals()) {
       if (proposal.getAuthorUsername().equals(strangerUsername)) {
         countOfPublishedByStranger--;
