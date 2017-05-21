@@ -64,7 +64,7 @@ public class FakeCommentRepository implements CommentRepository {
   public List<Comment> findByProposalId(UUID proposalId) {
     List<Comment> comments = new ArrayList<>();
     for (val comment : this.comments.values()) {
-      if (comment.getProposalId().equals(proposalId)) {
+      if (comment.getProposal().getId().equals(proposalId)) {
         comments.add(comment);
       }
     }

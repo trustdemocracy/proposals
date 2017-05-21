@@ -11,7 +11,6 @@ public class CommentMapper {
   public static Comment createEntity(CommentRequestDTO commentRequestDTO) {
     Comment comment = new Comment()
         .setId(commentRequestDTO.getId())
-        .setProposalId(commentRequestDTO.getProposalId())
         .setRootCommentId(commentRequestDTO.getRootCommentId())
         .setAuthor(UserMapper.createEntity(commentRequestDTO.getAuthorToken()))
         .setContent(commentRequestDTO.getContent());
@@ -26,7 +25,7 @@ public class CommentMapper {
   public static CommentResponseDTO createResponse(Comment comment) {
     return new CommentResponseDTO()
         .setId(comment.getId())
-        .setProposalId(comment.getProposalId())
+        .setProposalId(comment.getProposal().getId())
         .setRootCommentId(comment.getRootCommentId())
         .setAuthorUsername(comment.getAuthor().getUsername())
         .setContent(comment.getContent())

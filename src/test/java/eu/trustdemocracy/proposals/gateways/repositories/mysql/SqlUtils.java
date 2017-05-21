@@ -37,7 +37,8 @@ public final class SqlUtils {
     connectionStack.pop();
   }
 
-  public void createCommentsAndVotesTables() throws SQLException {
+  public void createAllTables() throws SQLException {
+    createProposalsTable();
     createCommentsTable();
     createVotesTable();
   }

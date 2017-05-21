@@ -32,7 +32,7 @@ public class DeleteComment implements Interactor<CommentRequestDTO, CommentRespo
     if (!foundComment.getAuthor().getId().equals(user.getId())) {
       throw new NotAllowedActionException(
           "Failed to delete comment [" + foundComment.getId()
-              + "] in proposal [" + foundComment.getProposalId()
+              + "] in proposal [" + foundComment.getProposal().getId()
               + "]. User [" + user.getId() + "] is not the owner");
     }
 

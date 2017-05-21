@@ -2,6 +2,7 @@ package eu.trustdemocracy.proposals.gateways.repositories.mysql;
 
 import eu.trustdemocracy.proposals.core.entities.Comment;
 import eu.trustdemocracy.proposals.core.entities.CommentVoteOption;
+import eu.trustdemocracy.proposals.core.entities.Proposal;
 import eu.trustdemocracy.proposals.core.entities.User;
 import eu.trustdemocracy.proposals.gateways.repositories.CommentRepository;
 import io.vertx.core.logging.Logger;
@@ -18,6 +19,7 @@ public class MySqlCommentRepository implements CommentRepository {
   private static final int DUPLICATE_PK_ERROR_CODE = 1062;
   private static final String COMMENTS_TABLE = "comments";
   private static final String VOTES_TABLE = "votes";
+  private static final String PROPOSALS_TABLE = "proposals";
   public static final int ID_SIZE = 36;
   public static final int AUTHOR_SIZE = 100;
   public static final int CONTENT_SIZE = 5000;
@@ -47,7 +49,7 @@ public class MySqlCommentRepository implements CommentRepository {
       val statement = conn.prepareStatement(sql);
 
       statement.setString(1, id.toString());
-      statement.setString(2, comment.getProposalId().toString());
+      statement.setString(2, comment.getProposal().getId().toString());
       statement.setString(3, comment.getRootCommentId().toString());
       statement.setString(4, comment.getAuthor().getId().toString());
       statement.setString(5, username);
@@ -93,8 +95,10 @@ public class MySqlCommentRepository implements CommentRepository {
 
   public Comment findById(UUID id) {
     try {
-      val sql = "SELECT comments.*, votes.option, COUNT(votes.option) AS `count` "
+      val sql = "SELECT proposals.*, comments.*, votes.option, COUNT(votes.option) AS `count` "
           + "FROM `" + COMMENTS_TABLE + "` AS comments "
+          + "LEFT JOIN `" + PROPOSALS_TABLE + "` AS proposals "
+          + "ON comments.proposal_id = proposals.id "
           + "LEFT JOIN `" + VOTES_TABLE + "` AS votes "
           + "ON comments.id = votes.comment_id "
           + "WHERE comments.id = ? "
@@ -111,9 +115,14 @@ public class MySqlCommentRepository implements CommentRepository {
       val author = new User()
           .setId(UUID.fromString(resultSet.getString("comments.author_id")))
           .setUsername(resultSet.getString("comments.author_username"));
+
+      val proposal = new Proposal()
+          .setId(UUID.fromString(resultSet.getString("comments.proposal_id")))
+          .setTitle(resultSet.getString("proposals.title"));
+
       val comment = new Comment()
           .setId(UUID.fromString(resultSet.getString("comments.id")))
-          .setProposalId(UUID.fromString(resultSet.getString("comments.proposal_id")))
+          .setProposal(proposal)
           .setRootCommentId(UUID.fromString(resultSet.getString("comments.root_comment_id")))
           .setRootCommentId(UUID.fromString(resultSet.getString("comments.root_comment_id")))
           .setAuthor(author)
@@ -161,8 +170,10 @@ public class MySqlCommentRepository implements CommentRepository {
   @Override
   public List<Comment> findByProposalId(UUID proposalId) {
     try {
-      val sql = "SELECT comments.*, votes.option, COUNT(votes.option) AS `count` "
+      val sql = "SELECT proposals.*, comments.*, votes.option, COUNT(votes.option) AS `count` "
           + "FROM `" + COMMENTS_TABLE + "` AS comments "
+          + "LEFT JOIN `" + PROPOSALS_TABLE + "` AS proposals "
+          + "ON comments.proposal_id = proposals.id "
           + "LEFT JOIN `" + VOTES_TABLE + "` AS votes "
           + "ON comments.id = votes.comment_id "
           + "WHERE comments.proposal_id = ? "
@@ -184,9 +195,13 @@ public class MySqlCommentRepository implements CommentRepository {
               .setId(UUID.fromString(resultSet.getString("comments.author_id")))
               .setUsername(resultSet.getString("comments.author_username"));
 
+          val proposal = new Proposal()
+              .setId(UUID.fromString(resultSet.getString("comments.proposal_id")))
+              .setTitle(resultSet.getString("proposals.title"));
+
           currentComment = new Comment()
               .setId(commentId)
-              .setProposalId(UUID.fromString(resultSet.getString("comments.proposal_id")))
+              .setProposal(proposal)
               .setRootCommentId(UUID.fromString(resultSet.getString("comments.root_comment_id")))
               .setRootCommentId(UUID.fromString(resultSet.getString("comments.root_comment_id")))
               .setAuthor(author)

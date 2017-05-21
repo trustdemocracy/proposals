@@ -33,7 +33,7 @@ public class VoteComment implements Interactor<CommentVoteRequestDTO, CommentRes
     if (foundComment.getAuthor().getId().equals(voter.getId())) {
       throw new NotAllowedActionException(
           "Failed to vote comment [" + foundComment.getId()
-              + "] in proposal [" + foundComment.getProposalId()
+              + "] in proposal [" + foundComment.getProposal().getId()
               + "]. User [" + voter.getId() + "] is the owner of the comment");
     }
 

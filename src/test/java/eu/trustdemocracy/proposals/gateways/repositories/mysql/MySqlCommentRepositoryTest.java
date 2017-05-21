@@ -10,6 +10,7 @@ import com.thedeanda.lorem.Lorem;
 import com.thedeanda.lorem.LoremIpsum;
 import eu.trustdemocracy.proposals.core.entities.Comment;
 import eu.trustdemocracy.proposals.core.entities.CommentVoteOption;
+import eu.trustdemocracy.proposals.core.entities.Proposal;
 import eu.trustdemocracy.proposals.core.entities.util.UserMapper;
 import eu.trustdemocracy.proposals.core.interactors.util.TokenUtils;
 import eu.trustdemocracy.proposals.gateways.repositories.CommentRepository;
@@ -37,9 +38,9 @@ public class MySqlCommentRepositoryTest {
     sqlUtils = new SqlUtils();
     sqlUtils.startDB();
 
-    sqlUtils.createCommentsAndVotesTables();
+    sqlUtils.createAllTables();
 
-    commentRepository = new eu.trustdemocracy.proposals.gateways.repositories.mysql.MySqlCommentRepository(sqlUtils.getConnection());
+    commentRepository = new MySqlCommentRepository(sqlUtils.getConnection());
   }
 
   @AfterEach
@@ -61,7 +62,7 @@ public class MySqlCommentRepositoryTest {
 
     assertTrue(resultSet.next());
     assertEquals(resultComment.getId(), UUID.fromString(resultSet.getString("id")));
-    assertEquals(resultComment.getProposalId(),
+    assertEquals(resultComment.getProposal().getId(),
         UUID.fromString(resultSet.getString("proposal_id")));
     assertEquals(resultComment.getRootCommentId(),
         UUID.fromString(resultSet.getString("root_comment_id")));
@@ -93,7 +94,7 @@ public class MySqlCommentRepositoryTest {
     assertNotNull(resultComment);
     assertNotNull(deletedComment);
     assertEquals(resultComment.getId(), deletedComment.getId());
-    assertEquals(resultComment.getProposalId(), deletedComment.getProposalId());
+    assertEquals(resultComment.getProposal().getId(), deletedComment.getProposal().getId());
     assertEquals(resultComment.getRootCommentId(), deletedComment.getRootCommentId());
     assertEquals(comment.getAuthor().getId(), deletedComment.getAuthor().getId());
     assertEquals(comment.getAuthor().getUsername(), deletedComment.getAuthor().getUsername());
@@ -134,7 +135,7 @@ public class MySqlCommentRepositoryTest {
 
     for (int i = 0; i < 10; i++) {
       val comment = createRandomComment();
-      comment.setProposalId(proposalId);
+      comment.getProposal().setId(proposalId);
       createdComments.add(commentRepository.create(comment));
       Thread.sleep(1000);
     }
@@ -144,7 +145,7 @@ public class MySqlCommentRepositoryTest {
     assertEquals(createdComments.size(), retrievedComments.size());
 
     for (int i = 0; i < retrievedComments.size(); i++) {
-      assertEquals(proposalId, retrievedComments.get(i).getProposalId());
+      assertEquals(proposalId, retrievedComments.get(i).getProposal().getId());
 
       assertEquals(createdComments.get(i), retrievedComments.get(i));
 
@@ -169,7 +170,7 @@ public class MySqlCommentRepositoryTest {
 
     return new Comment()
         .setAuthor(user)
-        .setProposalId(UUID.randomUUID())
+        .setProposal(new Proposal().setId(UUID.randomUUID()))
         .setRootCommentId(new UUID(0L, 0L))
         .setContent(lorem.getParagraphs(1, 2));
   }
