@@ -1,9 +1,9 @@
-package eu.trustdemocracy.proposals.gateways.mysql;
+package eu.trustdemocracy.proposals.gateways.repositories.mysql;
 
 import eu.trustdemocracy.proposals.core.entities.Comment;
 import eu.trustdemocracy.proposals.core.entities.CommentVoteOption;
 import eu.trustdemocracy.proposals.core.entities.User;
-import eu.trustdemocracy.proposals.gateways.CommentRepository;
+import eu.trustdemocracy.proposals.gateways.repositories.CommentRepository;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import java.sql.Connection;

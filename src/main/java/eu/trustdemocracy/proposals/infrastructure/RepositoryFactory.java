@@ -1,9 +1,9 @@
 package eu.trustdemocracy.proposals.infrastructure;
 
-import eu.trustdemocracy.proposals.gateways.CommentRepository;
-import eu.trustdemocracy.proposals.gateways.ProposalRepository;
-import eu.trustdemocracy.proposals.gateways.mysql.MySqlCommentRepository;
-import eu.trustdemocracy.proposals.gateways.mysql.MySqlProposalRepository;
+import eu.trustdemocracy.proposals.gateways.repositories.CommentRepository;
+import eu.trustdemocracy.proposals.gateways.repositories.ProposalRepository;
+import eu.trustdemocracy.proposals.gateways.repositories.mysql.MySqlCommentRepository;
+import eu.trustdemocracy.proposals.gateways.repositories.mysql.MySqlProposalRepository;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;

@@ -1,4 +1,4 @@
-package eu.trustdemocracy.proposals.gateways.mysql;
+package eu.trustdemocracy.proposals.gateways.repositories.mysql;
 
 import ch.vorburger.exec.ManagedProcessException;
 import ch.vorburger.mariadb4j.DB;

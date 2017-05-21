@@ -1,4 +1,4 @@
-package eu.trustdemocracy.proposals.gateways;
+package eu.trustdemocracy.proposals.gateways.repositories;
 
 import eu.trustdemocracy.proposals.core.entities.Comment;
 import eu.trustdemocracy.proposals.core.entities.CommentVoteOption;

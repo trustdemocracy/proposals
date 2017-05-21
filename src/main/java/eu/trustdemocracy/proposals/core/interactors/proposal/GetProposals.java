@@ -7,7 +7,7 @@ import eu.trustdemocracy.proposals.core.entities.util.UserMapper;
 import eu.trustdemocracy.proposals.core.interactors.Interactor;
 import eu.trustdemocracy.proposals.core.models.request.GetProposalsRequestDTO;
 import eu.trustdemocracy.proposals.core.models.response.GetProposalsResponseDTO;
-import eu.trustdemocracy.proposals.gateways.ProposalRepository;
+import eu.trustdemocracy.proposals.gateways.repositories.ProposalRepository;
 import java.util.List;
 import lombok.val;
 

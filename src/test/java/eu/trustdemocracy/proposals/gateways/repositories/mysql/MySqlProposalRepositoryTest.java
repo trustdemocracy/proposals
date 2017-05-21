@@ -1,4 +1,4 @@
-package eu.trustdemocracy.proposals.gateways.mysql;
+package eu.trustdemocracy.proposals.gateways.repositories.mysql;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -12,7 +12,7 @@ import eu.trustdemocracy.proposals.core.entities.Proposal;
 import eu.trustdemocracy.proposals.core.entities.ProposalStatus;
 import eu.trustdemocracy.proposals.core.entities.util.UserMapper;
 import eu.trustdemocracy.proposals.core.interactors.util.TokenUtils;
-import eu.trustdemocracy.proposals.gateways.ProposalRepository;
+import eu.trustdemocracy.proposals.gateways.repositories.ProposalRepository;
 import java.sql.SQLException;
 import java.util.UUID;
 import lombok.val;
@@ -37,7 +37,7 @@ public class MySqlProposalRepositoryTest {
 
     sqlUtils.createProposalsTable();
 
-    proposalRepository = new MySqlProposalRepository(sqlUtils.getConnection());
+    proposalRepository = new eu.trustdemocracy.proposals.gateways.repositories.mysql.MySqlProposalRepository(sqlUtils.getConnection());
   }
 
   @AfterEach
@@ -180,14 +180,20 @@ public class MySqlProposalRepositoryTest {
   }
 
   private Proposal createRandomProposal() {
-    val username = MySqlProposalRepository.truncate(lorem.getEmail(), MySqlProposalRepository.AUTHOR_SIZE);
-    val title = MySqlProposalRepository.truncate(lorem.getTitle(5, 30), MySqlProposalRepository.TITLE_SIZE);
-    val brief = MySqlProposalRepository.truncate(lorem.getParagraphs(1, 1), MySqlProposalRepository.BRIEF_SIZE);
-    val source = MySqlProposalRepository.truncate(lorem.getUrl(), MySqlProposalRepository.SOURCE_SIZE);
+    val username = eu.trustdemocracy.proposals.gateways.repositories.mysql.MySqlProposalRepository
+        .truncate(lorem.getEmail(), eu.trustdemocracy.proposals.gateways.repositories.mysql.MySqlProposalRepository.AUTHOR_SIZE);
+    val title = eu.trustdemocracy.proposals.gateways.repositories.mysql.MySqlProposalRepository
+        .truncate(lorem.getTitle(5, 30), eu.trustdemocracy.proposals.gateways.repositories.mysql.MySqlProposalRepository.TITLE_SIZE);
+    val brief = eu.trustdemocracy.proposals.gateways.repositories.mysql.MySqlProposalRepository
+        .truncate(lorem.getParagraphs(1, 1), eu.trustdemocracy.proposals.gateways.repositories.mysql.MySqlProposalRepository.BRIEF_SIZE);
+    val source = eu.trustdemocracy.proposals.gateways.repositories.mysql.MySqlProposalRepository
+        .truncate(lorem.getUrl(), eu.trustdemocracy.proposals.gateways.repositories.mysql.MySqlProposalRepository.SOURCE_SIZE);
     val motivation =
-        MySqlProposalRepository.truncate(lorem.getParagraphs(1, 5), MySqlProposalRepository.MOTIVATION_SIZE);
+        eu.trustdemocracy.proposals.gateways.repositories.mysql.MySqlProposalRepository
+            .truncate(lorem.getParagraphs(1, 5), eu.trustdemocracy.proposals.gateways.repositories.mysql.MySqlProposalRepository.MOTIVATION_SIZE);
     val measures =
-        MySqlProposalRepository.truncate(lorem.getParagraphs(1, 5), MySqlProposalRepository.MEASURES_SIZE);
+        eu.trustdemocracy.proposals.gateways.repositories.mysql.MySqlProposalRepository
+            .truncate(lorem.getParagraphs(1, 5), eu.trustdemocracy.proposals.gateways.repositories.mysql.MySqlProposalRepository.MEASURES_SIZE);
 
     val user = UserMapper.createEntity(TokenUtils.createToken(UUID.randomUUID(), username));
     return new Proposal()

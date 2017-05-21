@@ -10,8 +10,8 @@ import eu.trustdemocracy.proposals.core.interactors.proposal.GetProposal;
 import eu.trustdemocracy.proposals.core.interactors.proposal.GetProposals;
 import eu.trustdemocracy.proposals.core.interactors.proposal.PublishProposal;
 import eu.trustdemocracy.proposals.core.interactors.proposal.UnpublishProposal;
-import eu.trustdemocracy.proposals.gateways.CommentRepository;
-import eu.trustdemocracy.proposals.gateways.ProposalRepository;
+import eu.trustdemocracy.proposals.gateways.repositories.CommentRepository;
+import eu.trustdemocracy.proposals.gateways.repositories.ProposalRepository;
 
 public class DefaultInteractorFactory implements InteractorFactory {
 

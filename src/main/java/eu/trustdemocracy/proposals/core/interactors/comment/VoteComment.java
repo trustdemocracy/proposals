@@ -7,7 +7,7 @@ import eu.trustdemocracy.proposals.core.interactors.exceptions.NotAllowedActionE
 import eu.trustdemocracy.proposals.core.interactors.exceptions.ResourceNotFoundException;
 import eu.trustdemocracy.proposals.core.models.request.CommentVoteRequestDTO;
 import eu.trustdemocracy.proposals.core.models.response.CommentResponseDTO;
-import eu.trustdemocracy.proposals.gateways.CommentRepository;
+import eu.trustdemocracy.proposals.gateways.repositories.CommentRepository;
 import lombok.val;
 
 public class VoteComment implements Interactor<CommentVoteRequestDTO, CommentResponseDTO> {

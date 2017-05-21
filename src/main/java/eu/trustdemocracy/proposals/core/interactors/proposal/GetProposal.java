@@ -7,7 +7,7 @@ import eu.trustdemocracy.proposals.core.interactors.exceptions.NotAllowedActionE
 import eu.trustdemocracy.proposals.core.interactors.exceptions.ResourceNotFoundException;
 import eu.trustdemocracy.proposals.core.models.request.ProposalRequestDTO;
 import eu.trustdemocracy.proposals.core.models.response.ProposalResponseDTO;
-import eu.trustdemocracy.proposals.gateways.ProposalRepository;
+import eu.trustdemocracy.proposals.gateways.repositories.ProposalRepository;
 import lombok.val;
 
 public class GetProposal implements Interactor<ProposalRequestDTO, ProposalResponseDTO> {

@@ -1,8 +1,8 @@
-package eu.trustdemocracy.proposals.gateways.fake;
+package eu.trustdemocracy.proposals.gateways.repositories.fake;
 
 import eu.trustdemocracy.proposals.core.entities.Comment;
 import eu.trustdemocracy.proposals.core.entities.CommentVoteOption;
-import eu.trustdemocracy.proposals.gateways.CommentRepository;
+import eu.trustdemocracy.proposals.gateways.repositories.CommentRepository;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;

@@ -1,4 +1,4 @@
-package eu.trustdemocracy.proposals.gateways.mysql;
+package eu.trustdemocracy.proposals.gateways.repositories.mysql;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -12,7 +12,7 @@ import eu.trustdemocracy.proposals.core.entities.Comment;
 import eu.trustdemocracy.proposals.core.entities.CommentVoteOption;
 import eu.trustdemocracy.proposals.core.entities.util.UserMapper;
 import eu.trustdemocracy.proposals.core.interactors.util.TokenUtils;
-import eu.trustdemocracy.proposals.gateways.CommentRepository;
+import eu.trustdemocracy.proposals.gateways.repositories.CommentRepository;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +39,7 @@ public class MySqlCommentRepositoryTest {
 
     sqlUtils.createCommentsAndVotesTables();
 
-    commentRepository = new MySqlCommentRepository(sqlUtils.getConnection());
+    commentRepository = new eu.trustdemocracy.proposals.gateways.repositories.mysql.MySqlCommentRepository(sqlUtils.getConnection());
   }
 
   @AfterEach
@@ -163,7 +163,8 @@ public class MySqlCommentRepositoryTest {
 
 
   private Comment createRandomComment() {
-    val username = MySqlProposalRepository.truncate(lorem.getEmail(), MySqlProposalRepository.AUTHOR_SIZE);
+    val username = eu.trustdemocracy.proposals.gateways.repositories.mysql.MySqlProposalRepository
+        .truncate(lorem.getEmail(), eu.trustdemocracy.proposals.gateways.repositories.mysql.MySqlProposalRepository.AUTHOR_SIZE);
     val user = UserMapper.createEntity(TokenUtils.createToken(UUID.randomUUID(), username));
 
     return new Comment()

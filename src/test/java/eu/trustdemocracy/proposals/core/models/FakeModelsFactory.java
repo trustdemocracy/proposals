@@ -5,7 +5,7 @@ import com.thedeanda.lorem.LoremIpsum;
 import eu.trustdemocracy.proposals.core.interactors.util.TokenUtils;
 import eu.trustdemocracy.proposals.core.models.request.CommentRequestDTO;
 import eu.trustdemocracy.proposals.core.models.request.ProposalRequestDTO;
-import eu.trustdemocracy.proposals.gateways.mysql.MySqlProposalRepository;
+import eu.trustdemocracy.proposals.gateways.repositories.mysql.MySqlProposalRepository;
 import java.util.UUID;
 import lombok.val;
 
