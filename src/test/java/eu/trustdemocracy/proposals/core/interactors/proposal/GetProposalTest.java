@@ -44,7 +44,7 @@ public class GetProposalTest {
     authorId = UUID.randomUUID();
     authorUsername = lorem.getEmail();
 
-    val interactor = new CreateProposal(proposalRepository, eventsGateway);
+    val interactor = new CreateProposal(proposalRepository);
 
     for (int i = 0; i < 10; i++) {
       val inputProposal = FakeModelsFactory
@@ -104,7 +104,7 @@ public class GetProposalTest {
         .setId(createdProposal.getId())
         .setAuthorToken(TokenUtils.createToken(authorId, authorUsername));
 
-    new PublishProposal(proposalRepository).execute(authorInputProposal);
+    new PublishProposal(proposalRepository, eventsGateway).execute(authorInputProposal);
 
     val inputProposal = new ProposalRequestDTO()
         .setId(createdProposal.getId())
@@ -130,7 +130,7 @@ public class GetProposalTest {
         .setId(createdProposal.getId())
         .setAuthorToken(TokenUtils.createToken(authorId, authorUsername));
 
-    new PublishProposal(proposalRepository).execute(inputProposal);
+    new PublishProposal(proposalRepository, eventsGateway).execute(inputProposal);
 
     ProposalResponseDTO responseProposal = new GetProposal(proposalRepository).execute(inputProposal);
 

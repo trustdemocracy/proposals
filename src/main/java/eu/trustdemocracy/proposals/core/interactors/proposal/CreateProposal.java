@@ -5,18 +5,15 @@ import eu.trustdemocracy.proposals.core.entities.util.ProposalMapper;
 import eu.trustdemocracy.proposals.core.interactors.Interactor;
 import eu.trustdemocracy.proposals.core.models.request.ProposalRequestDTO;
 import eu.trustdemocracy.proposals.core.models.response.ProposalResponseDTO;
-import eu.trustdemocracy.proposals.gateways.events.EventsGateway;
 import eu.trustdemocracy.proposals.gateways.repositories.ProposalRepository;
 import lombok.val;
 
 public class CreateProposal implements Interactor<ProposalRequestDTO, ProposalResponseDTO> {
 
   private ProposalRepository proposalRepository;
-  private EventsGateway eventsGateway;
 
-  public CreateProposal(ProposalRepository proposalRepository, EventsGateway eventsGateway) {
+  public CreateProposal(ProposalRepository proposalRepository) {
     this.proposalRepository = proposalRepository;
-    this.eventsGateway = eventsGateway;
   }
 
   public ProposalResponseDTO execute(ProposalRequestDTO proposalRequestDTO) {

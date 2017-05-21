@@ -8,15 +8,18 @@ import eu.trustdemocracy.proposals.core.interactors.exceptions.NotAllowedActionE
 import eu.trustdemocracy.proposals.core.interactors.exceptions.ResourceNotFoundException;
 import eu.trustdemocracy.proposals.core.models.request.ProposalRequestDTO;
 import eu.trustdemocracy.proposals.core.models.response.ProposalResponseDTO;
+import eu.trustdemocracy.proposals.gateways.events.EventsGateway;
 import eu.trustdemocracy.proposals.gateways.repositories.ProposalRepository;
 import lombok.val;
 
 public class PublishProposal implements Interactor<ProposalRequestDTO, ProposalResponseDTO> {
 
   private ProposalRepository proposalRepository;
+  private EventsGateway eventsGateway;
 
-  public PublishProposal(ProposalRepository proposalRepository) {
+  public PublishProposal(ProposalRepository proposalRepository, EventsGateway eventsGateway) {
     this.proposalRepository = proposalRepository;
+    this.eventsGateway = eventsGateway;
   }
 
   public ProposalResponseDTO execute(ProposalRequestDTO inputProposal) {

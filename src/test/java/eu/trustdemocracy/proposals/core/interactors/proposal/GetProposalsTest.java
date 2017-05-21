@@ -45,8 +45,8 @@ public class GetProposalsTest {
     authorId = UUID.randomUUID();
     authorUsername = lorem.getEmail();
 
-    val create = new CreateProposal(proposalRepository, eventsGateway);
-    val publish = new PublishProposal(proposalRepository);
+    val create = new CreateProposal(proposalRepository);
+    val publish = new PublishProposal(proposalRepository, eventsGateway);
 
     for (int i = 0; i < 10; i++) {
       val inputProposal = FakeModelsFactory

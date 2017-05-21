@@ -43,10 +43,10 @@ public class VoteCommentTest {
     lorem = LoremIpsum.getInstance();
 
     val proposalAuthorToken = TokenUtils.createToken(UUID.randomUUID(), lorem.getEmail());
-    val createdProposal = new CreateProposal(proposalDAO, eventsGateway)
+    val createdProposal = new CreateProposal(proposalDAO)
         .execute(FakeModelsFactory.getRandomProposal(proposalAuthorToken));
 
-    new PublishProposal(proposalDAO).execute(new ProposalRequestDTO()
+    new PublishProposal(proposalDAO, eventsGateway).execute(new ProposalRequestDTO()
         .setId(createdProposal.getId())
         .setAuthorToken(proposalAuthorToken));
 

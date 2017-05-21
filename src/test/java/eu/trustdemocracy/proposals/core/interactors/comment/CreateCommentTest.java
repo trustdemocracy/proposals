@@ -51,7 +51,7 @@ public class CreateCommentTest {
     val lorem = LoremIpsum.getInstance();
 
     proposalAuthorToken = TokenUtils.createToken(UUID.randomUUID(), lorem.getEmail());
-    createdProposal = new CreateProposal(proposalRepository, eventsGateway)
+    createdProposal = new CreateProposal(proposalRepository)
         .execute(FakeModelsFactory.getRandomProposal(proposalAuthorToken));
 
     for (int i = 0; i < 10; i++) {
@@ -87,7 +87,7 @@ public class CreateCommentTest {
 
   @Test
   public void createComment() {
-    new PublishProposal(proposalRepository).execute(new ProposalRequestDTO()
+    new PublishProposal(proposalRepository, eventsGateway).execute(new ProposalRequestDTO()
         .setId(createdProposal.getId())
         .setAuthorToken(proposalAuthorToken));
 

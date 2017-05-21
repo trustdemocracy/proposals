@@ -45,7 +45,7 @@ public class PublishProposalTest {
     authorId = UUID.randomUUID();
     authorUsername = lorem.getEmail();
 
-    val interactor = new CreateProposal(proposalRepository, eventsGateway);
+    val interactor = new CreateProposal(proposalRepository);
 
     for (int i = 0; i < 10; i++) {
       val inputProposal = FakeModelsFactory
@@ -65,7 +65,7 @@ public class PublishProposalTest {
         .setAuthorToken("");
 
     assertThrows(InvalidTokenException.class,
-        () -> new PublishProposal(proposalRepository).execute(inputProposal));
+        () -> new PublishProposal(proposalRepository, eventsGateway).execute(inputProposal));
   }
 
   @Test
@@ -77,7 +77,7 @@ public class PublishProposalTest {
         .setAuthorToken(TokenUtils.createToken(UUID.randomUUID(), authorUsername));
 
     assertThrows(NotAllowedActionException.class,
-        () -> new PublishProposal(proposalRepository).execute(inputProposal));
+        () -> new PublishProposal(proposalRepository, eventsGateway).execute(inputProposal));
   }
 
   @Test
@@ -87,7 +87,7 @@ public class PublishProposalTest {
         .setAuthorToken(TokenUtils.createToken(authorId, authorUsername));
 
     assertThrows(ResourceNotFoundException.class,
-        () -> new PublishProposal(proposalRepository).execute(inputProposal));
+        () -> new PublishProposal(proposalRepository, eventsGateway).execute(inputProposal));
   }
 
   @Test
@@ -98,7 +98,8 @@ public class PublishProposalTest {
         .setId(createdProposal.getId())
         .setAuthorToken(TokenUtils.createToken(authorId, authorUsername));
 
-    ProposalResponseDTO responseProposal = new PublishProposal(proposalRepository).execute(inputProposal);
+    ProposalResponseDTO responseProposal = new PublishProposal(proposalRepository, eventsGateway)
+        .execute(inputProposal);
 
     assertEquals(authorUsername, responseProposal.getAuthorUsername());
     assertEquals(createdProposal.getTitle(), responseProposal.getTitle());

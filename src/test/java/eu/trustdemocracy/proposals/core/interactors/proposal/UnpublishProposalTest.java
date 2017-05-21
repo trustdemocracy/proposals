@@ -45,8 +45,8 @@ public class UnpublishProposalTest {
     authorId = UUID.randomUUID();
     authorUsername = lorem.getEmail();
 
-    val createProposal = new CreateProposal(proposalRepository, eventsGateway);
-    val publishProposal = new PublishProposal(proposalRepository);
+    val createProposal = new CreateProposal(proposalRepository);
+    val publishProposal = new PublishProposal(proposalRepository, eventsGateway);
 
     for (int i = 0; i < 10; i++) {
       val inputProposal = FakeModelsFactory

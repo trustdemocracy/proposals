@@ -31,7 +31,7 @@ public class DefaultInteractorFactory implements InteractorFactory {
 
   @Override
   public CreateProposal getCreateProposal() {
-    return new CreateProposal(getProposalDAO(), getEventsGateway());
+    return new CreateProposal(getProposalDAO());
   }
 
   @Override
@@ -51,7 +51,7 @@ public class DefaultInteractorFactory implements InteractorFactory {
 
   @Override
   public PublishProposal getPublishProposal() {
-    return new PublishProposal(getProposalDAO());
+    return new PublishProposal(getProposalDAO(), getEventsGateway());
   }
 
   @Override
