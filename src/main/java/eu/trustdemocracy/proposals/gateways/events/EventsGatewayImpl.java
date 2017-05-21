@@ -16,12 +16,12 @@ public class EventsGatewayImpl implements EventsGateway {
   @Override
   public void createPublicationEvent(Proposal proposal) {
     val serializedContent = new JsonObject()
-        .put("id", proposal.getId())
+        .put("id", proposal.getId().toString())
         .put("title", proposal.getTitle())
         .put("brief", proposal.getBrief());
 
     val event = new JsonObject()
-        .put("userId", proposal.getAuthor().getId())
+        .put("userId", proposal.getAuthor().getId().toString())
         .put("username", proposal.getAuthor().getUsername())
         .put("type", "PUBLICATION")
         .put("timestamp", System.currentTimeMillis())
@@ -32,14 +32,14 @@ public class EventsGatewayImpl implements EventsGateway {
   @Override
   public void createCommentEvent(Comment comment) {
     val serializedContent = new JsonObject()
-        .put("id", comment.getId())
-        .put("proposalId", comment.getProposal().getId())
+        .put("id", comment.getId().toString())
+        .put("proposalId", comment.getProposal().getId().toString())
         .put("title", comment.getProposal().getTitle())
         .put("content", comment.getContent())
-        .put("id", comment.getId());
+        .put("id", comment.getId().toString());
 
     val event = new JsonObject()
-        .put("userId", comment.getAuthor().getId())
+        .put("userId", comment.getAuthor().getId().toString())
         .put("username", comment.getAuthor().getUsername())
         .put("type", "COMMENT")
         .put("timestamp", comment.getTimestamp())
