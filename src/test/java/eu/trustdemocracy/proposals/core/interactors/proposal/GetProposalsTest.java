@@ -100,9 +100,9 @@ public class GetProposalsTest {
 
     GetProposalsResponseDTO responseDTO = new GetProposals(proposalDAO).execute(inputRequest);
 
-    assertEquals(10, responseDTO.getProposals().size());
+    assertEquals(20, responseDTO.getProposals().size());
 
-    int countOfPublishedByStranger = 5;
+    int countOfPublishedByStranger = 15;
     for (val proposal : responseDTO.getProposals()) {
       if (proposal.getAuthorUsername().equals(strangerUsername)) {
         countOfPublishedByStranger--;

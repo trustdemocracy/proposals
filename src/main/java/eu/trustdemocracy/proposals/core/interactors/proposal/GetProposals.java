@@ -28,7 +28,7 @@ public class GetProposals implements Interactor<GetProposalsRequestDTO, GetPropo
     if (user.getId().equals(requestDTO.getAuthorId())) {
       proposalList = proposalDAO.findByAuthorId(user.getId());
     } else if (requestDTO.getAuthorId() != null) {
-      proposalList = proposalDAO.findByAuthorId(user.getId(), ProposalStatus.PUBLISHED);
+      proposalList = proposalDAO.findByAuthorId(requestDTO.getAuthorId(), ProposalStatus.PUBLISHED);
     } else {
       proposalList = proposalDAO.findAllPublished();
     }
