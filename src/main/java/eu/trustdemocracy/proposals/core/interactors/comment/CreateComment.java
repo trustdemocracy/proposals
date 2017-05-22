@@ -48,7 +48,7 @@ public class CreateComment implements Interactor<CommentRequestDTO, CommentRespo
     val createdComment = commentRepository.create(comment);
     createdComment.setProposal(foundProposal);
 
-    eventsGateway.createCommentEvent(comment);
+    eventsGateway.createCommentEvent(createdComment);
 
     return CommentMapper.createResponse(createdComment);
   }
