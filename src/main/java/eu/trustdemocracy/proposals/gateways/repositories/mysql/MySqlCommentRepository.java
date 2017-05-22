@@ -65,7 +65,7 @@ public class MySqlCommentRepository implements CommentRepository {
         return create(comment);
       }
 
-      LOG.error("Failed to create proposal " + comment, e);
+      LOG.error("Failed to create comment " + comment, e);
       return null;
     }
   }
