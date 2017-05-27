@@ -207,7 +207,7 @@ public class ProposalControllerTest extends ControllerTest {
   }
 
 
-//  @Test
+  @Test
   public void createAndDeleteProposal(TestContext context) {
     val async = context.async();
     val inputProposal = FakeModelsFactory.getRandomProposal();

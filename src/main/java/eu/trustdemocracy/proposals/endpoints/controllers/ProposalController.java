@@ -196,7 +196,8 @@ public class ProposalController extends Controller {
 
         if (json.containsKey("expired")) {
           dto.setExpired(json.getBoolean("expired"));
-        } else if (json.containsKey("results")) {
+        }
+        if (json.containsKey("results")) {
           val resultsJson = json.getJsonObject("results");
           val favour = resultsJson.getDouble("FAVOUR");
           val against = resultsJson.getDouble("AGAINST");
