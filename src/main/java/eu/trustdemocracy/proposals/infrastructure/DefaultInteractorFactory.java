@@ -12,6 +12,8 @@ import eu.trustdemocracy.proposals.core.interactors.proposal.PublishProposal;
 import eu.trustdemocracy.proposals.core.interactors.proposal.UnpublishProposal;
 import eu.trustdemocracy.proposals.gateways.events.EventsGateway;
 import eu.trustdemocracy.proposals.gateways.events.EventsGatewayImpl;
+import eu.trustdemocracy.proposals.gateways.out.VotesGateway;
+import eu.trustdemocracy.proposals.gateways.out.VotesGatewayImpl;
 import eu.trustdemocracy.proposals.gateways.repositories.CommentRepository;
 import eu.trustdemocracy.proposals.gateways.repositories.ProposalRepository;
 
@@ -51,7 +53,7 @@ public class DefaultInteractorFactory implements InteractorFactory {
 
   @Override
   public PublishProposal getPublishProposal() {
-    return new PublishProposal(getProposalDAO(), getEventsGateway());
+    return new PublishProposal(getProposalDAO(), getEventsGateway(), getVotesGateway());
   }
 
   @Override
@@ -89,5 +91,9 @@ public class DefaultInteractorFactory implements InteractorFactory {
 
   private EventsGateway getEventsGateway() {
     return new EventsGatewayImpl();
+  }
+
+  private VotesGateway getVotesGateway() {
+    return new VotesGatewayImpl();
   }
 }

@@ -3,6 +3,7 @@ package eu.trustdemocracy.proposals.core.interactors.proposal;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.thedeanda.lorem.LoremIpsum;
 import eu.trustdemocracy.proposals.core.entities.ProposalStatus;
@@ -14,6 +15,7 @@ import eu.trustdemocracy.proposals.core.models.FakeModelsFactory;
 import eu.trustdemocracy.proposals.core.models.request.ProposalRequestDTO;
 import eu.trustdemocracy.proposals.core.models.response.ProposalResponseDTO;
 import eu.trustdemocracy.proposals.gateways.events.FakeEventsGateway;
+import eu.trustdemocracy.proposals.gateways.out.FakeVotesGateway;
 import eu.trustdemocracy.proposals.gateways.repositories.ProposalRepository;
 import eu.trustdemocracy.proposals.gateways.repositories.fake.FakeProposalRepository;
 import java.util.HashMap;
@@ -29,6 +31,7 @@ public class PublishProposalTest {
   private Map<UUID, ProposalResponseDTO> reponseProposals;
   private ProposalRepository proposalRepository;
   private FakeEventsGateway eventsGateway;
+  private FakeVotesGateway votesGateway;
 
   private UUID authorId;
   private String authorUsername;
@@ -65,7 +68,8 @@ public class PublishProposalTest {
         .setAuthorToken("");
 
     assertThrows(InvalidTokenException.class,
-        () -> new PublishProposal(proposalRepository, eventsGateway).execute(inputProposal));
+        () -> new PublishProposal(proposalRepository, eventsGateway, votesGateway)
+            .execute(inputProposal));
   }
 
   @Test
@@ -77,7 +81,8 @@ public class PublishProposalTest {
         .setAuthorToken(TokenUtils.createToken(UUID.randomUUID(), authorUsername));
 
     assertThrows(NotAllowedActionException.class,
-        () -> new PublishProposal(proposalRepository, eventsGateway).execute(inputProposal));
+        () -> new PublishProposal(proposalRepository, eventsGateway, votesGateway)
+            .execute(inputProposal));
   }
 
   @Test
@@ -87,7 +92,8 @@ public class PublishProposalTest {
         .setAuthorToken(TokenUtils.createToken(authorId, authorUsername));
 
     assertThrows(ResourceNotFoundException.class,
-        () -> new PublishProposal(proposalRepository, eventsGateway).execute(inputProposal));
+        () -> new PublishProposal(proposalRepository, eventsGateway, votesGateway)
+            .execute(inputProposal));
   }
 
   @Test
@@ -98,8 +104,8 @@ public class PublishProposalTest {
         .setId(createdProposal.getId())
         .setAuthorToken(TokenUtils.createToken(authorId, authorUsername));
 
-    ProposalResponseDTO responseProposal = new PublishProposal(proposalRepository, eventsGateway)
-        .execute(inputProposal);
+    ProposalResponseDTO responseProposal =
+        new PublishProposal(proposalRepository, eventsGateway, votesGateway).execute(inputProposal);
 
     assertEquals(authorUsername, responseProposal.getAuthorUsername());
     assertEquals(createdProposal.getTitle(), responseProposal.getTitle());
@@ -109,6 +115,8 @@ public class PublishProposalTest {
     assertEquals(createdProposal.getMeasures(), responseProposal.getMeasures());
     assertNotEquals(createdProposal.getStatus(), responseProposal.getStatus());
     assertEquals(ProposalStatus.PUBLISHED, responseProposal.getStatus());
+
+    assertTrue(votesGateway.registeredProposals.containsKey(responseProposal.getId()));
   }
 
 }

@@ -15,6 +15,8 @@ import eu.trustdemocracy.proposals.core.interactors.proposal.PublishProposal;
 import eu.trustdemocracy.proposals.core.interactors.proposal.UnpublishProposal;
 import eu.trustdemocracy.proposals.gateways.events.EventsGateway;
 import eu.trustdemocracy.proposals.gateways.events.FakeEventsGateway;
+import eu.trustdemocracy.proposals.gateways.out.FakeVotesGateway;
+import eu.trustdemocracy.proposals.gateways.out.VotesGateway;
 import eu.trustdemocracy.proposals.gateways.repositories.CommentRepository;
 import eu.trustdemocracy.proposals.gateways.repositories.ProposalRepository;
 import eu.trustdemocracy.proposals.gateways.repositories.mysql.MySqlCommentRepository;
@@ -50,7 +52,7 @@ public class FakeInteractorFactory implements InteractorFactory {
 
   @Override
   public PublishProposal getPublishProposal() {
-    return new PublishProposal(getProposalDAO(), getEventsGateway());
+    return new PublishProposal(getProposalDAO(), getEventsGateway(), getVotesGateway());
   }
 
   @Override
@@ -88,6 +90,10 @@ public class FakeInteractorFactory implements InteractorFactory {
 
   private EventsGateway getEventsGateway() {
     return new FakeEventsGateway();
+  }
+
+  private VotesGateway getVotesGateway() {
+    return new FakeVotesGateway();
   }
 
   private Connection getConnection() {

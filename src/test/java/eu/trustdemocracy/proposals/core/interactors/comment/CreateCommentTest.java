@@ -16,6 +16,7 @@ import eu.trustdemocracy.proposals.core.models.request.ProposalRequestDTO;
 import eu.trustdemocracy.proposals.core.models.response.CommentResponseDTO;
 import eu.trustdemocracy.proposals.core.models.response.ProposalResponseDTO;
 import eu.trustdemocracy.proposals.gateways.events.FakeEventsGateway;
+import eu.trustdemocracy.proposals.gateways.out.FakeVotesGateway;
 import eu.trustdemocracy.proposals.gateways.repositories.CommentRepository;
 import eu.trustdemocracy.proposals.gateways.repositories.ProposalRepository;
 import eu.trustdemocracy.proposals.gateways.repositories.fake.FakeCommentRepository;
@@ -65,7 +66,8 @@ public class CreateCommentTest {
     inputComment.setAuthorToken("");
 
     assertThrows(InvalidTokenException.class,
-        () -> new CreateComment(commentRepository, proposalRepository, eventsGateway).execute(inputComment));
+        () -> new CreateComment(commentRepository, proposalRepository, eventsGateway)
+            .execute(inputComment));
   }
 
   @Test
@@ -74,7 +76,8 @@ public class CreateCommentTest {
         .setProposalId(UUID.randomUUID());
 
     assertThrows(ResourceNotFoundException.class,
-        () -> new CreateComment(commentRepository, proposalRepository, eventsGateway).execute(inputComment));
+        () -> new CreateComment(commentRepository, proposalRepository, eventsGateway)
+            .execute(inputComment));
   }
 
   @Test
@@ -82,20 +85,23 @@ public class CreateCommentTest {
     val inputComment = inputComments.get(0);
 
     assertThrows(ResourceNotFoundException.class,
-        () -> new CreateComment(commentRepository, proposalRepository, eventsGateway).execute(inputComment));
+        () -> new CreateComment(commentRepository, proposalRepository, eventsGateway)
+            .execute(inputComment));
   }
 
   @Test
   public void createComment() {
-    new PublishProposal(proposalRepository, eventsGateway).execute(new ProposalRequestDTO()
-        .setId(createdProposal.getId())
-        .setAuthorToken(proposalAuthorToken));
+    new PublishProposal(proposalRepository, eventsGateway, new FakeVotesGateway())
+        .execute(new ProposalRequestDTO()
+            .setId(createdProposal.getId())
+            .setAuthorToken(proposalAuthorToken));
 
     val username = "username";
     val inputComment = inputComments.get(0)
         .setAuthorToken(TokenUtils.createToken(UUID.randomUUID(), username));
     val timestamp = System.currentTimeMillis();
-    CommentResponseDTO responseComment = new CreateComment(commentRepository, proposalRepository, eventsGateway)
+    CommentResponseDTO responseComment = new CreateComment(commentRepository, proposalRepository,
+        eventsGateway)
         .execute(inputComment);
 
     assertEquals(username, responseComment.getAuthorUsername());

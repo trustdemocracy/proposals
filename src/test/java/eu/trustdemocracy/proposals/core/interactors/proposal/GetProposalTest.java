@@ -12,6 +12,7 @@ import eu.trustdemocracy.proposals.core.models.FakeModelsFactory;
 import eu.trustdemocracy.proposals.core.models.request.ProposalRequestDTO;
 import eu.trustdemocracy.proposals.core.models.response.ProposalResponseDTO;
 import eu.trustdemocracy.proposals.gateways.events.FakeEventsGateway;
+import eu.trustdemocracy.proposals.gateways.out.FakeVotesGateway;
 import eu.trustdemocracy.proposals.gateways.repositories.ProposalRepository;
 import eu.trustdemocracy.proposals.gateways.repositories.fake.FakeProposalRepository;
 import java.util.HashMap;
@@ -85,7 +86,8 @@ public class GetProposalTest {
         .setId(createdProposal.getId())
         .setAuthorToken(TokenUtils.createToken(authorId, authorUsername));
 
-    ProposalResponseDTO responseProposal = new GetProposal(proposalRepository).execute(inputProposal);
+    ProposalResponseDTO responseProposal = new GetProposal(proposalRepository)
+        .execute(inputProposal);
 
     assertEquals(authorUsername, responseProposal.getAuthorUsername());
     assertEquals(createdProposal.getTitle(), responseProposal.getTitle());
@@ -104,14 +106,15 @@ public class GetProposalTest {
         .setId(createdProposal.getId())
         .setAuthorToken(TokenUtils.createToken(authorId, authorUsername));
 
-    new PublishProposal(proposalRepository, eventsGateway).execute(authorInputProposal);
+    new PublishProposal(proposalRepository, eventsGateway, new FakeVotesGateway())
+        .execute(authorInputProposal);
 
     val inputProposal = new ProposalRequestDTO()
         .setId(createdProposal.getId())
         .setAuthorToken(TokenUtils.createToken(UUID.randomUUID(), authorUsername));
 
-
-    ProposalResponseDTO responseProposal = new GetProposal(proposalRepository).execute(inputProposal);
+    ProposalResponseDTO responseProposal = new GetProposal(proposalRepository)
+        .execute(inputProposal);
 
     assertEquals(authorUsername, responseProposal.getAuthorUsername());
     assertEquals(createdProposal.getTitle(), responseProposal.getTitle());
@@ -130,9 +133,11 @@ public class GetProposalTest {
         .setId(createdProposal.getId())
         .setAuthorToken(TokenUtils.createToken(authorId, authorUsername));
 
-    new PublishProposal(proposalRepository, eventsGateway).execute(inputProposal);
+    new PublishProposal(proposalRepository, eventsGateway, new FakeVotesGateway())
+        .execute(inputProposal);
 
-    ProposalResponseDTO responseProposal = new GetProposal(proposalRepository).execute(inputProposal);
+    ProposalResponseDTO responseProposal = new GetProposal(proposalRepository)
+        .execute(inputProposal);
 
     assertEquals(authorUsername, responseProposal.getAuthorUsername());
     assertEquals(createdProposal.getTitle(), responseProposal.getTitle());
