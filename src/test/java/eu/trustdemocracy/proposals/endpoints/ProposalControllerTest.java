@@ -267,10 +267,10 @@ public class ProposalControllerTest extends ControllerTest {
       val request = new JsonObject()
           .put(responseProposal.getId().toString(), new JsonObject().put("results", results));
 
-      client.post(port, HOST, "/proposals/results/")
+      client.post(port, HOST, "/proposals/results")
           .rxSendJson(request)
-          .subscribe(deleteResponse -> {
-            context.assertEquals(deleteResponse.statusCode(), 200);
+          .subscribe(resultResponse -> {
+            context.assertEquals(resultResponse.statusCode(), 200);
 
             async.complete();
           }, error -> {

@@ -10,6 +10,7 @@ import eu.trustdemocracy.proposals.core.interactors.proposal.GetProposal;
 import eu.trustdemocracy.proposals.core.interactors.proposal.GetProposals;
 import eu.trustdemocracy.proposals.core.interactors.proposal.PublishProposal;
 import eu.trustdemocracy.proposals.core.interactors.proposal.UnpublishProposal;
+import eu.trustdemocracy.proposals.core.interactors.proposal.UpdateResult;
 
 public interface InteractorFactory {
 
@@ -33,4 +34,6 @@ public interface InteractorFactory {
   GetComments getGetComments();
 
   VoteComment getVoteComment();
+
+  UpdateResult getUpdateResult();
 }

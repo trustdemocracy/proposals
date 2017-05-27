@@ -1,13 +1,17 @@
 package eu.trustdemocracy.proposals.endpoints.controllers;
 
+import eu.trustdemocracy.proposals.core.entities.VoteOption;
 import eu.trustdemocracy.proposals.core.interactors.exceptions.InvalidTokenException;
 import eu.trustdemocracy.proposals.core.interactors.exceptions.NotAllowedActionException;
 import eu.trustdemocracy.proposals.core.interactors.exceptions.ResourceNotFoundException;
 import eu.trustdemocracy.proposals.core.models.request.GetProposalsRequestDTO;
 import eu.trustdemocracy.proposals.core.models.request.ProposalRequestDTO;
+import eu.trustdemocracy.proposals.core.models.request.UpdateResultDTO;
 import eu.trustdemocracy.proposals.endpoints.App;
 import io.vertx.core.json.Json;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
+import java.util.HashMap;
 import java.util.UUID;
 import lombok.val;
 
@@ -25,6 +29,7 @@ public class ProposalController extends Controller {
     getRouter().delete("/proposals/:id").handler(this::deleteProposal);
     getRouter().get("/proposals/:id/publish").handler(this::publishProposal);
     getRouter().get("/proposals/:id/unpublish").handler(this::unpublishProposal);
+    getRouter().post("/proposals/results").handler(this::updateResults);
   }
 
   private void getProposals(RoutingContext routingContext) {
@@ -178,5 +183,36 @@ public class ProposalController extends Controller {
     }
   }
 
+  private void updateResults(RoutingContext context) {
+    val interactor = getInteractorFactory().getUpdateResult();
 
+    try {
+      val proposals = context.getBodyAsJson();
+      for (val proposal : proposals) {
+        val dto = new UpdateResultDTO()
+            .setId(UUID.fromString(proposal.getKey()));
+
+        val json = JsonObject.mapFrom(proposal.getValue());
+
+        if (json.containsKey("expired")) {
+          dto.setExpired(json.getBoolean("expired"));
+        } else if (json.containsKey("results")) {
+          val resultsJson = json.getJsonObject("results");
+          val favour = resultsJson.getDouble("FAVOUR");
+          val against = resultsJson.getDouble("AGAINST");
+
+          val results = new HashMap<VoteOption, Double>();
+          results.put(VoteOption.FAVOUR, favour == null ? 0.0 : favour);
+          results.put(VoteOption.AGAINST, against == null ? 0.0 : against);
+
+          dto.setResults(results);
+        }
+
+        interactor.execute(dto);
+      }
+      serveJsonResponse(context, 200, new JsonObject().put("status", "ok").encodePrettily());
+    } catch (Exception e) {
+      serveBadRequest(context);
+    }
+  }
 }
