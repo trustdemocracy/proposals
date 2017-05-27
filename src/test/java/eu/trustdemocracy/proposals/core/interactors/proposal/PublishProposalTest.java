@@ -101,6 +101,10 @@ public class PublishProposalTest {
   public void publishProposal() {
     val createdProposal = reponseProposals.values().iterator().next();
 
+    long currentTime = System.currentTimeMillis();
+    long aDay = 24 * 60 * 60 * 1000;
+    long timeShouldBeDue = currentTime + aDay * 60;
+
     val inputProposal = new ProposalRequestDTO()
         .setId(createdProposal.getId())
         .setAuthorToken(TokenUtils.createToken(authorId, authorUsername));
@@ -116,6 +120,8 @@ public class PublishProposalTest {
     assertEquals(createdProposal.getMeasures(), responseProposal.getMeasures());
     assertNotEquals(createdProposal.getStatus(), responseProposal.getStatus());
     assertEquals(ProposalStatus.PUBLISHED, responseProposal.getStatus());
+    assertTrue(timeShouldBeDue <= responseProposal.getDueDate());
+    assertTrue(timeShouldBeDue + aDay >= responseProposal.getDueDate());
 
     assertTrue(votesGateway.registeredProposals.containsKey(responseProposal.getId()));
   }

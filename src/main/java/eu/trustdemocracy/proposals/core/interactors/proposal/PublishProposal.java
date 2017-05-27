@@ -1,5 +1,6 @@
 package eu.trustdemocracy.proposals.core.interactors.proposal;
 
+import eu.trustdemocracy.proposals.core.entities.Proposal;
 import eu.trustdemocracy.proposals.core.entities.ProposalStatus;
 import eu.trustdemocracy.proposals.core.entities.util.ProposalMapper;
 import eu.trustdemocracy.proposals.core.entities.util.UserMapper;
@@ -45,7 +46,14 @@ public class PublishProposal implements Interactor<ProposalRequestDTO, ProposalR
               + "]. User [" + user.getId() + "] is not the owner");
     }
 
-    val proposal = proposalRepository.setStatus(inputProposal.getId(), ProposalStatus.PUBLISHED);
+    Proposal proposal;
+    if (foundProposal.getDueDate() != 0) {
+      proposal = proposalRepository.setStatus(inputProposal.getId(), ProposalStatus.PUBLISHED);
+    } else {
+      long aDay = 24 * 60 * 60 * 1000;
+      long dueDate = System.currentTimeMillis() + aDay * 60;
+      proposal = proposalRepository.setStatus(inputProposal.getId(), ProposalStatus.PUBLISHED, dueDate);
+    }
 
     eventsGateway.createPublicationEvent(proposal);
     votesGateway.registerProposal(proposal);

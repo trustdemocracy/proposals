@@ -15,6 +15,8 @@ public interface ProposalRepository {
 
   Proposal setStatus(UUID id, ProposalStatus status);
 
+  Proposal setStatus(UUID id, ProposalStatus status, long dueDate);
+
   List<Proposal> findByAuthorId(UUID authorId);
 
   List<Proposal> findByAuthorId(UUID authorId, ProposalStatus status);

@@ -72,7 +72,7 @@ public class MySqlProposalRepository implements ProposalRepository {
   public Proposal findById(UUID id) {
     try {
       val sql = "SELECT id, author_id, author_username, title, "
-          + "brief, source, motivation, measures, status "
+          + "brief, source, motivation, measures, status, due_date "
           + "FROM `" + TABLE + "` "
           + "WHERE id = ?";
       val statement = conn.prepareStatement(sql);
@@ -96,7 +96,8 @@ public class MySqlProposalRepository implements ProposalRepository {
           .setSource(resultSet.getString("source"))
           .setMotivation(resultSet.getString("motivation"))
           .setMeasures(resultSet.getString("measures"))
-          .setStatus(ProposalStatus.valueOf(resultSet.getString("status")));
+          .setStatus(ProposalStatus.valueOf(resultSet.getString("status")))
+          .setDueDate(resultSet.getLong("due_date"));
     } catch (SQLException e) {
       LOG.error("Failed to find proposal with id " + id, e);
       return null;
@@ -156,10 +157,39 @@ public class MySqlProposalRepository implements ProposalRepository {
   }
 
   @Override
+  public Proposal setStatus(UUID id, ProposalStatus status, long dueDate) {
+    try {
+      val proposal = findById(id);
+      if (proposal == null) {
+        return null;
+      }
+
+      val sql = "UPDATE `" + TABLE + "` "
+          + "SET status = ?, due_date = ?"
+          + " WHERE id = ? ";
+      val statement = conn.prepareStatement(sql);
+
+      statement.setString(1, status.toString());
+      statement.setLong(2, dueDate);
+      statement.setString(3, id.toString());
+
+      if (statement.executeUpdate() > 0) {
+        proposal.setStatus(status);
+        return proposal;
+      }
+
+      return null;
+    } catch (SQLException e) {
+      LOG.error("Failed to update status in proposal with id " + id, e);
+      return null;
+    }
+  }
+
+  @Override
   public List<Proposal> findByAuthorId(UUID authorId) {
     try {
       val sql = "SELECT id, author_id, author_username, title, "
-          + "brief, source, motivation, measures, status "
+          + "brief, source, motivation, measures, status, due_date "
           + "FROM `" + TABLE + "` "
           + "WHERE author_id = ? ";
       val statement = conn.prepareStatement(sql);
@@ -182,7 +212,8 @@ public class MySqlProposalRepository implements ProposalRepository {
             .setSource(resultSet.getString("source"))
             .setMotivation(resultSet.getString("motivation"))
             .setMeasures(resultSet.getString("measures"))
-            .setStatus(ProposalStatus.valueOf(resultSet.getString("status")));
+            .setStatus(ProposalStatus.valueOf(resultSet.getString("status")))
+            .setDueDate(resultSet.getLong("due_date"));
 
         proposals.add(proposal);
       }
@@ -198,7 +229,7 @@ public class MySqlProposalRepository implements ProposalRepository {
   public List<Proposal> findByAuthorId(UUID authorId, ProposalStatus status) {
     try {
       val sql = "SELECT id, author_id, author_username, title, "
-          + "brief, source, motivation, measures, status "
+          + "brief, source, motivation, measures, status, due_date "
           + "FROM `" + TABLE + "` "
           + "WHERE author_id = ? AND status = ?";
       val statement = conn.prepareStatement(sql);
@@ -222,7 +253,8 @@ public class MySqlProposalRepository implements ProposalRepository {
             .setSource(resultSet.getString("source"))
             .setMotivation(resultSet.getString("motivation"))
             .setMeasures(resultSet.getString("measures"))
-            .setStatus(ProposalStatus.valueOf(resultSet.getString("status")));
+            .setStatus(ProposalStatus.valueOf(resultSet.getString("status")))
+            .setDueDate(resultSet.getLong("due_date"));
 
         proposals.add(proposal);
       }
@@ -238,7 +270,7 @@ public class MySqlProposalRepository implements ProposalRepository {
   public List<Proposal> findAllPublished() {
     try {
       val sql = "SELECT id, author_id, author_username, title, "
-          + "brief, source, motivation, measures, status "
+          + "brief, source, motivation, measures, status, due_date "
           + "FROM `" + TABLE + "` "
           + "WHERE status = ?";
       val statement = conn.prepareStatement(sql);
@@ -261,7 +293,8 @@ public class MySqlProposalRepository implements ProposalRepository {
             .setSource(resultSet.getString("source"))
             .setMotivation(resultSet.getString("motivation"))
             .setMeasures(resultSet.getString("measures"))
-            .setStatus(ProposalStatus.valueOf(resultSet.getString("status")));
+            .setStatus(ProposalStatus.valueOf(resultSet.getString("status")))
+            .setDueDate(resultSet.getLong("due_date"));
 
         proposals.add(proposal);
       }

@@ -44,6 +44,12 @@ public class FakeProposalRepository implements ProposalRepository {
   }
 
   @Override
+  public Proposal setStatus(UUID id, ProposalStatus status, long dueDate) {
+    val proposal = findById(id);
+    return proposal.setStatus(status).setDueDate(dueDate);
+  }
+
+  @Override
   public List<Proposal> findByAuthorId(UUID authorId) {
     List<Proposal> result = new ArrayList<>();
 

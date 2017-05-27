@@ -29,7 +29,8 @@ public class ProposalMapper {
         .setSource(proposal.getSource())
         .setMotivation(proposal.getMotivation())
         .setMeasures(proposal.getMeasures())
-        .setStatus(proposal.getStatus());
+        .setStatus(proposal.getStatus())
+        .setDueDate(proposal.getDueDate());
   }
 
   public static GetProposalsResponseDTO createResponse(List<Proposal> proposalList) {
