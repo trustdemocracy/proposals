@@ -39,6 +39,9 @@ public class UnpublishProposal implements Interactor<ProposalRequestDTO, Proposa
     }
 
     val proposal = proposalRepository.setStatus(inputProposal.getId(), ProposalStatus.UNPUBLISHED);
+
+    votesGateway.unregisterProposal(proposal);
+
     return ProposalMapper.createResponse(proposal);
   }
 }
