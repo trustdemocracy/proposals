@@ -7,7 +7,7 @@ import eu.trustdemocracy.proposals.core.interactors.Interactor;
 import eu.trustdemocracy.proposals.core.interactors.exceptions.ResourceNotFoundException;
 import eu.trustdemocracy.proposals.core.models.request.CommentRequestDTO;
 import eu.trustdemocracy.proposals.core.models.response.CommentResponseDTO;
-import eu.trustdemocracy.proposals.gateways.events.EventsGateway;
+import eu.trustdemocracy.proposals.gateways.out.EventsGateway;
 import eu.trustdemocracy.proposals.gateways.repositories.CommentRepository;
 import eu.trustdemocracy.proposals.gateways.repositories.ProposalRepository;
 import lombok.val;

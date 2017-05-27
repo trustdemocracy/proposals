@@ -13,7 +13,7 @@ import eu.trustdemocracy.proposals.core.interactors.util.TokenUtils;
 import eu.trustdemocracy.proposals.core.models.FakeModelsFactory;
 import eu.trustdemocracy.proposals.core.models.request.ProposalRequestDTO;
 import eu.trustdemocracy.proposals.core.models.response.CommentResponseDTO;
-import eu.trustdemocracy.proposals.gateways.events.FakeEventsGateway;
+import eu.trustdemocracy.proposals.gateways.out.FakeEventsGateway;
 import eu.trustdemocracy.proposals.gateways.out.FakeVotesGateway;
 import eu.trustdemocracy.proposals.gateways.repositories.fake.FakeCommentRepository;
 import eu.trustdemocracy.proposals.gateways.repositories.fake.FakeProposalRepository;

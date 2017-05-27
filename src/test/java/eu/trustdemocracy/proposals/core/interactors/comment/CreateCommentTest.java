@@ -15,7 +15,7 @@ import eu.trustdemocracy.proposals.core.models.request.CommentRequestDTO;
 import eu.trustdemocracy.proposals.core.models.request.ProposalRequestDTO;
 import eu.trustdemocracy.proposals.core.models.response.CommentResponseDTO;
 import eu.trustdemocracy.proposals.core.models.response.ProposalResponseDTO;
-import eu.trustdemocracy.proposals.gateways.events.FakeEventsGateway;
+import eu.trustdemocracy.proposals.gateways.out.FakeEventsGateway;
 import eu.trustdemocracy.proposals.gateways.out.FakeVotesGateway;
 import eu.trustdemocracy.proposals.gateways.repositories.CommentRepository;
 import eu.trustdemocracy.proposals.gateways.repositories.ProposalRepository;
