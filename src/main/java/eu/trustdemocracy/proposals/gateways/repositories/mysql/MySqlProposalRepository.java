@@ -12,6 +12,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -76,7 +77,7 @@ public class MySqlProposalRepository implements ProposalRepository {
   public Proposal findById(UUID id) {
     try {
       val sql = "SELECT id, author_id, author_username, title, "
-          + "brief, source, motivation, measures, status, due_date "
+          + "brief, source, motivation, measures, status, due_date, favour, against "
           + "FROM `" + TABLE + "` "
           + "WHERE id = ?";
       val statement = conn.prepareStatement(sql);
@@ -98,6 +99,10 @@ public class MySqlProposalRepository implements ProposalRepository {
       } catch (SQLException ignored) {
       }
 
+      Map<VoteOption, Double> votes = new HashMap<>();
+      votes.put(VoteOption.FAVOUR, resultSet.getDouble("favour"));
+      votes.put(VoteOption.AGAINST, resultSet.getDouble("against"));
+
       return new Proposal()
           .setId(UUID.fromString(resultSet.getString("id")))
           .setAuthor(user)
@@ -107,7 +112,8 @@ public class MySqlProposalRepository implements ProposalRepository {
           .setMotivation(resultSet.getString("motivation"))
           .setMeasures(resultSet.getString("measures"))
           .setStatus(ProposalStatus.valueOf(resultSet.getString("status")))
-          .setDueDate(dueDate);
+          .setDueDate(dueDate)
+          .setVotes(votes);
     } catch (SQLException e) {
       LOG.error("Failed to find proposal with id " + id, e);
       return null;
@@ -199,7 +205,7 @@ public class MySqlProposalRepository implements ProposalRepository {
   public List<Proposal> findByAuthorId(UUID authorId) {
     try {
       val sql = "SELECT id, author_id, author_username, title, "
-          + "brief, source, motivation, measures, status, due_date "
+          + "brief, source, motivation, measures, status, due_date, favour, against "
           + "FROM `" + TABLE + "` "
           + "WHERE author_id = ? ";
       val statement = conn.prepareStatement(sql);
@@ -218,7 +224,7 @@ public class MySqlProposalRepository implements ProposalRepository {
   public List<Proposal> findByAuthorId(UUID authorId, ProposalStatus status) {
     try {
       val sql = "SELECT id, author_id, author_username, title, "
-          + "brief, source, motivation, measures, status, due_date "
+          + "brief, source, motivation, measures, status, due_date, favour, against "
           + "FROM `" + TABLE + "` "
           + "WHERE author_id = ? AND status = ?";
       val statement = conn.prepareStatement(sql);
@@ -238,7 +244,7 @@ public class MySqlProposalRepository implements ProposalRepository {
   public List<Proposal> findAllPublished() {
     try {
       val sql = "SELECT id, author_id, author_username, title, "
-          + "brief, source, motivation, measures, status, due_date "
+          + "brief, source, motivation, measures, status, due_date, favour, against "
           + "FROM `" + TABLE + "` "
           + "WHERE status = ?";
       val statement = conn.prepareStatement(sql);
@@ -267,6 +273,8 @@ public class MySqlProposalRepository implements ProposalRepository {
       statement.setDouble(1, favour == null ? 0.0 : favour);
       statement.setDouble(2, against == null ? 0.0 : against);
       statement.setString(3, id.toString());
+      statement.executeUpdate();
+
     } catch (SQLException e) {
       LOG.error("Failed to update votes in proposal with id " + id, e);
     }
@@ -282,6 +290,8 @@ public class MySqlProposalRepository implements ProposalRepository {
 
       statement.setBoolean(1, true);
       statement.setString(2, id.toString());
+      statement.executeUpdate();
+
     } catch (SQLException e) {
       LOG.error("Failed to expire proposal with id " + id, e);
     }
@@ -305,6 +315,10 @@ public class MySqlProposalRepository implements ProposalRepository {
       } catch (SQLException ignored) {
       }
 
+      Map<VoteOption, Double> votes = new HashMap<>();
+      votes.put(VoteOption.FAVOUR, resultSet.getDouble("favour"));
+      votes.put(VoteOption.AGAINST, resultSet.getDouble("against"));
+
       val proposal = new Proposal()
           .setId(UUID.fromString(resultSet.getString("id")))
           .setAuthor(user)
@@ -314,7 +328,8 @@ public class MySqlProposalRepository implements ProposalRepository {
           .setMotivation(resultSet.getString("motivation"))
           .setMeasures(resultSet.getString("measures"))
           .setStatus(ProposalStatus.valueOf(resultSet.getString("status")))
-          .setDueDate(dueDate);
+          .setDueDate(dueDate)
+          .setVotes(votes);
 
       proposals.add(proposal);
     }
