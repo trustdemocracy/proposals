@@ -20,6 +20,7 @@ public class Proposal {
   private ProposalStatus status;
   private long dueDate;
   private Map<VoteOption, Double> votes;
+  private boolean expired;
 
   public Map<VoteOption, Double> getVotes() {
     if (votes == null) {

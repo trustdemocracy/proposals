@@ -70,5 +70,32 @@ public class UpdateResultTest {
     assertEquals(votes.get(VoteOption.AGAINST), foundProposal.getVotes().get(VoteOption.AGAINST));
   }
 
+  @Test
+  public void closeProposal() {
+    val votes = new HashMap<VoteOption, Double>();
+    votes.put(VoteOption.FAVOUR, 0.3);
+    votes.put(VoteOption.AGAINST, 0.2);
+
+    val proposal = responseProposals.values().iterator().next();
+
+    UpdateResultDTO request = new UpdateResultDTO()
+        .setId(proposal.getId())
+        .setResults(votes);
+
+    new UpdateResult(proposalRepository).execute(request);
+
+
+    UpdateResultDTO expiredRequest = new UpdateResultDTO()
+        .setId(proposal.getId())
+        .setExpired(true);
+    new UpdateResult(proposalRepository).execute(expiredRequest);
+
+
+    val foundProposal = proposalRepository.findById(proposal.getId());
+    assertEquals(votes.get(VoteOption.FAVOUR), foundProposal.getVotes().get(VoteOption.FAVOUR));
+    assertEquals(votes.get(VoteOption.AGAINST), foundProposal.getVotes().get(VoteOption.AGAINST));
+    assertTrue(foundProposal.isExpired());
+  }
+
 
 }
