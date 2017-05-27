@@ -1,8 +1,6 @@
 package eu.trustdemocracy.proposals.infrastructure;
 
 import ch.vorburger.exec.ManagedProcessException;
-import ch.vorburger.mariadb4j.DB;
-import ch.vorburger.mariadb4j.DBConfigurationBuilder;
 import eu.trustdemocracy.proposals.core.interactors.comment.CreateComment;
 import eu.trustdemocracy.proposals.core.interactors.comment.DeleteComment;
 import eu.trustdemocracy.proposals.core.interactors.comment.GetComments;
@@ -21,14 +19,13 @@ import eu.trustdemocracy.proposals.gateways.repositories.CommentRepository;
 import eu.trustdemocracy.proposals.gateways.repositories.ProposalRepository;
 import eu.trustdemocracy.proposals.gateways.repositories.mysql.MySqlCommentRepository;
 import eu.trustdemocracy.proposals.gateways.repositories.mysql.MySqlProposalRepository;
+import eu.trustdemocracy.proposals.gateways.repositories.mysql.SqlUtils;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
-import lombok.val;
 
 public class FakeInteractorFactory implements InteractorFactory {
 
-  private Connection connection;
+  private SqlUtils sql;
 
   @Override
   public CreateProposal getCreateProposal() {
@@ -97,61 +94,15 @@ public class FakeInteractorFactory implements InteractorFactory {
   }
 
   private Connection getConnection() {
-    if (connection == null) {
+    if (sql == null) {
       try {
-        val configBuilder = DBConfigurationBuilder.newBuilder();
-        configBuilder.setPort(0);
-
-        val db = DB.newEmbeddedDB(configBuilder.build());
-        db.start();
-        connection = DriverManager
-            .getConnection(configBuilder.getURL("test"), "root", "");
-
-        buildTables(connection);
+        sql = new SqlUtils();
+        sql.startDB();
+        sql.createAllTables();
       } catch (SQLException | ManagedProcessException e) {
         throw new RuntimeException(e);
       }
     }
-    return connection;
-  }
-
-  private void buildTables(Connection connection) throws SQLException {
-    val proposals = "CREATE TABLE `proposals` (" +
-        "`id` VARCHAR(" + MySqlProposalRepository.ID_SIZE + ") NOT NULL, " +
-        "`author_id` VARCHAR(" + MySqlProposalRepository.AUTHOR_SIZE + "), " +
-        "`author_username` VARCHAR(" + MySqlProposalRepository.AUTHOR_SIZE + "), " +
-        "`title` VARCHAR(" + MySqlProposalRepository.TITLE_SIZE + "), " +
-        "`brief` VARCHAR(" + MySqlProposalRepository.BRIEF_SIZE + "), " +
-        "`source` VARCHAR(" + MySqlProposalRepository.SOURCE_SIZE + "), " +
-        "`motivation` TEXT(" + MySqlProposalRepository.MOTIVATION_SIZE + "), " +
-        "`measures` TEXT(" + MySqlProposalRepository.MEASURES_SIZE + "), " +
-        "`status` VARCHAR(" + MySqlProposalRepository.STATUS_SIZE + "), " +
-        "PRIMARY KEY ( id ) " +
-        ") ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;";
-
-    val comments = "CREATE TABLE `comments` (" +
-        "`id` VARCHAR(" + MySqlCommentRepository.ID_SIZE + ") NOT NULL, " +
-        "`proposal_id` VARCHAR(" + MySqlCommentRepository.ID_SIZE + ") NOT NULL, " +
-        "`root_comment_id` VARCHAR(" + MySqlCommentRepository.ID_SIZE + ") NOT NULL, " +
-        "`author_id` VARCHAR(" + MySqlCommentRepository.ID_SIZE + ") NOT NULL, " +
-        "`author_username` VARCHAR(" + MySqlCommentRepository.ID_SIZE + ") NOT NULL, " +
-        "`content` VARCHAR(" + MySqlCommentRepository.CONTENT_SIZE + "), " +
-        "`created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, " +
-        "PRIMARY KEY ( id ) " +
-        ") ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci; ";
-
-    val votes = "CREATE TABLE `votes` (" +
-        "`comment_id` VARCHAR(" + MySqlCommentRepository.ID_SIZE + ") NOT NULL, " +
-        "`voter_id` VARCHAR(" + MySqlCommentRepository.ID_SIZE + ") NOT NULL, " +
-        "`option` VARCHAR(" + MySqlCommentRepository.OPTION_SIZE + ") NOT NULL, " +
-        "PRIMARY KEY ( comment_id, voter_id ) " +
-        ") ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;";
-
-    val tables = new String[]{proposals, comments, votes};
-
-    for (val sql : tables) {
-      val statement = connection.createStatement();
-      statement.executeUpdate(sql);
-    }
+    return sql.getConnection();
   }
 }
