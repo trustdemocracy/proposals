@@ -4,6 +4,7 @@ import eu.trustdemocracy.proposals.core.entities.ProposalStatus;
 import eu.trustdemocracy.proposals.core.models.FakeModelsFactory;
 import eu.trustdemocracy.proposals.core.models.response.ProposalResponseDTO;
 import io.vertx.core.json.Json;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import lombok.val;
@@ -243,6 +244,45 @@ public class ProposalControllerTest extends ControllerTest {
       context.fail(error);
       async.complete();
     });
+  }
+
+
+  @Test
+  public void updateResult(TestContext context) {
+    val async = context.async();
+    val inputProposal = FakeModelsFactory.getRandomProposal();
+
+    val single = client.post(port, HOST, "/proposals")
+        .putHeader("Authorization", "Bearer " + inputProposal.getAuthorToken())
+        .rxSendJson(inputProposal);
+
+    single.subscribe(response -> {
+      val responseProposal = Json
+          .decodeValue(response.body().toString(), ProposalResponseDTO.class);
+
+      val results = new JsonObject()
+          .put("FAVOUR", 0.4)
+          .put("AGAINST", 0.3);
+
+      val request = new JsonObject()
+          .put(responseProposal.getId().toString(), new JsonObject().put("results", results));
+
+      client.post(port, HOST, "/proposals/results/")
+          .rxSendJson(request)
+          .subscribe(deleteResponse -> {
+            context.assertEquals(deleteResponse.statusCode(), 200);
+
+            async.complete();
+          }, error -> {
+            context.fail(error);
+            async.complete();
+          });
+
+    }, error -> {
+      context.fail(error);
+      async.complete();
+    });
+
   }
 
 }
