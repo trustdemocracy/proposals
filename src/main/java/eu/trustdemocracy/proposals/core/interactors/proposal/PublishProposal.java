@@ -48,6 +48,7 @@ public class PublishProposal implements Interactor<ProposalRequestDTO, ProposalR
     val proposal = proposalRepository.setStatus(inputProposal.getId(), ProposalStatus.PUBLISHED);
 
     eventsGateway.createPublicationEvent(proposal);
+    votesGateway.registerProposal(proposal);
 
     return ProposalMapper.createResponse(proposal);
   }

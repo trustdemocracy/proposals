@@ -40,6 +40,7 @@ public class PublishProposalTest {
   public void init() throws JoseException {
     proposalRepository = new FakeProposalRepository();
     eventsGateway = new FakeEventsGateway();
+    votesGateway = new FakeVotesGateway();
     reponseProposals = new HashMap<>();
     TokenUtils.generateKeys();
 
