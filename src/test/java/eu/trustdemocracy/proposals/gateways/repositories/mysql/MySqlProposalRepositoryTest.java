@@ -37,7 +37,7 @@ public class MySqlProposalRepositoryTest {
 
     sqlUtils.createProposalsTable();
 
-    proposalRepository = new eu.trustdemocracy.proposals.gateways.repositories.mysql.MySqlProposalRepository(sqlUtils.getConnection());
+    proposalRepository = new MySqlProposalRepository(sqlUtils.getConnection());
   }
 
   @AfterEach
@@ -65,6 +65,7 @@ public class MySqlProposalRepositoryTest {
     assertEquals(proposal.getMotivation(), resultSet.getString("motivation"));
     assertEquals(proposal.getMeasures(), resultSet.getString("measures"));
     assertEquals(ProposalStatus.UNPUBLISHED.toString(), resultSet.getString("status"));
+    assertEquals(0, resultSet.getLong("due_date"));
   }
 
   @Test
@@ -81,6 +82,7 @@ public class MySqlProposalRepositoryTest {
     assertEquals(proposal.getMotivation(), resultProposal.getMotivation());
     assertEquals(proposal.getMeasures(), resultProposal.getMeasures());
     assertEquals(ProposalStatus.UNPUBLISHED, resultProposal.getStatus());
+    assertEquals(0, resultProposal.getDueDate());
   }
 
   @Test

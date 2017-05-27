@@ -18,4 +18,5 @@ public class ProposalResponseDTO {
   private String motivation;
   private String measures;
   private ProposalStatus status;
+  private long dueDate;
 }

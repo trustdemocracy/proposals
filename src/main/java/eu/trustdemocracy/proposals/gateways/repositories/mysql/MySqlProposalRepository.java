@@ -3,13 +3,17 @@ package eu.trustdemocracy.proposals.gateways.repositories.mysql;
 import eu.trustdemocracy.proposals.core.entities.Proposal;
 import eu.trustdemocracy.proposals.core.entities.ProposalStatus;
 import eu.trustdemocracy.proposals.core.entities.User;
+import eu.trustdemocracy.proposals.core.entities.VoteOption;
 import eu.trustdemocracy.proposals.gateways.repositories.ProposalRepository;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import lombok.val;
 
@@ -72,7 +76,7 @@ public class MySqlProposalRepository implements ProposalRepository {
   public Proposal findById(UUID id) {
     try {
       val sql = "SELECT id, author_id, author_username, title, "
-          + "brief, source, motivation, measures, status "
+          + "brief, source, motivation, measures, status, due_date "
           + "FROM `" + TABLE + "` "
           + "WHERE id = ?";
       val statement = conn.prepareStatement(sql);
@@ -88,6 +92,12 @@ public class MySqlProposalRepository implements ProposalRepository {
           .setId(UUID.fromString(resultSet.getString("author_id")))
           .setUsername(resultSet.getString("author_username"));
 
+      long dueDate = 0;
+      try {
+        dueDate = resultSet.getTimestamp("due_date").getTime();
+      } catch (SQLException ignored) {
+      }
+
       return new Proposal()
           .setId(UUID.fromString(resultSet.getString("id")))
           .setAuthor(user)
@@ -96,7 +106,8 @@ public class MySqlProposalRepository implements ProposalRepository {
           .setSource(resultSet.getString("source"))
           .setMotivation(resultSet.getString("motivation"))
           .setMeasures(resultSet.getString("measures"))
-          .setStatus(ProposalStatus.valueOf(resultSet.getString("status")));
+          .setStatus(ProposalStatus.valueOf(resultSet.getString("status")))
+          .setDueDate(dueDate);
     } catch (SQLException e) {
       LOG.error("Failed to find proposal with id " + id, e);
       return null;
@@ -156,10 +167,39 @@ public class MySqlProposalRepository implements ProposalRepository {
   }
 
   @Override
+  public Proposal setStatus(UUID id, ProposalStatus status, long dueDate) {
+    try {
+      val proposal = findById(id);
+      if (proposal == null) {
+        return null;
+      }
+
+      val sql = "UPDATE `" + TABLE + "` "
+          + "SET status = ?, due_date = ?"
+          + " WHERE id = ? ";
+      val statement = conn.prepareStatement(sql);
+
+      statement.setString(1, status.toString());
+      statement.setTimestamp(2, new Timestamp(dueDate));
+      statement.setString(3, id.toString());
+
+      if (statement.executeUpdate() > 0) {
+        proposal.setStatus(status);
+        return proposal;
+      }
+
+      return null;
+    } catch (SQLException e) {
+      LOG.error("Failed to update status in proposal with id " + id, e);
+      return null;
+    }
+  }
+
+  @Override
   public List<Proposal> findByAuthorId(UUID authorId) {
     try {
       val sql = "SELECT id, author_id, author_username, title, "
-          + "brief, source, motivation, measures, status "
+          + "brief, source, motivation, measures, status, due_date "
           + "FROM `" + TABLE + "` "
           + "WHERE author_id = ? ";
       val statement = conn.prepareStatement(sql);
@@ -167,27 +207,7 @@ public class MySqlProposalRepository implements ProposalRepository {
       statement.setString(1, authorId.toString());
       val resultSet = statement.executeQuery();
 
-      List<Proposal> proposals = new ArrayList<>();
-
-      while (resultSet.next()) {
-        val user = new User()
-            .setId(UUID.fromString(resultSet.getString("author_id")))
-            .setUsername(resultSet.getString("author_username"));
-
-        val proposal = new Proposal()
-            .setId(UUID.fromString(resultSet.getString("id")))
-            .setAuthor(user)
-            .setTitle(resultSet.getString("title"))
-            .setBrief(resultSet.getString("brief"))
-            .setSource(resultSet.getString("source"))
-            .setMotivation(resultSet.getString("motivation"))
-            .setMeasures(resultSet.getString("measures"))
-            .setStatus(ProposalStatus.valueOf(resultSet.getString("status")));
-
-        proposals.add(proposal);
-      }
-
-      return proposals;
+      return parseProposals(resultSet);
     } catch (SQLException e) {
       LOG.error("Failed to find proposals for author " + authorId, e);
       return null;
@@ -198,7 +218,7 @@ public class MySqlProposalRepository implements ProposalRepository {
   public List<Proposal> findByAuthorId(UUID authorId, ProposalStatus status) {
     try {
       val sql = "SELECT id, author_id, author_username, title, "
-          + "brief, source, motivation, measures, status "
+          + "brief, source, motivation, measures, status, due_date "
           + "FROM `" + TABLE + "` "
           + "WHERE author_id = ? AND status = ?";
       val statement = conn.prepareStatement(sql);
@@ -207,27 +227,7 @@ public class MySqlProposalRepository implements ProposalRepository {
       statement.setString(2, status.toString());
       val resultSet = statement.executeQuery();
 
-      List<Proposal> proposals = new ArrayList<>();
-
-      while (resultSet.next()) {
-        val user = new User()
-            .setId(UUID.fromString(resultSet.getString("author_id")))
-            .setUsername(resultSet.getString("author_username"));
-
-        val proposal = new Proposal()
-            .setId(UUID.fromString(resultSet.getString("id")))
-            .setAuthor(user)
-            .setTitle(resultSet.getString("title"))
-            .setBrief(resultSet.getString("brief"))
-            .setSource(resultSet.getString("source"))
-            .setMotivation(resultSet.getString("motivation"))
-            .setMeasures(resultSet.getString("measures"))
-            .setStatus(ProposalStatus.valueOf(resultSet.getString("status")));
-
-        proposals.add(proposal);
-      }
-
-      return proposals;
+      return parseProposals(resultSet);
     } catch (SQLException e) {
       LOG.error("Failed to find proposals for author " + authorId + " and status " + status, e);
       return null;
@@ -238,7 +238,7 @@ public class MySqlProposalRepository implements ProposalRepository {
   public List<Proposal> findAllPublished() {
     try {
       val sql = "SELECT id, author_id, author_username, title, "
-          + "brief, source, motivation, measures, status "
+          + "brief, source, motivation, measures, status, due_date "
           + "FROM `" + TABLE + "` "
           + "WHERE status = ?";
       val statement = conn.prepareStatement(sql);
@@ -246,34 +246,79 @@ public class MySqlProposalRepository implements ProposalRepository {
       statement.setString(1, ProposalStatus.PUBLISHED.toString());
       val resultSet = statement.executeQuery();
 
-      List<Proposal> proposals = new ArrayList<>();
-
-      while (resultSet.next()) {
-        val user = new User()
-            .setId(UUID.fromString(resultSet.getString("author_id")))
-            .setUsername(resultSet.getString("author_username"));
-
-        val proposal = new Proposal()
-            .setId(UUID.fromString(resultSet.getString("id")))
-            .setAuthor(user)
-            .setTitle(resultSet.getString("title"))
-            .setBrief(resultSet.getString("brief"))
-            .setSource(resultSet.getString("source"))
-            .setMotivation(resultSet.getString("motivation"))
-            .setMeasures(resultSet.getString("measures"))
-            .setStatus(ProposalStatus.valueOf(resultSet.getString("status")));
-
-        proposals.add(proposal);
-      }
-
-      return proposals;
+      return parseProposals(resultSet);
     } catch (SQLException e) {
       LOG.error("Failed to find published proposals", e);
       return null;
     }
   }
 
+  @Override
+  public void updateResults(UUID id, Map<VoteOption, Double> results) {
+    try {
+      val sql = "UPDATE `" + TABLE + "` "
+          + "SET favour = ?, against = ?"
+          + " WHERE id = ? ";
+      val statement = conn.prepareStatement(sql);
+
+      val favour = results.get(VoteOption.FAVOUR);
+      val against = results.get(VoteOption.AGAINST);
+
+      statement.setDouble(1, favour == null ? 0.0 : favour);
+      statement.setDouble(2, against == null ? 0.0 : against);
+      statement.setString(3, id.toString());
+    } catch (SQLException e) {
+      LOG.error("Failed to update votes in proposal with id " + id, e);
+    }
+  }
+
+  @Override
+  public void expire(UUID id) {
+    try {
+      val sql = "UPDATE `" + TABLE + "` "
+          + "SET expired = ?"
+          + " WHERE id = ? ";
+      val statement = conn.prepareStatement(sql);
+
+      statement.setBoolean(1, true);
+      statement.setString(2, id.toString());
+    } catch (SQLException e) {
+      LOG.error("Failed to expire proposal with id " + id, e);
+    }
+  }
+
   protected static String truncate(String string, int limit) {
     return string.length() > limit ? string.substring(0, limit) : string;
+  }
+
+  private static List<Proposal> parseProposals(ResultSet resultSet) throws SQLException {
+    List<Proposal> proposals = new ArrayList<>();
+
+    while (resultSet.next()) {
+      val user = new User()
+          .setId(UUID.fromString(resultSet.getString("author_id")))
+          .setUsername(resultSet.getString("author_username"));
+
+      long dueDate = 0;
+      try {
+        dueDate = resultSet.getTimestamp("due_date").getTime();
+      } catch (SQLException ignored) {
+      }
+
+      val proposal = new Proposal()
+          .setId(UUID.fromString(resultSet.getString("id")))
+          .setAuthor(user)
+          .setTitle(resultSet.getString("title"))
+          .setBrief(resultSet.getString("brief"))
+          .setSource(resultSet.getString("source"))
+          .setMotivation(resultSet.getString("motivation"))
+          .setMeasures(resultSet.getString("measures"))
+          .setStatus(ProposalStatus.valueOf(resultSet.getString("status")))
+          .setDueDate(dueDate);
+
+      proposals.add(proposal);
+    }
+
+    return proposals;
   }
 }

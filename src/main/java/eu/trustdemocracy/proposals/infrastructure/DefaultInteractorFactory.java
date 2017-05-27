@@ -10,8 +10,11 @@ import eu.trustdemocracy.proposals.core.interactors.proposal.GetProposal;
 import eu.trustdemocracy.proposals.core.interactors.proposal.GetProposals;
 import eu.trustdemocracy.proposals.core.interactors.proposal.PublishProposal;
 import eu.trustdemocracy.proposals.core.interactors.proposal.UnpublishProposal;
-import eu.trustdemocracy.proposals.gateways.events.EventsGateway;
-import eu.trustdemocracy.proposals.gateways.events.EventsGatewayImpl;
+import eu.trustdemocracy.proposals.core.interactors.proposal.UpdateResult;
+import eu.trustdemocracy.proposals.gateways.out.EventsGateway;
+import eu.trustdemocracy.proposals.gateways.out.EventsGatewayImpl;
+import eu.trustdemocracy.proposals.gateways.out.VotesGateway;
+import eu.trustdemocracy.proposals.gateways.out.VotesGatewayImpl;
 import eu.trustdemocracy.proposals.gateways.repositories.CommentRepository;
 import eu.trustdemocracy.proposals.gateways.repositories.ProposalRepository;
 
@@ -31,63 +34,72 @@ public class DefaultInteractorFactory implements InteractorFactory {
 
   @Override
   public CreateProposal getCreateProposal() {
-    return new CreateProposal(getProposalDAO());
+    return new CreateProposal(getProposalRepository());
   }
 
   @Override
   public DeleteProposal getDeleteProposal() {
-    return new DeleteProposal(getProposalDAO());
+    return new DeleteProposal(getProposalRepository());
   }
 
   @Override
   public GetProposal getGetProposal() {
-    return new GetProposal(getProposalDAO());
+    return new GetProposal(getProposalRepository());
   }
 
   @Override
   public GetProposals getGetProposals() {
-    return new GetProposals(getProposalDAO());
+    return new GetProposals(getProposalRepository());
   }
 
   @Override
   public PublishProposal getPublishProposal() {
-    return new PublishProposal(getProposalDAO(), getEventsGateway());
+    return new PublishProposal(getProposalRepository(), getEventsGateway(), getVotesGateway());
   }
 
   @Override
   public UnpublishProposal getUnpublishProposal() {
-    return new UnpublishProposal(getProposalDAO());
+    return new UnpublishProposal(getProposalRepository(), getVotesGateway());
   }
 
   @Override
   public CreateComment getCreateComment() {
-    return new CreateComment(getCommentDAO(), getProposalDAO(), getEventsGateway());
+    return new CreateComment(getCommentRepository(), getProposalRepository(), getEventsGateway());
   }
 
   @Override
   public DeleteComment getDeleteComment() {
-    return new DeleteComment(getCommentDAO());
+    return new DeleteComment(getCommentRepository());
   }
 
   @Override
   public GetComments getGetComments() {
-    return new GetComments(getCommentDAO(), getProposalDAO());
+    return new GetComments(getCommentRepository(), getProposalRepository());
   }
 
   @Override
   public VoteComment getVoteComment() {
-    return new VoteComment(getCommentDAO());
+    return new VoteComment(getCommentRepository());
   }
 
-  private CommentRepository getCommentDAO() {
+  @Override
+  public UpdateResult getUpdateResult() {
+    return new UpdateResult(getProposalRepository());
+  }
+
+  private CommentRepository getCommentRepository() {
     return RepositoryFactory.getCommentRepository();
   }
 
-  private ProposalRepository getProposalDAO() {
+  private ProposalRepository getProposalRepository() {
     return RepositoryFactory.getProposalRepository();
   }
 
   private EventsGateway getEventsGateway() {
     return new EventsGatewayImpl();
+  }
+
+  private VotesGateway getVotesGateway() {
+    return new VotesGatewayImpl();
   }
 }

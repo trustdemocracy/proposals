@@ -13,7 +13,8 @@ import eu.trustdemocracy.proposals.core.interactors.util.TokenUtils;
 import eu.trustdemocracy.proposals.core.models.FakeModelsFactory;
 import eu.trustdemocracy.proposals.core.models.request.ProposalRequestDTO;
 import eu.trustdemocracy.proposals.core.models.response.CommentResponseDTO;
-import eu.trustdemocracy.proposals.gateways.events.FakeEventsGateway;
+import eu.trustdemocracy.proposals.gateways.out.FakeEventsGateway;
+import eu.trustdemocracy.proposals.gateways.out.FakeVotesGateway;
 import eu.trustdemocracy.proposals.gateways.repositories.fake.FakeCommentRepository;
 import eu.trustdemocracy.proposals.gateways.repositories.fake.FakeProposalRepository;
 import java.util.ArrayList;
@@ -48,9 +49,10 @@ public class GetCommentsTest {
     val createdProposal = new CreateProposal(proposalDAO)
         .execute(FakeModelsFactory.getRandomProposal(proposalAuthorToken));
 
-    new PublishProposal(proposalDAO, eventsGateway).execute(new ProposalRequestDTO()
-        .setId(createdProposal.getId())
-        .setAuthorToken(proposalAuthorToken));
+    new PublishProposal(proposalDAO, eventsGateway, new FakeVotesGateway())
+        .execute(new ProposalRequestDTO()
+            .setId(createdProposal.getId())
+            .setAuthorToken(proposalAuthorToken));
     val interactor = new CreateComment(commentDAO, proposalDAO, eventsGateway);
     for (int i = 0; i < 10; i++) {
       val inputComment = FakeModelsFactory.getRandomComment(createdProposal.getId());
@@ -97,7 +99,7 @@ public class GetCommentsTest {
         .setAuthorToken(TokenUtils.createToken(UUID.randomUUID(),
             responseComment.getAuthorUsername()));
 
-    new UnpublishProposal(proposalDAO).execute(new ProposalRequestDTO()
+    new UnpublishProposal(proposalDAO, new FakeVotesGateway()).execute(new ProposalRequestDTO()
         .setId(responseComment.getProposalId())
         .setAuthorToken(proposalAuthorToken));
 

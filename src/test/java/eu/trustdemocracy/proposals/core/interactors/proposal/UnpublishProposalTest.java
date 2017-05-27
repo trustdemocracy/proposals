@@ -1,8 +1,10 @@
 package eu.trustdemocracy.proposals.core.interactors.proposal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.thedeanda.lorem.LoremIpsum;
 import eu.trustdemocracy.proposals.core.entities.ProposalStatus;
@@ -13,7 +15,8 @@ import eu.trustdemocracy.proposals.core.interactors.util.TokenUtils;
 import eu.trustdemocracy.proposals.core.models.FakeModelsFactory;
 import eu.trustdemocracy.proposals.core.models.request.ProposalRequestDTO;
 import eu.trustdemocracy.proposals.core.models.response.ProposalResponseDTO;
-import eu.trustdemocracy.proposals.gateways.events.FakeEventsGateway;
+import eu.trustdemocracy.proposals.gateways.out.FakeEventsGateway;
+import eu.trustdemocracy.proposals.gateways.out.FakeVotesGateway;
 import eu.trustdemocracy.proposals.gateways.repositories.ProposalRepository;
 import eu.trustdemocracy.proposals.gateways.repositories.fake.FakeProposalRepository;
 import java.util.HashMap;
@@ -29,6 +32,7 @@ public class UnpublishProposalTest {
   private Map<UUID, ProposalResponseDTO> reponseProposals;
   private ProposalRepository proposalRepository;
   private FakeEventsGateway eventsGateway;
+  private FakeVotesGateway votesGateway;
 
   private UUID authorId;
   private String authorUsername;
@@ -37,6 +41,7 @@ public class UnpublishProposalTest {
   public void init() throws JoseException {
     proposalRepository = new FakeProposalRepository();
     eventsGateway = new FakeEventsGateway();
+    votesGateway = new FakeVotesGateway();
     reponseProposals = new HashMap<>();
     TokenUtils.generateKeys();
 
@@ -46,7 +51,7 @@ public class UnpublishProposalTest {
     authorUsername = lorem.getEmail();
 
     val createProposal = new CreateProposal(proposalRepository);
-    val publishProposal = new PublishProposal(proposalRepository, eventsGateway);
+    val publishProposal = new PublishProposal(proposalRepository, eventsGateway, votesGateway);
 
     for (int i = 0; i < 10; i++) {
       val inputProposal = FakeModelsFactory
@@ -70,7 +75,7 @@ public class UnpublishProposalTest {
         .setAuthorToken("");
 
     assertThrows(InvalidTokenException.class,
-        () -> new UnpublishProposal(proposalRepository).execute(inputProposal));
+        () -> new UnpublishProposal(proposalRepository, votesGateway).execute(inputProposal));
   }
 
   @Test
@@ -82,7 +87,7 @@ public class UnpublishProposalTest {
         .setAuthorToken(TokenUtils.createToken(UUID.randomUUID(), authorUsername));
 
     assertThrows(NotAllowedActionException.class,
-        () -> new UnpublishProposal(proposalRepository).execute(inputProposal));
+        () -> new UnpublishProposal(proposalRepository, votesGateway).execute(inputProposal));
   }
 
   @Test
@@ -92,7 +97,7 @@ public class UnpublishProposalTest {
         .setAuthorToken(TokenUtils.createToken(authorId, authorUsername));
 
     assertThrows(ResourceNotFoundException.class,
-        () -> new UnpublishProposal(proposalRepository).execute(inputProposal));
+        () -> new UnpublishProposal(proposalRepository, votesGateway).execute(inputProposal));
   }
 
   @Test
@@ -103,7 +108,11 @@ public class UnpublishProposalTest {
         .setId(publishedProposal.getId())
         .setAuthorToken(TokenUtils.createToken(authorId, authorUsername));
 
-    ProposalResponseDTO responseProposal = new UnpublishProposal(proposalRepository).execute(inputProposal);
+
+    assertTrue(votesGateway.registeredProposals.containsKey(inputProposal.getId()));
+
+    ProposalResponseDTO responseProposal = new UnpublishProposal(proposalRepository, votesGateway)
+        .execute(inputProposal);
 
     assertEquals(authorUsername, responseProposal.getAuthorUsername());
     assertEquals(publishedProposal.getTitle(), responseProposal.getTitle());
@@ -113,8 +122,9 @@ public class UnpublishProposalTest {
     assertEquals(publishedProposal.getMeasures(), responseProposal.getMeasures());
     assertNotEquals(publishedProposal.getStatus(), responseProposal.getStatus());
     assertEquals(ProposalStatus.UNPUBLISHED, responseProposal.getStatus());
-  }
 
+    assertFalse(votesGateway.registeredProposals.containsKey(inputProposal.getId()));
+  }
 
 
 }

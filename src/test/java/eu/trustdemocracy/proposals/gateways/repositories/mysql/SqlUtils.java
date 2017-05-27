@@ -28,6 +28,10 @@ public final class SqlUtils {
         "`motivation` TEXT(" + MySqlProposalRepository.MOTIVATION_SIZE + "), " +
         "`measures` TEXT(" + MySqlProposalRepository.MEASURES_SIZE + "), " +
         "`status` VARCHAR(" + MySqlProposalRepository.STATUS_SIZE + "), " +
+        "`due_date` TIMESTAMP NOT NULL DEFAULT 0, " +
+        "`expired` BOOLEAN NOT NULL DEFAULT 0, " +
+        "`favour` DOUBLE NOT NULL DEFAULT 0.0, " +
+        "`against` DOUBLE NOT NULL DEFAULT 0.0, " +
 
         "PRIMARY KEY ( id ) " +
         ") ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;";

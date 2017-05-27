@@ -1,5 +1,6 @@
 package eu.trustdemocracy.proposals.core.interactors.proposal;
 
+import eu.trustdemocracy.proposals.core.entities.Proposal;
 import eu.trustdemocracy.proposals.core.entities.ProposalStatus;
 import eu.trustdemocracy.proposals.core.entities.util.ProposalMapper;
 import eu.trustdemocracy.proposals.core.entities.util.UserMapper;
@@ -8,7 +9,8 @@ import eu.trustdemocracy.proposals.core.interactors.exceptions.NotAllowedActionE
 import eu.trustdemocracy.proposals.core.interactors.exceptions.ResourceNotFoundException;
 import eu.trustdemocracy.proposals.core.models.request.ProposalRequestDTO;
 import eu.trustdemocracy.proposals.core.models.response.ProposalResponseDTO;
-import eu.trustdemocracy.proposals.gateways.events.EventsGateway;
+import eu.trustdemocracy.proposals.gateways.out.EventsGateway;
+import eu.trustdemocracy.proposals.gateways.out.VotesGateway;
 import eu.trustdemocracy.proposals.gateways.repositories.ProposalRepository;
 import lombok.val;
 
@@ -16,10 +18,16 @@ public class PublishProposal implements Interactor<ProposalRequestDTO, ProposalR
 
   private ProposalRepository proposalRepository;
   private EventsGateway eventsGateway;
+  private VotesGateway votesGateway;
 
-  public PublishProposal(ProposalRepository proposalRepository, EventsGateway eventsGateway) {
+  public PublishProposal(
+      ProposalRepository proposalRepository,
+      EventsGateway eventsGateway,
+      VotesGateway votesGateway
+  ) {
     this.proposalRepository = proposalRepository;
     this.eventsGateway = eventsGateway;
+    this.votesGateway = votesGateway;
   }
 
   public ProposalResponseDTO execute(ProposalRequestDTO inputProposal) {
@@ -38,9 +46,17 @@ public class PublishProposal implements Interactor<ProposalRequestDTO, ProposalR
               + "]. User [" + user.getId() + "] is not the owner");
     }
 
-    val proposal = proposalRepository.setStatus(inputProposal.getId(), ProposalStatus.PUBLISHED);
+    Proposal proposal;
+    if (foundProposal.getDueDate() != 0) {
+      proposal = proposalRepository.setStatus(inputProposal.getId(), ProposalStatus.PUBLISHED);
+    } else {
+      long aDay = 24 * 60 * 60 * 1000;
+      long dueDate = System.currentTimeMillis() + aDay * 60;
+      proposal = proposalRepository.setStatus(inputProposal.getId(), ProposalStatus.PUBLISHED, dueDate);
+    }
 
     eventsGateway.createPublicationEvent(proposal);
+    votesGateway.registerProposal(proposal);
 
     return ProposalMapper.createResponse(proposal);
   }
