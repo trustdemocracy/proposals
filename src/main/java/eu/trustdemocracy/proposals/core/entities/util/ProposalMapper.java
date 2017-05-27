@@ -30,7 +30,8 @@ public class ProposalMapper {
         .setMotivation(proposal.getMotivation())
         .setMeasures(proposal.getMeasures())
         .setStatus(proposal.getStatus())
-        .setDueDate(proposal.getDueDate());
+        .setDueDate(proposal.getDueDate())
+        .setVotes(proposal.getVotes());
   }
 
   public static GetProposalsResponseDTO createResponse(List<Proposal> proposalList) {
