@@ -2,7 +2,9 @@ package eu.trustdemocracy.proposals.gateways.repositories;
 
 import eu.trustdemocracy.proposals.core.entities.Proposal;
 import eu.trustdemocracy.proposals.core.entities.ProposalStatus;
+import eu.trustdemocracy.proposals.core.entities.VoteOption;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public interface ProposalRepository {
@@ -23,4 +25,5 @@ public interface ProposalRepository {
 
   List<Proposal> findAllPublished();
 
+  void updateResults(UUID id, Map<VoteOption, Double> results);
 }

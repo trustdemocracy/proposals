@@ -6,12 +6,15 @@ import eu.trustdemocracy.proposals.gateways.repositories.ProposalRepository;
 
 public class UpdateResult implements Interactor<UpdateResultDTO, Boolean> {
 
-  public UpdateResult(ProposalRepository proposalRepository) {
+  private ProposalRepository proposalRepository;
 
+  public UpdateResult(ProposalRepository proposalRepository) {
+    this.proposalRepository = proposalRepository;
   }
 
   @Override
   public Boolean execute(UpdateResultDTO updateResultDTO) {
-    return null;
+    proposalRepository.updateResults(updateResultDTO.getId(), updateResultDTO.getResults());
+    return true;
   }
 }

@@ -3,6 +3,7 @@ package eu.trustdemocracy.proposals.gateways.repositories.mysql;
 import eu.trustdemocracy.proposals.core.entities.Proposal;
 import eu.trustdemocracy.proposals.core.entities.ProposalStatus;
 import eu.trustdemocracy.proposals.core.entities.User;
+import eu.trustdemocracy.proposals.core.entities.VoteOption;
 import eu.trustdemocracy.proposals.gateways.repositories.ProposalRepository;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -12,6 +13,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import lombok.val;
 
@@ -248,6 +250,25 @@ public class MySqlProposalRepository implements ProposalRepository {
     } catch (SQLException e) {
       LOG.error("Failed to find published proposals", e);
       return null;
+    }
+  }
+
+  @Override
+  public void updateResults(UUID id, Map<VoteOption, Double> results) {
+    try {
+      val sql = "UPDATE `" + TABLE + "` "
+          + "SET favour = ?, against = ?"
+          + " WHERE id = ? ";
+      val statement = conn.prepareStatement(sql);
+
+      val favour = results.get(VoteOption.FAVOUR);
+      val against = results.get(VoteOption.AGAINST);
+
+      statement.setDouble(1, favour == null ? 0.0 : favour);
+      statement.setDouble(2, against == null ? 0.0 : against);
+      statement.setString(3, id.toString());
+    } catch (SQLException e) {
+      LOG.error("Failed to update votes in proposal with id " + id, e);
     }
   }
 
