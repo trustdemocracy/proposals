@@ -1,5 +1,7 @@
 package eu.trustdemocracy.proposals.core.entities;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -17,4 +19,15 @@ public class Proposal {
   private String measures;
   private ProposalStatus status;
   private long dueDate;
+  private Map<VoteOption, Double> votes;
+
+  public Map<VoteOption, Double> getVotes() {
+    if (votes == null) {
+      votes = new HashMap<>();
+      for (VoteOption option : VoteOption.values()) {
+        votes.put(option, 0.0);
+      }
+    }
+    return votes;
+  }
 }
