@@ -95,4 +95,10 @@ public class FakeProposalRepository implements ProposalRepository {
     proposal.setVotes(results);
   }
 
+  @Override
+  public void expire(UUID id) {
+    val proposal = proposals.get(id);
+    proposal.setExpired(true);
+  }
+
 }

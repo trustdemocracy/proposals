@@ -272,6 +272,21 @@ public class MySqlProposalRepository implements ProposalRepository {
     }
   }
 
+  @Override
+  public void expire(UUID id) {
+    try {
+      val sql = "UPDATE `" + TABLE + "` "
+          + "SET expired = ?"
+          + " WHERE id = ? ";
+      val statement = conn.prepareStatement(sql);
+
+      statement.setBoolean(1, true);
+      statement.setString(2, id.toString());
+    } catch (SQLException e) {
+      LOG.error("Failed to expire proposal with id " + id, e);
+    }
+  }
+
   protected static String truncate(String string, int limit) {
     return string.length() > limit ? string.substring(0, limit) : string;
   }

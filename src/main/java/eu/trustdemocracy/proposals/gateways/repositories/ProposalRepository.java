@@ -26,4 +26,6 @@ public interface ProposalRepository {
   List<Proposal> findAllPublished();
 
   void updateResults(UUID id, Map<VoteOption, Double> results);
+
+  void expire(UUID id);
 }

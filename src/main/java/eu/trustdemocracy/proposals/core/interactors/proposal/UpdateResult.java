@@ -14,7 +14,11 @@ public class UpdateResult implements Interactor<UpdateResultDTO, Boolean> {
 
   @Override
   public Boolean execute(UpdateResultDTO updateResultDTO) {
-    proposalRepository.updateResults(updateResultDTO.getId(), updateResultDTO.getResults());
+    if (updateResultDTO.isExpired()) {
+      proposalRepository.expire(updateResultDTO.getId());
+    } else {
+      proposalRepository.updateResults(updateResultDTO.getId(), updateResultDTO.getResults());
+    }
     return true;
   }
 }
