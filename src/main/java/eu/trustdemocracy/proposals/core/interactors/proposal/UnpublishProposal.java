@@ -8,15 +8,18 @@ import eu.trustdemocracy.proposals.core.interactors.exceptions.NotAllowedActionE
 import eu.trustdemocracy.proposals.core.interactors.exceptions.ResourceNotFoundException;
 import eu.trustdemocracy.proposals.core.models.request.ProposalRequestDTO;
 import eu.trustdemocracy.proposals.core.models.response.ProposalResponseDTO;
+import eu.trustdemocracy.proposals.gateways.out.VotesGateway;
 import eu.trustdemocracy.proposals.gateways.repositories.ProposalRepository;
 import lombok.val;
 
 public class UnpublishProposal implements Interactor<ProposalRequestDTO, ProposalResponseDTO> {
 
   private ProposalRepository proposalRepository;
+  private VotesGateway votesGateway;
 
-  public UnpublishProposal(ProposalRepository proposalRepository) {
+  public UnpublishProposal(ProposalRepository proposalRepository, VotesGateway votesGateway) {
     this.proposalRepository = proposalRepository;
+    this.votesGateway = votesGateway;
   }
 
   public ProposalResponseDTO execute(ProposalRequestDTO inputProposal) {

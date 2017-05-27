@@ -58,7 +58,7 @@ public class DefaultInteractorFactory implements InteractorFactory {
 
   @Override
   public UnpublishProposal getUnpublishProposal() {
-    return new UnpublishProposal(getProposalDAO());
+    return new UnpublishProposal(getProposalDAO(), getVotesGateway());
   }
 
   @Override

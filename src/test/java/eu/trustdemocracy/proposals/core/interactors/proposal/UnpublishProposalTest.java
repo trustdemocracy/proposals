@@ -1,8 +1,10 @@
 package eu.trustdemocracy.proposals.core.interactors.proposal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.thedeanda.lorem.LoremIpsum;
 import eu.trustdemocracy.proposals.core.entities.ProposalStatus;
@@ -73,7 +75,7 @@ public class UnpublishProposalTest {
         .setAuthorToken("");
 
     assertThrows(InvalidTokenException.class,
-        () -> new UnpublishProposal(proposalRepository).execute(inputProposal));
+        () -> new UnpublishProposal(proposalRepository, votesGateway).execute(inputProposal));
   }
 
   @Test
@@ -85,7 +87,7 @@ public class UnpublishProposalTest {
         .setAuthorToken(TokenUtils.createToken(UUID.randomUUID(), authorUsername));
 
     assertThrows(NotAllowedActionException.class,
-        () -> new UnpublishProposal(proposalRepository).execute(inputProposal));
+        () -> new UnpublishProposal(proposalRepository, votesGateway).execute(inputProposal));
   }
 
   @Test
@@ -95,7 +97,7 @@ public class UnpublishProposalTest {
         .setAuthorToken(TokenUtils.createToken(authorId, authorUsername));
 
     assertThrows(ResourceNotFoundException.class,
-        () -> new UnpublishProposal(proposalRepository).execute(inputProposal));
+        () -> new UnpublishProposal(proposalRepository, votesGateway).execute(inputProposal));
   }
 
   @Test
@@ -106,7 +108,11 @@ public class UnpublishProposalTest {
         .setId(publishedProposal.getId())
         .setAuthorToken(TokenUtils.createToken(authorId, authorUsername));
 
-    ProposalResponseDTO responseProposal = new UnpublishProposal(proposalRepository).execute(inputProposal);
+
+    assertTrue(votesGateway.registeredProposals.containsKey(inputProposal.getId()));
+
+    ProposalResponseDTO responseProposal = new UnpublishProposal(proposalRepository, votesGateway)
+        .execute(inputProposal);
 
     assertEquals(authorUsername, responseProposal.getAuthorUsername());
     assertEquals(publishedProposal.getTitle(), responseProposal.getTitle());
@@ -116,8 +122,9 @@ public class UnpublishProposalTest {
     assertEquals(publishedProposal.getMeasures(), responseProposal.getMeasures());
     assertNotEquals(publishedProposal.getStatus(), responseProposal.getStatus());
     assertEquals(ProposalStatus.UNPUBLISHED, responseProposal.getStatus());
-  }
 
+    assertFalse(votesGateway.registeredProposals.containsKey(inputProposal.getId()));
+  }
 
 
 }

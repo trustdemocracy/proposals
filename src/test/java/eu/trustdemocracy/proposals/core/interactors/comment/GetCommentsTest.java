@@ -99,7 +99,7 @@ public class GetCommentsTest {
         .setAuthorToken(TokenUtils.createToken(UUID.randomUUID(),
             responseComment.getAuthorUsername()));
 
-    new UnpublishProposal(proposalDAO).execute(new ProposalRequestDTO()
+    new UnpublishProposal(proposalDAO, new FakeVotesGateway()).execute(new ProposalRequestDTO()
         .setId(responseComment.getProposalId())
         .setAuthorToken(proposalAuthorToken));
 
