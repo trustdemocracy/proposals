@@ -191,6 +191,7 @@ public class MySqlProposalRepository implements ProposalRepository {
 
       if (statement.executeUpdate() > 0) {
         proposal.setStatus(status);
+        proposal.setDueDate(dueDate);
         return proposal;
       }
 
